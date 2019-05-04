@@ -1,0 +1,52 @@
+{
+"Hz": {
+    "Dimension": [0,0,-1,0,0,0,0],
+    "Symbol": "Hz"},
+"N": {
+    "Dimension": [1,1,-2,0,0,0,0]},
+"Pa": {
+    "Dimension": [1,-1,-2,0,0,0,0]},
+"J": {
+    "Dimension": [1,2,-2,0,0,0,0]},
+"W": {
+    "Dimension": [1,2,-3,0,0,0,0]},
+"C": {
+    "Dimension": [0,0,1,1,0,0,0]},
+"V": {
+    "Dimension": [1,2,-3,-1,0,0,0]},
+"F": {
+    "Dimension": [-1,-2,4,2,0,0,0]},
+"Ohm": {
+    "Dimension": [1,2,-3,-2,0,0,0],
+    "Symbol": "Ω"},
+"S": {
+    "Dimension": [-1,-2,3,2,0,0,0]},
+"Wb": {
+    "Dimension": [1,2,-2,-1,0,0,0]},
+"T": {
+    "Dimension": [1,-2,-1,0,0,0,0]},
+"H": {
+    "Dimension": [1,2,-2,-2,0,0,0]},
+"Celsius": {
+    "Dimension": [0,0,0,0,0,1,0],
+    "Symbol": "°C"},
+"lux": {
+    "Dimension": [0,-2,0,0,1,0,0]},
+"Gy": {
+    "Dimension": [0,2,-2,0,0,0,0]},
+"katal": {
+    "Dimension": [0,0,-1,0,0,0,1],
+    "Symbol": "kat"},
+"minute": {
+    "Dimension": [0,0,1,0,0,0,0],
+    "Factor": "1/60",
+    "Symbol": "minutes"},
+"hour": {
+    "Dimension": [0,0,1,0,0,0,0],
+    "Factor": "1/3600",
+    "Symbol": "hours"},
+"day": {
+    "Dimension": [0,0,1,0,0,0,0],
+    "Factor": "1/3600/24",
+    "Symbol": "days"}
+}
