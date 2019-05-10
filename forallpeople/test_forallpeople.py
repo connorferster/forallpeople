@@ -1,19 +1,20 @@
 import pytest
 import forallpeople as si
-si.environment("structural")
+
+si.environment("test_definitions")
+env_dims = si.environment.units_by_dimension
+env_fact = si.environment.units_by_factor
 ftlb = si.lb * si.ft
 
 ## Tests of the Physical class ##
 
-def test__get_symbol_by_factor():
-    assert si.Physical._get_symbol_by_factor(si.ft.factor, 
-                                             si.ft.dimensions) == \
+def test__get_units_by_factor():
+    func = si.Physical._get_units_by_factor
+    assert func(si.ft.factor, si.ft.dimensions, env_fact) == \
             si.environment.environment["ft"]
-    
-    assert si.Physical._get_symbol_by_factor(ftlb.factor, ftlb.dimensions) == \
+    assert func(ftlb.factor, ftlb.dimensions, env_fact) == \
             si.environment.environment["lbft"]
-    assert si.Physical._get_symbol_by_factor((ftlb*si.ft).factor, (ftlb*si.ft).dimensions) ==\
-            dict()
+    assert func((ftlb*si.ft).factor, (ftlb*si.ft).dimensions, env_fact) == dict()
     
 def test__return_symbol():
     assert si.lb._return_symbol() == "lb"
@@ -22,7 +23,21 @@ def test__return_symbol():
     assert si.kg._return_symbol() == ""
     
 def test__return_prefix():
-    assert "stub" == False
+    assert (si.N*1000)._return_prefix() == "k"
+    assert (si.N*0.001)._return_prefix() == "m"
+    assert si.kg._return_prefix() == "k"
+    assert (si.kg*1e-6)._return_prefix() == "m"
+    assert si.N._return_prefix() == ""
+    assert (si.m * 1e6)._return_prefix() == "M"
+    
+def test_get_unit_components_from_dims():
+    func = si.Physical._get_unit_components_from_dims
+    assert func(si.Dimensions(1,1,-2,0,0,0,0)) == \
+            [("kg", 1), ("m", 1), ("s", -2)]
+    assert func(si.Dimensions(1,2,3,4,5,6,7)) == \
+        [('kg', 1), ('m', 2), ('s', 3), ('A', 4),
+         ('cd', 5), ('K', 6), ('mol', 7)]
+    assert func(si.Dimensions(0,0,0,0,0,0,0)) == []
 
 def test__get_unit_string():
     assert "stub" == False
@@ -51,35 +66,67 @@ def test_in_units():
 def test_si():
     assert "stub" == False
 
-def test__get_derived_name():
+def test__get_derived_unit():
+    func = si.Physical._get_derived_unit
     assert "stub" == False
 
 def test__dims_quotient():
-    assert "stub" == False
+    func = si.Physical._dims_quotient
+    assert func(si.Dimensions(1,1,-2,0,0,0,0), env_dims) == si.Dimensions(1,1,1,0,0,0,0)
+    assert func(si.Dimensions(3,3,-6,0,0,0,0), env_dims) == si.Dimensions(3,3,3,0,0,0,0)
+    assert func(si.Dimensions(1,2,-2,0,0,0,0), env_dims) == si.Dimensions(1,1,1,0,0,0,0)
     
 def test__dims_basis_multiple():
-    assert "stub" == False
+    func = si.Physical._dims_basis_multiple
+    assert func(si.Dimensions(0,1,0,0,0,0,0)) == si.Dimensions(0,1,0,0,0,0,0)
+    assert func(si.Dimensions(0,4,0,0,0,0,0)) == si.Dimensions(0,4,0,0,0,0,0)
+    assert func(si.Dimensions(0,0,2.5,0,0,0,0)) == si.Dimensions(0,0,2.5,0,0,0,0)
+    assert func(si.Dimensions(0,1,2.5,0,0,0,0)) == None
+    assert func(si.Dimensions(1,1,-2,0,0,0,0)) == None
     
 def test__powers_of_derived():
-    assert "stub" == False
+    func = si.Physical._powers_of_derived
+    assert func(si.Dimensions(0,1,0,0,0,0,0), env_dims) == 1
+    assert func(si.Dimensions(1,1,-2,0,0,0,0), env_dims) == 1
+    assert func(si.Dimensions(3,3,-6,0,0,0,0), env_dims) == 3
+    assert func(si.Dimensions(1,2,-2,0,0,0,0), env_dims) == 1
+    assert func(si.Dimensions(0,4,0,0,0,0,0), env_dims) == 4
+    assert func(si.Dimensions(0,0,2.5,0,0,0,0), env_dims) == 2.5
+    assert func(si.Dimensions(3.6,3.6,-7.2, 0,0,0,0), env_dims) == 3.6
     
 def test__dims_original():
-    assert "stub" == False
-    
-def test__unit_data_from_dims():
-    assert "stub" == False
+    func = si.Physical._dims_original
+    assert func(si.Dimensions(0,1,0,0,0,0,0), env_dims) == si.Dimensions(0,1,0,0,0,0,0)
+    assert func(si.Dimensions(1,1,-2,0,0,0,0), env_dims) == si.Dimensions(1,1,-2,0,0,0,0)
+    assert func(si.Dimensions(3,3,-6,0,0,0,0), env_dims) == si.Dimensions(1,1,-2,0,0,0,0)
+    assert func(si.Dimensions(1,2,-2,0,0,0,0), env_dims) == si.Dimensions(1,2,-2,0,0,0,0)
     
 def test__auto_value():
-    assert "stub" == False
+    func = si.Physical._auto_value
+    assert func(1500, si.Dimensions(0,1,0,0,0,0,0), 1, env_dims) == 1500
+    assert func(500, si.Dimensions(2,2,-4,0,0,0,0), 1, env_dims) == 500
+    assert func(500, si.Dimensions(2,2,-4,0,0,0,0), 1/0.3048, env_dims) == 5381.95520835486
     
 def test__auto_prefix():
-    assert "stub" == False
+    func = si.Physical._auto_prefix
+    assert func(1500, si.Dimensions(0,1,0,0,0,0,0), env_dims) == "k"
+    assert func(1500000, si.Dimensions(0,1,0,0,0,0,0), env_dims) == "M"
+    assert func(15, si.Dimensions(0,1,0,0,0,0,0), env_dims) == ""
+    assert func(1500000, si.Dimensions(1,1,-2,0,0,0,0), env_dims) == "M"
+    assert func(25000000, si.Dimensions(2,2,-4,0,0,0,0), env_dims) == "k"
     
 def test__auto_prefix_kg():
-    assert "stub" == False
+    func = si.Physical._auto_prefix_kg
+    assert func(1500, si.Dimensions(1,0,0,0,0,0,0), env_dims) == "M"
+    assert func(.015, si.Dimensions(1,0,0,0,0,0,0), env_dims) == ""
     
 def test__auto_prefix_value():
-    assert "stub" == False
+    func = si.Physical._auto_prefix_value
+    assert func(1500, si.Dimensions(0,1,0,0,0,0,0), 1, env_dims) == 1.5
+    assert func(1500000, si.Dimensions(0,1,0,0,0,0,0), 1, env_dims) == 1.5
+    assert func(15, si.Dimensions(0,1,0,0,0,0,0), 1, env_dims) == 15
+    assert func(0.15, si.Dimensions(1,1,-2,0,0,0,0), 1, env_dims) == 150
+    assert func(0.00015, si.Dimensions(2,2,-4,0,0,0,0), 1, env_dims) == 150
     
 def test___eq__():
     assert "stub" == False
