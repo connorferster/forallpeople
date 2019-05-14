@@ -22,6 +22,7 @@ A module to model the seven SI base units:
 import json
 import re
 import collections
+import dataclasses
 from typing import NamedTuple, Union, Tuple, List, Any, Optional
 import tuplevector as vec
 from collections import ChainMap
@@ -38,8 +39,9 @@ class Dimensions(NamedTuple):
     K: int
     mol: int
 
-# The single class to describe all units...Physical (as in "a physical property")   
-class Physical(NamedTuple):
+# The single class to describe all units...Physical (as in "a physical property")  
+@dataclasses.dataclass(frozen=True)
+class Physical:
     """
     A class that defines any physical quantity that *can* be described
     within the BIPM SI unit system.
@@ -49,7 +51,7 @@ class Physical(NamedTuple):
                  '': 1.0,
                  'm': 1e-3, 'μ': 1e-6, 'n': 1e-09,'p': 1e-12,
                  'f': 1e-15,'a': 1e-18,'z': 1e-21,'y': 1e-24}
-    _precision = 3
+
     _superscripts = {"1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵",
                      "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹", "0": "⁰", 
                      "-": "⁻", ".": "'"}
@@ -58,28 +60,37 @@ class Physical(NamedTuple):
     value: float
     dimensions: Dimensions
     factor: float = 1.0
-    
-    ### API Methods ###
-    @property
-    def symbol(self):
-        return self._return_symbol()
+    precision: int = 3
         
+    def __post_init__(self):
+        object.__setattr__(self, '_precomputed', self._precompute()) 
+        #self._precomputed = self._precompute()
+        
+    ### API Methods ###
     @property
     def latex(self):
         return self._repr_latex_()
     
     @property
-    def tuple(self): 
-        return self.components
+    def html(self):
+        return self._repr_html_()
     
     @property
-    def components(self):
+    def data(self):
         """
         Returns a repr that can be used to create another Physical instance.
         """
         repr_str = "Physical(value={}, dimensions={}, factor={})"
         return repr_str.format(self.value,
                                self.dimensions, self.factor)
+    
+    def round(self, n: int):
+        """
+        Returns a new Physical with a new precision, 'n'. Precision controls
+        the number of decimal places displayed in repr and str.
+        """
+        return dataclasses.replace(self, precision = n)
+        #self.precision = n
     
     def in_units(self, unit_name=""):
         """
@@ -103,9 +114,25 @@ class Physical(NamedTuple):
             unit_match = defined_match or derived_match
             power = Physical._powers_of_derived(self.dimensions, env_dims)
             new_factor = unit_match.get("Factor", 1) ** power
-            return self._replace(factor=new_factor)
+            return dataclasses.replace(self, factor=new_factor)
+            #self.factor = new_factor
+            #self.__post_init__()
+            #return self
 
     ### Repr and String methods ###
+    def _precompute(self) -> dict:
+        precision = self.precision
+        factor = self.factor
+        symbol = self._return_symbol()
+        value = self._return_value()
+        exponent = self._return_exponent()  
+        while True:
+            yield dict(precision=precision,
+                       factor=factor,
+                       symbol=symbol,
+                       value=value,
+                       exponent=exponent)
+            
     def __repr__(self):
         return self._repr_template_()
     
@@ -125,12 +152,14 @@ class Physical(NamedTuple):
         'html' and 'latex'. which will only be utilized if the Physical
         exists in the Jupyter/iPython environment.
         """
-        precision = self._precision
-        factor = self.factor
-        symbol = self._return_symbol()
-        units = self._return_units(repr_format=template)
-        value = self._return_value()
-        exponent = self._return_exponent()        
+  
+        precomputed_vals = next(self._precomputed)
+        precision = precomputed_vals['precision']
+        factor = precomputed_vals['factor']
+        symbol = precomputed_vals['symbol']
+        value = precomputed_vals['value']
+        exponent = precomputed_vals['exponent']
+        units = self._return_units(symbol=symbol, repr_format=template)
         
         pre_super = ""
         post_super = ""
@@ -207,14 +236,14 @@ class Physical(NamedTuple):
             prefix = self._auto_prefix(val, dims, env_dims)
         return prefix
                   
-    def _return_units(self, repr_format: str):
+    def _return_units(self, symbol: str, repr_format: str):
         """Part of the __str__ and __repr__ process. Returns the most appropriate
         unit string of the Physical instance, e.g. Returns the appropriate symbol 
         for the units if defined in an environment .json file. Returns '' otherwise.
         """    
         dims = self.dimensions
         prefix = self._return_prefix() 
-        symbol = self._return_symbol()          
+        #symbol = self._return_symbol()          
         unit_components = self._get_unit_components_from_dims(dims)
         unit_string = self._get_unit_string(prefix, unit_components, repr_format)
                   
@@ -319,8 +348,11 @@ class Physical(NamedTuple):
             pre_super = "^{"
             post_super = "}"
 
-        str_components = []
-        for symbol, exponent in unit_components:
+        if len(unit_components) != 1:
+            prefix = "" # We only want prefixes on single-dimension unit strings
+        
+        str_components = []          
+        for symbol, exponent in unit_components:                
             if exponent == 1:
                 this_component = f"{pre_symbol}{prefix}{symbol}{post_symbol}"
             else:
@@ -435,15 +467,6 @@ class Physical(NamedTuple):
         else:
             return 1
        
-#    @staticmethod              
-#    def _auto_value(value: float, factor: float, units_env: dict) -> float:
-#        """
-#        Returns the value to be displayed in __str__(). This value represents the value
-#        of the Physical in whatever dimension in whatever units it is intended to be in
-#        based on its .factor.
-#        """
-#        return value * factor
-    
     @staticmethod
     def _auto_prefix(value: float, dims: Dimensions, units_env: dict) -> str:
         """
@@ -510,9 +533,9 @@ class Physical(NamedTuple):
     #def __hash__(self):
     #    return hash((self.value, self.dimensions, self.factor))
                   
-    def __round__(self, precision=0):
-        self._precision = precision
-        return self
+    def __round__(self, n=0):
+        return self.round(n)
+        
                   
     def __eq__(self, other):
         if isinstance(other,number):
