@@ -14,9 +14,13 @@ ftlb = si.lb * si.ft
 def test__get_units_by_factor():
     func = si.Physical._get_units_by_factor
     assert func(si.ft.factor, si.ft.dimensions, env_fact) == \
-            si.environment.environment["ft"]
+            {'ft': {'Dimension': si.Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0),
+                    'Symbol': 'ft',
+                    'Factor': 3.280839895013123}}
     assert func(ftlb.factor, ftlb.dimensions, env_fact) == \
-            si.environment.environment["lbft"]
+            {'lbft': {'Dimension': si.Dimensions(kg=1, m=2, s=-2, A=0, cd=0, K=0, mol=0),
+                      'Symbol': 'lb·ft',
+                      'Factor': 0.7375621492772653}}
     assert func((ftlb*si.ft).factor, (ftlb*si.ft).dimensions, env_fact) == dict()
     
 def test__return_symbol():
@@ -102,9 +106,6 @@ def test_in_units():
     assert kip.in_units("lb").factor == (1000*si.lb).factor
     assert ((10*lb)**2).in_units("kip").factor == (0.1*si.kip*si.kip).factor
 
-def test_si():
-    assert "stub" == False
-
 def test__get_derived_unit():
     func = si.Physical._get_derived_unit
     assert func(si.Dimensions(1,1,-2,0,0,0,0), env_dims) == \
@@ -150,11 +151,11 @@ def test__dims_original():
     assert func(si.Dimensions(3,3,-6,0,0,0,0), env_dims) == si.Dimensions(1,1,-2,0,0,0,0)
     assert func(si.Dimensions(1,2,-2,0,0,0,0), env_dims) == si.Dimensions(1,2,-2,0,0,0,0)
     
-def test__auto_value():
-    func = si.Physical._auto_value
-    assert func(1500, si.Dimensions(0,1,0,0,0,0,0), 1, env_dims) == 1500
-    assert func(500, si.Dimensions(2,2,-4,0,0,0,0), 1, env_dims) == 500
-    assert func(500, si.Dimensions(2,2,-4,0,0,0,0), 1/(0.3048**2), env_dims) == 5381.955208354861
+#def test__auto_value():
+#    func = si.Physical._auto_value
+#    assert func(1500, si.Dimensions(0,1,0,0,0,0,0), 1, env_dims) == 1500
+#    assert func(500, si.Dimensions(2,2,-4,0,0,0,0), 1, env_dims) == 500
+#    assert func(500, si.Dimensions(2,2,-4,0,0,0,0), 1/(0.3048**2), env_dims) == 5381.955208354861
     
 def test__auto_prefix():
     func = si.Physical._auto_prefix
@@ -303,6 +304,11 @@ def test___abs__():
     assert abs(-1*si.m) == si.m
     assert abs(-10*si.ft**2) == 10*si.ft**2
     assert abs(1*si.kip) == 1*si.kip
+    
+def test___float__():
+    assert float(6.7*si.ft) == pytest.approx(6.7)
+    assert float(52.5*si.kN) == pytest.approx(52.5)
+    assert float(34*si.kg*si.A*si.m) == 34
     
 ## Test of Environment Class ##
     

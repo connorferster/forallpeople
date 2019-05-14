@@ -25,17 +25,9 @@ import collections
 from typing import NamedTuple, Union, Tuple, List, Any, Optional
 import tuplevector as vec
 from collections import ChainMap
-
 from decimal import Decimal
 
-
 number = (int, float, Decimal)
-
-class DimensionError(Exception):
-    """
-    A class to describe an error based on incompatible dimensions
-    """
-    pass
 
 class Dimensions(NamedTuple):
     kg: int
@@ -45,41 +37,28 @@ class Dimensions(NamedTuple):
     cd: int
     K: int
     mol: int
-        
-    def __add__(self, other):
-        return vec.add(self, other)
-    def __sub__(self, other):
-        return vec.subtract(self, other)
-    def __mul__(self, other):
-        return vec.multiply(self, other)
-    def __truediv__(self, other):
-        return vec.divide(self, other)
-    def __pow__(self, other):
-        return vec.pow(self, other)
-
-
 
 # The single class to describe all units...Physical (as in "a physical property")   
-class Physical:
+class Physical(NamedTuple):
     """
     A class that defines any physical quantity that *can* be described
     within the BIPM SI unit system.
     """
-    _prefixes = {'T': 1e12,'G': 1e9,'M': 1e6,'k': 1e3,'': 1.0,
-                 'm': 1e-3,'μ': 1e-6,'n': 1e-09,'p': 1e-12}
+    _prefixes = {'Y': 1e24, 'Z': 1e21, 'E': 1e18, 'P': 1e15, 
+                 'T': 1e12, 'G': 1e09, 'M': 1e06, 'k': 1e03,
+                 '': 1.0,
+                 'm': 1e-3, 'μ': 1e-6, 'n': 1e-09,'p': 1e-12,
+                 'f': 1e-15,'a': 1e-18,'z': 1e-21,'y': 1e-24}
     _precision = 3
     _superscripts = {"1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵",
                      "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹", "0": "⁰", 
                      "-": "⁻", ".": "'"}
     _eps = 1e-7
     
-    def __init__(self, value: Any, 
-                 dimensions: Union[Dimensions, list, tuple], 
-                 factor: float = 1.):
-        self.value = value
-        self.dimensions = Dimensions(*dimensions)
-        self.factor = factor
-        
+    value: float
+    dimensions: Dimensions
+    factor: float = 1.0
+    
     ### API Methods ###
     @property
     def symbol(self):
@@ -90,12 +69,16 @@ class Physical:
         return self._repr_latex_()
     
     @property
+    def tuple(self): 
+        return self.components
+    
+    @property
     def components(self):
         """
         Returns a repr that can be used to create another Physical instance.
         """
-        repr_str = "{}(value={}, dimensions={}, factor={})"
-        return repr_str.format(self.__class__.__name__, self.value,
+        repr_str = "Physical(value={}, dimensions={}, factor={})"
+        return repr_str.format(self.value,
                                self.dimensions, self.factor)
     
     def in_units(self, unit_name=""):
@@ -119,18 +102,9 @@ class Physical:
             derived_match = derived.get(orig_dims, {}).get(unit_name, {})
             unit_match = defined_match or derived_match
             power = Physical._powers_of_derived(self.dimensions, env_dims)
-            factor = unit_match.get("Factor", 1)
-            self.factor = factor ** power
-            return self
-            
-    def si(self):
-        """
-        Returns self. Sets self.factor == 1.0
-        Effectively "reverts" the Physical to base SI units
-        """
-        self.factor = 1.0
-        return self
-    
+            new_factor = unit_match.get("Factor", 1) ** power
+            return self._replace(factor=new_factor)
+
     ### Repr and String methods ###
     def __repr__(self):
         return self._repr_template_()
@@ -153,7 +127,7 @@ class Physical:
         """
         precision = self._precision
         factor = self.factor
-        symbol = self.symbol
+        symbol = self._return_symbol()
         units = self._return_units(repr_format=template)
         value = self._return_value()
         exponent = self._return_exponent()        
@@ -178,12 +152,9 @@ class Physical:
         
         return f"{value:.{precision}f}{space}{units}{pre_super}{exponent}{post_super}"
 
-        
 #    def __str__(self):
 #        return repr(self)
-
-
-
+                  
     def _return_symbol(self):
         """Part of the __str__ and __repr__ process. Returns the display symbol
         of the Physical instance, if appropriate. Returns '' otherwise."""
@@ -198,7 +169,7 @@ class Physical:
                   
         if units_match:
             name = tuple(units_match.keys())[0]
-            symbol = units_match.get("Symbol", "")
+            symbol = units_match.get(name, {}).get("Symbol", "")
             return symbol or name
         else: return ""
     
@@ -209,13 +180,13 @@ class Physical:
         dims = self.dimensions
         fact = self.factor
         env_dims = environment.units_by_dimension
-        eps = 1e-7
+        eps = self._eps
                   
         prefix = self._return_prefix()       
         if prefix and fact == 1:
             value = self._auto_prefix_value(val, dims, fact, env_dims)
         else:
-            value = self._auto_value(val, dims, fact, env_dims) 
+            value = val * fact
         if abs(value - round(value)) < eps: return round(value)
         return value
     
@@ -283,7 +254,7 @@ class Physical:
         symbol = self._return_symbol()
         basis_multiple = self._dims_basis_multiple(dims) 
         exponent = ""
-        eps = 1e-7
+        eps = self._eps
 
         if power_of_derived and symbol and not basis_multiple:
             if power_of_derived != 1:
@@ -304,17 +275,7 @@ class Physical:
         """
         new_factor = factor **(1/power)
         units_match = units_env.get(new_factor, dict())
-        units_name = ""
-        units_dims = ()
-        for name, definition in units_match.items():
-            units_name = name
-            units_dims = definition["Dimension"]
-            break  
-        if units_name: units_dims = units_match[units_name].get("Dimension", False)
-        if units_dims and (dims == units_dims): 
-            units_result = units_match[units_name]
-            return units_result
-        else: return dict()
+        return units_match
                   
     @staticmethod   
     def _get_derived_unit(dimensions: Dimensions, units_env: dict) -> dict:
@@ -474,16 +435,14 @@ class Physical:
         else:
             return 1
        
-    @staticmethod              
-    def _auto_value(value: float, dims: Dimensions, factor: float, units_env: dict) -> float:
-        """
-        Returns the value to be displayed in __str__(). This value represents the value
-        of the Physical in whatever dimension in whatever units it is intended to be in
-        based on its .factor.
-        """
-        #powers_of_derived = Physical._powers_of_derived(dims, units_env)
-
-        return value * factor# ** powers_of_derived
+#    @staticmethod              
+#    def _auto_value(value: float, factor: float, units_env: dict) -> float:
+#        """
+#        Returns the value to be displayed in __str__(). This value represents the value
+#        of the Physical in whatever dimension in whatever units it is intended to be in
+#        based on its .factor.
+#        """
+#        return value * factor
     
     @staticmethod
     def _auto_prefix(value: float, dims: Dimensions, units_env: dict) -> str:
@@ -548,8 +507,8 @@ class Physical:
     def __int__(self): 
         return int(self._return_value())
                   
-    def __hash__(self):
-        return hash((self.value, self.dimensions, self.symbol, self.factor))
+    #def __hash__(self):
+    #    return hash((self.value, self.dimensions, self.factor))
                   
     def __round__(self, precision=0):
         self._precision = precision
@@ -751,7 +710,7 @@ class Environment:
         self._physical_class = physical_class
     
     def __call__(self, env_name: str):
-        self.environment = self.load_environment(env_name)                          
+        self.environment = self._load_environment(env_name)
         for name, definition in self.environment.items():
             factor = definition.get("Factor", 1)
             dimension = definition.get("Dimension")
@@ -762,9 +721,9 @@ class Environment:
                 self.units_by_dimension["defined"].setdefault(dimension, dict()).update({name: definition}) 
                 self.units_by_factor.update({factor: {name: definition}})
         
-        self.instantiator(self.environment, self._physical_class)
+        self._instantiator(self.environment, self._physical_class)
     
-    def load_environment(self, env_name: str):
+    def _load_environment(self, env_name: str):
         """
         Returns a dict that describes a set of unit definitions as contained in the 
         JSON file titled "'env_name'.json" after the 'Dimension' definition is converted to 
@@ -800,17 +759,18 @@ class Environment:
                 units_environment[unit]["Factor"] = eval(factor) 
         return units_environment
     
-    def instantiator(self, environment: dict, physical_class):
+    @staticmethod
+    def _instantiator(environment: dict, physical_class):
         """
         Returns None; updates the globals dict with the units defined in the "definitions" 
         portion of the environment dict
         """
         to_globals = {}
         # Transfer definitions
-        for unit, definitions in self.environment.items():
+        for unit, definitions in environment.items():
             dimensions = definitions["Dimension"]
             factor = definitions.get("Factor", 1)
-            symbol = definitions.get("Symbol", None)
+            symbol = definitions.get("Symbol", "")
             value = definitions.get("Value", 1)
             if symbol:
                 to_globals.update({unit: physical_class(1/factor, dimensions, factor=factor)})
