@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 The SI Units: "For all people, for all time"
 
@@ -21,14 +19,11 @@ A module to model the seven SI base units:
 """
 import json
 import re
-import collections
-import dataclasses
 from typing import NamedTuple, Union, Tuple, List, Any, Optional
 import tuplevector as vec
 from collections import ChainMap
-from decimal import Decimal
 
-number = (int, float, Decimal)
+NUMBER = (int, float)
 
 class Dimensions(NamedTuple):
     kg: int
@@ -40,7 +35,7 @@ class Dimensions(NamedTuple):
     mol: int
 
 # The single class to describe all units...Physical (as in "a physical property")  
-class Physical(NamedTuple):
+class Physical(object):
     """
     A class that defines any physical quantity that *can* be described
     within the BIPM SI unit system.
@@ -57,9 +52,13 @@ class Physical(NamedTuple):
     _eps = 1e-7
     _precision = 3
     
-    value: float
-    dimensions: Dimensions
-    factor: float = 1.0
+    __slots__ = ("value", "dimensions", "factor")
+    
+    def __init__(self, value: Union[int, float], dimensions: Dimensions, factor: float):
+        """Constructor"""
+        super(Physical, self).__setattr__("value", value)
+        super(Physical, self).__setattr__("dimensions", dimensions)
+        super(Physical, self).__setattr__("factor", factor)
         
     ### API Methods ###
     @property
@@ -71,7 +70,7 @@ class Physical(NamedTuple):
         return self._repr_html_()
     
     @property
-    def tuple(self):
+    def data(self):
         """
         Returns a repr that can be used to create another Physical instance.
         """
@@ -91,10 +90,7 @@ class Physical(NamedTuple):
         Returns None and alters the instance into one of the elligible 
         alternative units for its dimension, if it exists in the alternative_units dict;
         """
-        env_dims = environment.units_by_dimension
-        derived = env_dims["derived"]
-        defined = env_dims["defined"]
-        orig_dims = self._dims_original(self.dimensions, env_dims)
+        dims = self.dimensions
         if not unit_name:
             print("Available units: ")
             for key in derived.get(orig_dims, {}):
@@ -103,12 +99,15 @@ class Physical(NamedTuple):
                 print(key)
         
         if unit_name:
-            defined_match = defined.get(orig_dims, {}).get(unit_name, {})
-            derived_match = derived.get(orig_dims, {}).get(unit_name, {})
+            env_dims = environment.units_by_dimension
+            derived = env_dims["derived"]
+            defined = env_dims["defined"]
+            power, dims_orig = Physical._powers_of_derived(dims, env_dims)
+            defined_match = defined.get(dims_orig, {}).get(unit_name, {})
+            derived_match = derived.get(dims_orig, {}).get(unit_name, {})
             unit_match = defined_match or derived_match
-            power = Physical._powers_of_derived(self.dimensions, env_dims)
             new_factor = unit_match.get("Factor", 1) ** power
-            return self._replace(factor=new_factor)
+            return Physical(self.value, self.dimensions, new_factor)
             
     def __repr__(self):
         return self._repr_template_()
@@ -154,10 +153,21 @@ class Physical(NamedTuple):
         elif prefix_bool:
             prefix = Physical._auto_prefix(val, power)
             
+        # Format the exponent (may not be used, though)
+        exponent = Physical._format_exponent(power, repr_format=template, eps=eps)
+            
         # Format the units
-        if not symbol and not prefix_bool:
+        if not symbol and Physical._dims_basis_multiple(dims):
             components = Physical._get_unit_components_from_dims(dims) 
-            units = Physical._get_unit_string(components, repr_format=template)
+            units_symbol = Physical._get_unit_string(components, repr_format=template)
+            units = units_symbol
+            units = Physical._format_symbol(prefix, units_symbol, repr_format=template)
+            exponent = ""
+        elif not symbol:
+            components = Physical._get_unit_components_from_dims(dims) 
+            units_symbol = Physical._get_unit_string(components, repr_format=template)
+            units = units_symbol
+            exponent = ""                                                 
         else:
             units = Physical._format_symbol(prefix, symbol, repr_format=template)
         
@@ -166,9 +176,6 @@ class Physical(NamedTuple):
         if prefix_bool:
             value = Physical._auto_prefix_value(val, power)
 
-        # Format the exponent
-        exponent = Physical._format_exponent(power, repr_format=template, eps=eps)
-        
         pre_super = ""
         post_super = ""
         space = " "
@@ -180,7 +187,10 @@ class Physical(NamedTuple):
             space = " "
             pre_super = "<sup>"
             post_super = "</sup>"
-        
+            
+        if not exponent:
+            pre_super = ""
+            post_super = ""
         return f"{value:.{precision}f}{space}{units}{pre_super}{exponent}{post_super}"
 
 #    def __str__(self):
@@ -285,10 +295,9 @@ class Physical(NamedTuple):
                 this_component = f"{pre_symbol}{symbol}{post_symbol}"
             else:
                 if not repr_format:
-                    exponent = Physical._get_superscript_string(exponent)
-                else:
-                    this_component = f"{pre_symbol}{symbol}{post_symbol}"\
-                                     f"{pre_super}{exponent}{post_super}"
+                    exponent = Physical._get_superscript_string(str(exponent))
+                this_component = f"{pre_symbol}{symbol}{post_symbol}"\
+                                 f"{pre_super}{exponent}{post_super}"
             str_components.append(this_component)
         if kg_only == "kg": # Hack for lone special case of a kg only Physical
             return dot_operator.join(str_components).replace("kg", "g")
@@ -314,6 +323,8 @@ class Physical(NamedTuple):
         """
         Returns 'symbol' formatted appropriately for the 'repr_format' output.
         """
+        #if r"\text" or "^" in symbol: # in case pre-formatted latex from unit_string
+        #    return symbol
         symbol_string_open = ""
         symbol_string_close = ""
         dot_operator = "·"
@@ -361,6 +372,32 @@ class Physical(NamedTuple):
         return exponent_string        
                   
      ### Mathematical helper functions ###
+    @staticmethod
+    def _powers_of_derived(dims: Dimensions, units_env: dict) -> Union[int, float]:
+        """
+        Returns an integer value that represents the exponent of a unit if the 
+        dimensions
+        array is a multiple of one of the defined derived units in dimension_keys. 
+        Returns None,
+        otherwise.
+        e.g. a force would have dimensions = [1,1,-2,0,0,0,0] so a Physical object
+        that had dimensions = [2,2,-4,0,0,0,0] would really be a force to the power of 
+        2.
+        The function returns the 2.
+        """
+        quotient_1 = Physical._dims_quotient(dims, units_env)
+        quotient_2 = Physical._dims_basis_multiple(dims)
+        if quotient_1 is not None:
+            power_of_derived = vec.mean(quotient_1, ignore_empty=True)
+            base_dimensions = vec.divide(dims, quotient_1, ignore_zeros = True)
+            return ((power_of_derived or 1), base_dimensions)
+        elif quotient_2 is not None:
+            power_of_basis = vec.mean(quotient_2, ignore_empty=True)
+            base_dimensions = vec.divide(dims, quotient_2, ignore_zeros = True)
+            return ((power_of_basis or 1), base_dimensions)
+        else:
+            return (1, dims)              
+    
 
     @staticmethod
     def _dims_quotient(dimensions: Dimensions, 
@@ -397,28 +434,7 @@ class Physical(NamedTuple):
                 return None
         return dims
                              
-    @staticmethod
-    def _powers_of_derived(dims: Dimensions, units_env: dict) -> Union[int, float]:
-        """
-        Returns an integer value that represents the exponent of a unit if the dimensions
-        array is a multiple of one of the defined derived units in dimension_keys. Returns None,
-        otherwise.
-        e.g. a force would have dimensions = [1,1,-2,0,0,0,0] so a Physical object
-        that had dimensions = [2,2,-4,0,0,0,0] would really be a force to the power of 2.
-        The function returns the 2.
-        """
-        quotient_1 = Physical._dims_quotient(dims, units_env)
-        quotient_2 = Physical._dims_basis_multiple(dims)
-        if quotient_1 is not None:
-            power_of_derived = vec.mean(quotient_1, ignore_empty=True)
-            base_dimensions = vec.divide(dims, quotient_1, ignore_zeros = True)
-            return ((power_of_derived or 1), base_dimensions)
-        elif quotient_2 is not None:
-            power_of_basis = vec.mean(quotient_2, ignore_empty=True)
-            base_dimensions = vec.divide(dims, quotient_2, ignore_zeros = True)
-            return ((power_of_basis or 1), base_dimensions)
-        else:
-            return (1, dims)
+
        
     @staticmethod
     def _auto_prefix(value: float, power: Union[int, float]) -> str:
@@ -484,20 +500,28 @@ class Physical(NamedTuple):
     ### "Magic" Methods ###
                   
     def __float__(self): 
-        return float(self._return_value())
+        value = self.value
+        dims = self.dimensions
+        factor = self.factor
+        env_dims = environment.units_by_dimension or dict()
+        power, _ = Physical._powers_of_derived(dims, env_dims)
+        if factor != 1:
+            float_value = value * factor
+        else:
+            float_value = Physical._auto_prefix_value(value, power)
+        return float(float_value)
                   
     def __int__(self): 
-        return int(self._return_value())
+        return int(float(self))
                   
     def __hash__(self):
         return hash((self.value, self.dimensions, self.factor))
                   
     def __round__(self, n=0):
         return self.round(n)
-        
                   
     def __eq__(self, other):
-        if isinstance(other,number):
+        if isinstance(other,NUMBER):
             return self.value == other
         elif type(other) == str:
             return True
@@ -507,7 +531,7 @@ class Physical(NamedTuple):
             raise ValueError("Can only compare between Physical instances of equal dimension.")
             
     def __gt__(self, other):
-        if isinstance(other,number):
+        if isinstance(other,NUMBER):
             return self.value > other
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
             return self.value > other.value
@@ -515,7 +539,7 @@ class Physical(NamedTuple):
             raise ValueError("Can only compare between Physical instances of equal dimension.")
             
     def __ge__(self, other):
-        if isinstance(other,number):
+        if isinstance(other,NUMBER):
             return self.value >= other
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
             return self.value >= other.value
@@ -523,7 +547,7 @@ class Physical(NamedTuple):
             raise ValueError("Can only compare between Physical instances of equal dimension.")
             
     def __lt__(self, other):
-        if isinstance(other,number):
+        if isinstance(other,NUMBER):
             return self.value < other
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
             return self.value < other.value
@@ -531,7 +555,7 @@ class Physical(NamedTuple):
             raise ValueError("Can only compare between Physical instances of equal dimension.")
             
     def __le__(self, other):
-        if isinstance(other,number):
+        if isinstance(other,NUMBER):
             return self.value <= other
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
             return self.value <= other.value
@@ -597,7 +621,7 @@ class Physical(NamedTuple):
                          " Use 'a = a - b', instead.")
             
     def __mul__(self, other):
-        if isinstance(other, number):
+        if isinstance(other, NUMBER):
             return Physical(self.value * other, self.dimensions, self.factor)
         elif isinstance(other, Physical):
             new_dims = vec.add(self.dimensions, other.dimensions)
@@ -630,7 +654,7 @@ class Physical(NamedTuple):
         return self.__mul__(other)
     
     def __truediv__(self, other):
-        if isinstance(other, number):
+        if isinstance(other, NUMBER):
             return Physical(self.value / other, self.dimensions, self.factor)
         elif isinstance(other, Physical):
             new_dims = vec.subtract(self.dimensions, other.dimensions)
@@ -657,7 +681,7 @@ class Physical(NamedTuple):
                                   ".value attributes are incompatible.")
             
     def __rtruediv__(self, other):
-        if isinstance(other, number):
+        if isinstance(other, NUMBER):
             new_value = other / self.value
             new_dimensions = vec.multiply(self.dimensions, -1)
             return Physical(new_value, new_dimensions, self.factor)
@@ -674,7 +698,7 @@ class Physical(NamedTuple):
                          " Use 'a = a / b', instead.")
             
     def __pow__(self, other):
-        if isinstance(other, number):
+        if isinstance(other, NUMBER):
             new_value = self.value ** other
             new_dimensions = vec.multiply(self.dimensions, other)
             new_factor = self.factor ** other
@@ -695,10 +719,8 @@ class Environment:
     information from the single SIEnvironment instance (OMG! Singleton!)
     """
     environment = {}
-    derived = dict()
-    defined = dict()
-    units_by_dimension = {"derived": derived, "defined": defined}
-    units_by_factor = {}
+    units_by_dimension = {"derived": dict(), "defined": dict()}
+    units_by_factor = dict()
     
     def __init__(self, physical_class):
         self._physical_class = physical_class
@@ -767,9 +789,9 @@ class Environment:
             symbol = definitions.get("Symbol", "")
             value = definitions.get("Value", 1)
             if symbol:
-                to_globals.update({unit: physical_class(1/factor, dimensions, factor=factor)})
+                to_globals.update({unit: physical_class(1/factor, dimensions, factor)})
             else:
-                to_globals.update({unit: physical_class(value, dimensions)})
+                to_globals.update({unit: physical_class(value, dimensions, factor)})
         globals().update(to_globals)
 
 
@@ -778,13 +800,13 @@ if not "environment" in globals():
 
 # The seven SI base units...
 _the_si_base_units = {
-    "kg": Physical(1, Dimensions(1,0,0,0,0,0,0)),
-    "m": Physical(1, Dimensions(0,1,0,0,0,0,0)),
-    "s": Physical(1, Dimensions(0,0,1,0,0,0,0)),
-    "A": Physical(1, Dimensions(0,0,0,1,0,0,0)),
-    "cd": Physical(1, Dimensions(0,0,0,0,1,0,0)),
-    "K": Physical(1, Dimensions(0,0,0,0,0,1,0)),
-    "mol": Physical(1, Dimensions(0,0,0,0,0,0,1))}
+    "kg": Physical(1, Dimensions(1,0,0,0,0,0,0), 1.),
+    "m": Physical(1, Dimensions(0,1,0,0,0,0,0), 1.),
+    "s": Physical(1, Dimensions(0,0,1,0,0,0,0), 1.),
+    "A": Physical(1, Dimensions(0,0,0,1,0,0,0), 1.),
+    "cd": Physical(1, Dimensions(0,0,0,0,1,0,0), 1.),
+    "K": Physical(1, Dimensions(0,0,0,0,0,1,0), 1.),
+    "mol": Physical(1, Dimensions(0,0,0,0,0,0,1), 1.)}
 globals().update(_the_si_base_units)
     
 def fsqrt(p: Physical) -> Physical:
@@ -798,10 +820,10 @@ def fsqrt(p: Physical) -> Physical:
                        sqrt(9*kN) = 94.868 N
                        
     """
-    if isinstance(p, number):
+    if isinstance(p, NUMBER):
         return (p)**(1/2)
     elif isinstance(p, Physical):
-        value = Physical._auto_prefix_value(p.value, p.dimensions, p.factor, environment.units_by_dimension)
-        unit_holder = p / value
-        new_value = value**(1/2)
+        val = float(p)
+        unit_holder = p / val
+        new_value = val**(1/2)
         return new_value * unit_holder

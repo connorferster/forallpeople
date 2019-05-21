@@ -1,41 +1,61 @@
 import pytest
 import forallpeople as si
-
 si.environment("test_definitions")
-env_dims = si.environment.units_by_dimension
-env_fact = si.environment.units_by_factor
-ftlb = si.lb * si.ft
+
+
 
 ### TODO: add Ohms to definitions for testing
         # add energy modelling units to definitions for testing
 
-## Tests of the Physical class ##
+### Testing parameters ###
+env_dims = si.environment.units_by_dimension
+env_fact = si.environment.units_by_factor
+units = {"A": 0.05*si.kg,
+         "B": 3.2e-3*si.m,
+         "C": 1000*si.ft,
+         "D": 1e6*si.N,
+         "E": 0.2*si.kip,
+         "F": 5*si.N*1e3*si.kip}
+parameters = [(value,
+               si.Physical._powers_of_derived(value.dimensions, env_dims))\
+              for value in units.values()]
 
+### Tests of the Physical class ###
+
+## Testing "._repr_" methods in order of appearance in ._repr_template_() ##
+def test__evaluate_dims_and_factor():
+    func = si.Physical._evaluate_dims_and_factor
+    assert func(si.Dimensions(1,1,-2,0,0,0,0), 
+                1/0.45359237/9.80665, 
+                1, env_fact, env_dims) == ("lb", False)
+    assert func(si.Dimensions(1,1,-2,0,0,0,0), 
+                1, 2, env_fact, env_dims) == ("N", True)
+    assert func(si.Dimensions(1,1,-2,0,0,0,0), 
+                1, 1, env_fact, env_dims) == ("N", True)
+    assert func(si.Dimensions(0,1,0,0,0,0,0), 1/0.3048,
+                1, env_fact, env_dims)
+    assert func(si.Dimensions(1,0,0,0,0,0,0), 1, 
+                3, env_fact, env_dims) == ("", True)
+    assert func(si.Dimensions(1,1,1,0,0,0,0), 1, 
+                1, env_fact, env_dims) == ("", False)
+    
 def test__get_units_by_factor():
+    ftlb = si.lb * si.ft
+    ft2 = si.ft**2
     func = si.Physical._get_units_by_factor
-    assert func(si.ft.factor, si.ft.dimensions, env_fact) == \
+    assert func(si.ft.factor, si.ft.dimensions, env_fact, 1) == \
             {'ft': {'Dimension': si.Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0),
                     'Symbol': 'ft',
                     'Factor': 3.280839895013123}}
-    assert func(ftlb.factor, ftlb.dimensions, env_fact) == \
+    assert func(ft2.factor, si.ft.dimensions, env_fact, 2) == \
+            {'ft': {'Dimension': si.Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0),
+                    'Symbol': 'ft',
+                    'Factor': 3.280839895013123}}
+    assert func(ftlb.factor, ftlb.dimensions, env_fact, 1) == \
             {'lbft': {'Dimension': si.Dimensions(kg=1, m=2, s=-2, A=0, cd=0, K=0, mol=0),
                       'Symbol': 'lb·ft',
                       'Factor': 0.7375621492772653}}
-    assert func((ftlb*si.ft).factor, (ftlb*si.ft).dimensions, env_fact) == dict()
-    
-def test__return_symbol():
-    assert si.lb._return_symbol() == "lb"
-    assert si.ft._return_symbol() == "ft"
-    assert si.N._return_symbol() == "N"
-    assert si.kg._return_symbol() == ""
-    
-def test__return_prefix():
-    assert (si.N*1000)._return_prefix() == "k"
-    assert (si.N*0.001)._return_prefix() == "m"
-    assert si.kg._return_prefix() == "k"
-    assert (si.kg*1e-6)._return_prefix() == "m"
-    assert si.N._return_prefix() == ""
-    assert (si.m * 1e6)._return_prefix() == "M"
+    assert func((ftlb*si.ft).factor,(ftlb*si.ft).dimensions, env_fact, 1) == dict()
     
 def test_get_unit_components_from_dims():
     func = si.Physical._get_unit_components_from_dims
@@ -48,40 +68,18 @@ def test_get_unit_components_from_dims():
 
 def test__get_unit_string():
     func = si.Physical._get_unit_string
-    assert func('', [("kg", 1), ("m", 1), ("s", -2)], '') == 'kg⋅m⋅s⁻²'
-    assert func('', [("kg", 1), ("m", 1), ("s", -2)], 'html') == \
+    assert func([("kg", 1), ("m", 1), ("s", -2)], '') == 'kg⋅m⋅s⁻²'
+    assert func([("kg", 1), ("m", 1), ("s", -2)], 'html') == \
            'kg&#8901;m&#8901;s<sup>-2</sup>'
-    assert func('', [("kg", 1), ("m", 1), ("s", -2)], 'latex') == \
+    assert func([("kg", 1), ("m", 1), ("s", -2)], 'latex') == \
            r'\text{kg} \cdot \text{m} \cdot \text{s}^{-2}'
-    assert func('k', [('m', 2)], 'html') == 'km<sup>2</sup>'
+    assert func([('m', 2)], 'html') == 'm<sup>2</sup>'
 
 def test__get_superscript_string():
     func = si.Physical._get_superscript_string
-    assert func(-2) == '⁻²'
-    assert func(1.39) == "¹'³⁹"
-    assert func(-0.10) == "⁻⁰'¹"
-
-def test__return_value():
-    assert si.ft._return_value() == 1
-    assert si.kN._return_value() == 1
-    assert (10*si.kN)._return_value() == 10
-    assert si.psi._return_value() == 1
-
-def test__return_units():
-    assert si.ft._return_units('ft','') == "ft"
-    assert si.kN._return_units('N','latex') == r"\text{kN}"
-    assert (si.kg*si.A*si.cd)._return_units('','') == "kg⋅A⋅cd"
-    assert (si.kg*si.A*si.cd)._return_units('','html') == "kg&#8901;A&#8901;cd"
-    assert (si.kg*si.A*si.cd)._return_units('','latex') == \
-        r"\text{kg} \cdot \text{A} \cdot \text{cd}"
-    assert (si.kip**2)._return_units('kip','latex') == r"\text{kip}"
-
-def test__return_exponent():
-    assert (si.kip**2)._return_exponent() == "2"
-    assert (si.kg**2)._return_exponent() == ""
-    assert (si.MPa**4)._return_exponent() == "4"
-    assert (si.psf**2.73)._return_exponent() == "2.73"
-    assert si.kN._return_exponent() == ""
+    assert func("-2") == '⁻²'
+    assert func("1.39") == "¹'³⁹"
+    assert func("-0.10") == "⁻⁰'¹⁰"
 
 def test_latex():
     assert si.MPa.latex == r"1.000\ \text{MPa}"
@@ -91,7 +89,7 @@ def test_latex():
 def test_data():
     assert si.MPa.data == "Physical(value=1000000.0, dimensions=" +\
                                 "Dimensions(kg=1, m=-1, s=-2, A=0, cd=0, K=0, mol=0), "+\
-                                "factor=1.0)"
+                                "factor=1)"
     assert si.ft.data == 'Physical(value=0.3048, dimensions=' +\
                                'Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0), ' +\
                                'factor=3.280839895013123)'
@@ -112,13 +110,13 @@ def test__get_derived_unit():
     {'N': 
          {'Dimension': si.Dimensions(kg=1, m=1, s=-2, A=0, cd=0, K=0, mol=0),
           'Factor': 1}}
-    assert func(si.Dimensions(3,3,-6,0,0,0,0), env_dims) == \
-    {'N': 
-         {'Dimension': si.Dimensions(kg=1, m=1, s=-2, A=0, cd=0, K=0, mol=0),
-          'Factor': 1}}
-    assert func(si.Dimensions(1,1,0,0,0,0,0), env_dims) == {}
-    assert func(si.Dimensions(3,0,0,0,0,0,0), env_dims) == {}
-    assert func(si.Dimensions(3,0,0,0,0,0,0), env_dims) == {}
+    assert func(si.Dimensions(1,0,0,0,0,0,0), env_dims) == {}
+    assert func(si.Dimensions(1,0,-2,0,0,0,0), env_dims) == \
+        {'N_m': 
+            {'Dimension': si.Dimensions(kg=1, m=0, s=-2, A=0, cd=0, K=0, mol=0),
+             'Factor': 1,
+             'Symbol': 'N/m'}}
+    assert func(si.Dimensions(1,1,1,1,1,1,1), env_dims) == {}
 
 def test__dims_quotient():
     func = si.Physical._dims_quotient
@@ -136,49 +134,45 @@ def test__dims_basis_multiple():
     
 def test__powers_of_derived():
     func = si.Physical._powers_of_derived
-    assert func(si.Dimensions(0,1,0,0,0,0,0), env_dims) == 1
-    assert func(si.Dimensions(1,1,-2,0,0,0,0), env_dims) == 1
-    assert func(si.Dimensions(3,3,-6,0,0,0,0), env_dims) == 3
-    assert func(si.Dimensions(1,2,-2,0,0,0,0), env_dims) == 1
-    assert func(si.Dimensions(0,4,0,0,0,0,0), env_dims) == 4
-    assert func(si.Dimensions(0,0,2.5,0,0,0,0), env_dims) == 2.5
-    assert func(si.Dimensions(3.6,3.6,-7.2, 0,0,0,0), env_dims) == 3.6
+    dims = si.Dimensions
+    assert func(dims(0,1,0,0,0,0,0), env_dims) == (1, dims(0,1,0,0,0,0,0))
+    assert func(dims(1,1,-2,0,0,0,0), env_dims) == (1, dims(1,1,-2,0,0,0,0))
+    assert func(dims(3,3,-6,0,0,0,0), env_dims) == (3, dims(1,1,-2,0,0,0,0))
+    assert func(dims(1,2,-2,0,0,0,0), env_dims) == (1, dims(1,2,-2,0,0,0,0))
+    assert func(dims(0,4,0,0,0,0,0), env_dims) == (4, dims(0,1,0,0,0,0,0))
+    assert func(dims(0,0,2.5,0,0,0,0), env_dims) == (2.5, dims(0,0,1,0,0,0,0))
+    assert func(dims(3.6,3.6,-7.2, 0,0,0,0), env_dims) == (3.6, dims(1,1,-2,0,0,0,0))
     
-def test__dims_original():
-    func = si.Physical._dims_original
-    assert func(si.Dimensions(0,1,0,0,0,0,0), env_dims) == si.Dimensions(0,1,0,0,0,0,0)
-    assert func(si.Dimensions(1,1,-2,0,0,0,0), env_dims) == si.Dimensions(1,1,-2,0,0,0,0)
-    assert func(si.Dimensions(3,3,-6,0,0,0,0), env_dims) == si.Dimensions(1,1,-2,0,0,0,0)
-    assert func(si.Dimensions(1,2,-2,0,0,0,0), env_dims) == si.Dimensions(1,2,-2,0,0,0,0)
-    
-#def test__auto_value():
-#    func = si.Physical._auto_value
-#    assert func(1500, si.Dimensions(0,1,0,0,0,0,0), 1, env_dims) == 1500
-#    assert func(500, si.Dimensions(2,2,-4,0,0,0,0), 1, env_dims) == 500
-#    assert func(500, si.Dimensions(2,2,-4,0,0,0,0), 1/(0.3048**2), env_dims) == 5381.955208354861
     
 def test__auto_prefix():
     func = si.Physical._auto_prefix
-    assert func(1500, si.Dimensions(0,1,0,0,0,0,0), env_dims) == "k"
-    assert func(1500000, si.Dimensions(0,1,0,0,0,0,0), env_dims) == "M"
-    assert func(15, si.Dimensions(0,1,0,0,0,0,0), env_dims) == ""
-    assert func(1500000, si.Dimensions(1,1,-2,0,0,0,0), env_dims) == "M"
-    assert func(25000000, si.Dimensions(2,2,-4,0,0,0,0), env_dims) == "k"
+    assert func(1500, 1) == "k"
+    assert func(1500, 2) == ""
+    assert func(1.5e6, 2) == "k"
+    assert func(1.5e6, 1) == "M"
+    assert func(1.5e-3, 1) == "m"
+    assert func(1.5e-6, 2) == "m"
     
 def test__auto_prefix_kg():
     func = si.Physical._auto_prefix_kg
-    assert func(1500, si.Dimensions(1,0,0,0,0,0,0), env_dims) == "M"
-    assert func(.015, si.Dimensions(1,0,0,0,0,0,0), env_dims) == ""
-    assert func(1, si.Dimensions(1,0,0,0,0,0,0), env_dims) == "k"
-    
+    assert func(1500, 1) == "M"
+    assert func(1500, 2) == "k"
+    assert func(1.5e6, 2) == "M"
+    assert func(1.5e6, 1) == "G"
+    assert func(1.5e-3, 1) == ""
+    assert func(1.5e-6, 2) == ""
+    assert func(1.5e-6, 1) == "m"
     
 def test__auto_prefix_value():
     func = si.Physical._auto_prefix_value
-    assert func(1500, si.Dimensions(0,1,0,0,0,0,0), 1, env_dims) == 1.5
-    assert func(1500000, si.Dimensions(0,1,0,0,0,0,0), 1, env_dims) == 1.5
-    assert func(15, si.Dimensions(0,1,0,0,0,0,0), 1, env_dims) == 15
-    assert func(0.15, si.Dimensions(1,1,-2,0,0,0,0), 1, env_dims) == 150
-    assert func(0.00015, si.Dimensions(2,2,-4,0,0,0,0), 1, env_dims) == 150
+    assert func(1500, 1) == 1.5
+    assert func(1500, 2) == 1500
+    assert func(52500, 1) == 52.5
+    assert func(1.5e6, 2) == 1.5
+    assert func(1.5e6, 1) == 1.5
+    assert func(1.5e-6, 2) == 1.5
+    assert func(1.5e-5, 1) == pytest.approx(15)
+    assert func(1.5e-5, 2) == pytest.approx(15)
     
 def test___eq__():
     assert si.m == si.m
@@ -223,10 +217,12 @@ def test___le__():
         5*si.kg <= 5*si.m
     
 def test___add__():
-    assert si.kg + si.kg == si.Physical(2, si.Dimensions(1,0,0,0,0,0,0))
-    assert si.m + si.ft == si.Physical(1.3048, si.Dimensions(0,1,0,0,0,0,0))
+    assert si.kg + si.kg == si.Physical(2, si.Dimensions(1,0,0,0,0,0,0), 1)
+    assert si.m + si.ft == si.Physical(1.3048, si.Dimensions(0,1,0,0,0,0,0), 1)
     assert si.ft + si.m == si.Physical(1.3048, si.Dimensions(0,1,0,0,0,0,0), 1/0.3048)
-    assert si.N + si.lb == si.Physical(5.4482216152605005, si.Dimensions(1,1,-2,0,0,0,0))
+    assert si.N + si.lb == si.Physical(5.4482216152605005, 
+                                       si.Dimensions(1,1,-2,0,0,0,0), 
+                                       1)
     assert si.lb + si.N == si.Physical(5.4482216152605005, 
                                        si.Dimensions(1,1,-2,0,0,0,0), 
                                        0.22480894309971047)
@@ -242,11 +238,12 @@ def test___iadd__():
     
 def test___sub__():
     assert si.kg - si.kg == 0.
-    assert si.m - si.ft == si.Physical(0.6952, si.Dimensions(0,1,0,0,0,0,0))
+    assert si.m - si.ft == si.Physical(0.6952, si.Dimensions(0,1,0,0,0,0,0), 1)
     assert si.ft - si.m == si.Physical(-0.6952, si.Dimensions(0,1,0,0,0,0,0), 
                                        1/0.3048)
     assert si.N - si.lb == si.Physical(-3.4482216152605005, 
-                                       si.Dimensions(1,1,-2,0,0,0,0))
+                                       si.Dimensions(1,1,-2,0,0,0,0),
+                                       1)
     assert si.lb - si.N == si.Physical(3.4482216152605005, 
                                        si.Dimensions(1,1,-2,0,0,0,0), 
                                        0.22480894309971047)
@@ -259,26 +256,27 @@ def test___sub__():
     
 def test___rsub__():
     assert 2 - si.ft == si.Physical(0.3048, si.Dimensions(0,1,0,0,0,0,0), 1/0.3048)
-    assert 10 - si.N == si.Physical(9, si.Dimensions(1,1,-2,0,0,0,0))
+    assert 10 - si.N == si.Physical(9, si.Dimensions(1,1,-2,0,0,0,0), 1)
     
 def test___isub__():
     with pytest.raises(ValueError):
         si.m -= 3
     
 def test___mul__():
-    assert si.m * si.m == si.Physical(1, si.Dimensions(0,2,0,0,0,0,0))
-    assert si.m * si.kg == si.Physical(1, si.Dimensions(1,1,0,0,0,0,0))
+    assert si.m * si.m == si.Physical(1, si.Dimensions(0,2,0,0,0,0,0), 1)
+    assert si.m * si.kg == si.Physical(1, si.Dimensions(1,1,0,0,0,0,0), 1)
     assert si.ft * si.m == si.Physical(0.3048, si.Dimensions(0,2,0,0,0,0,0), 1/0.3048)
-    assert si.N * si.m == si.Physical(1, si.Dimensions(1,2,-2,0,0,0,0))
+    assert si.N * si.m == si.Physical(1, si.Dimensions(1,2,-2,0,0,0,0), 1)
     assert si.psf * si.m * si.m == si.Physical(47.88025898033584, 
                                                si.Dimensions(1,1,-2,0,0,0,0), 
                                                0.02088543423315013)
     assert 2 * si.ft == si.Physical(0.6096, si.Dimensions(0,1,0,0,0,0,0), 1/0.3048)
-    assert (si.Physical(10, si.Dimensions(-1,-1,0,0,0,0,0)) 
-            * si.Physical(2, si.Dimensions(1,1,0,0,0,0,0))) == 20
+    assert (si.Physical(10, si.Dimensions(-1,-1,0,0,0,0,0), 1) 
+            * si.Physical(2, si.Dimensions(1,1,0,0,0,0,0), 1)) == 20
     #assert (10*si.ksf) * (5*si.ft) * (2*si.ft) == 100*si.kip # TODO: Fix this gotcha
     assert ((10*si.ksf) * ((5*si.ft) * (2*si.ft))).value == \
             pytest.approx((100*si.kip).value)
+    assert si.m * si.ft == si.Physical(.3048, si.Dimensions(0,2,0,0,0,0,0), 1.0)
     
 def test___imul__():
     with pytest.raises(ValueError):
@@ -286,18 +284,18 @@ def test___imul__():
     
 def test___truediv__():
     assert si.m / si.m == 1
-    assert si.m / si.s == si.Physical(1, si.Dimensions(0,1,-1,0,0,0,0))
+    assert si.m / si.s == si.Physical(1, si.Dimensions(0,1,-1,0,0,0,0), 1)
     assert si.kN / si.m / si.m == si.kPa
     assert (5*si.kN) / 2 == 2.5*si.kN
     assert (si.kip / (2*si.ft * 5*si.ft)).value == pytest.approx((0.100*si.ksf).value)
 
     
 def test___rtruediv__():
-    assert 2 / si.m == si.Physical(2, si.Dimensions(0,-1,0,0,0,0,0))
-    assert 10 / si.N == si.Physical(10, si.Dimensions(-1,-1,2,0,0,0,0))
+    assert 2 / si.m == si.Physical(2, si.Dimensions(0,-1,0,0,0,0,0), 1)
+    assert 10 / si.N == si.Physical(10, si.Dimensions(-1,-1,2,0,0,0,0), 1)
     
 def test___pow__():
-    assert si.N**2 == si.Physical(1, si.Dimensions(2,2,-4,0,0,0,0))
+    assert si.N**2 == si.Physical(1, si.Dimensions(2,2,-4,0,0,0,0), 1)
     assert si.ft**3 == si.Physical(0.3048**3, si.Dimensions(0,3,0,0,0,0,0), (1/0.3048)**3)
     
 def test___abs__():
@@ -307,8 +305,8 @@ def test___abs__():
     
 def test___float__():
     assert float(6.7*si.ft) == pytest.approx(6.7)
-    assert float(52.5*si.kN) == pytest.approx(52.5)
-    assert float(34*si.kg*si.A*si.m) == 34
+    assert float((52.5*si.kN)) == pytest.approx(52.5)
+    assert float(34*si.kg*si.A*si.m) == pytest.approx(34)
     
 ## Test of Environment Class ##
     
@@ -324,3 +322,7 @@ def test___float__():
 def test_fsqrt():
     assert si.fsqrt(9*si.kPa) == 3*si.kPa
     assert si.fsqrt(9*si.MPa) == 3*si.MPa
+
+## General arithmetic tests ##
+def test_calc_mixed_units():
+    pass
