@@ -89,10 +89,10 @@ def test_latex():
 def test_data():
     assert si.MPa.data == "Physical(value=1000000.0, dimensions=" +\
                                 "Dimensions(kg=1, m=-1, s=-2, A=0, cd=0, K=0, mol=0), "+\
-                                "factor=1)"
+                                "factor=1, _precision=3)"
     assert si.ft.data == 'Physical(value=0.3048, dimensions=' +\
                                'Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0), ' +\
-                               'factor=3.280839895013123)'
+                               'factor=3.280839895013123, _precision=3)'
 
 def test_in_units():
     ft = 1*si.ft

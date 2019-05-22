@@ -17,6 +17,7 @@ A module to model the seven SI base units:
      
   ...and other derived and non-SI units for practical calculations.
 """
+import functools
 import json
 import re
 from typing import NamedTuple, Union, Tuple, List, Any, Optional
@@ -50,15 +51,19 @@ class Physical(object):
                      "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹", "0": "⁰", 
                      "-": "⁻", ".": "'"}
     _eps = 1e-7
-    _precision = 3
     
-    __slots__ = ("value", "dimensions", "factor")
+    __slots__ = ("value", "dimensions", "factor", "_precision")
     
-    def __init__(self, value: Union[int, float], dimensions: Dimensions, factor: float):
+    def __init__(self, 
+                 value: Union[int, float], 
+                 dimensions: Dimensions, 
+                 factor: float, 
+                 _precision: int = 3):
         """Constructor"""
         super(Physical, self).__setattr__("value", value)
         super(Physical, self).__setattr__("dimensions", dimensions)
         super(Physical, self).__setattr__("factor", factor)
+        super(Physical, self).__setattr__("_precision", _precision)
         
     ### API Methods ###
     @property
@@ -74,16 +79,18 @@ class Physical(object):
         """
         Returns a repr that can be used to create another Physical instance.
         """
-        repr_str = "Physical(value={}, dimensions={}, factor={})"
+        repr_str = "Physical(value={}, dimensions={}, factor={}, _precision={})"
         return repr_str.format(self.value,
-                               self.dimensions, self.factor)
+                               self.dimensions, 
+                               self.factor,
+                               self._precision)
     
     def round(self, n: int):
         """
         Returns a new Physical with a new precision, 'n'. Precision controls
         the number of decimal places displayed in repr and str.
         """
-        return self._replace(self, precision = n)
+        return Physical(self.value, self.dimensions, self.factor, n)
     
     def in_units(self, unit_name=""):
         """
@@ -91,23 +98,23 @@ class Physical(object):
         alternative units for its dimension, if it exists in the alternative_units dict;
         """
         dims = self.dimensions
+        env_dims = environment.units_by_dimension
+        derived = env_dims["derived"]
+        defined = env_dims["defined"]
+        power, dims_orig = Physical._powers_of_derived(dims, env_dims)
         if not unit_name:
             print("Available units: ")
-            for key in derived.get(orig_dims, {}):
+            for key in derived.get(dims_orig, {}):
                 print(key)
-            for key in defined.get(orig_dims, {}):
+            for key in defined.get(dims_orig, {}):
                 print(key)
         
         if unit_name:
-            env_dims = environment.units_by_dimension
-            derived = env_dims["derived"]
-            defined = env_dims["defined"]
-            power, dims_orig = Physical._powers_of_derived(dims, env_dims)
             defined_match = defined.get(dims_orig, {}).get(unit_name, {})
             derived_match = derived.get(dims_orig, {}).get(unit_name, {})
             unit_match = defined_match or derived_match
             new_factor = unit_match.get("Factor", 1) ** power
-            return Physical(self.value, self.dimensions, new_factor)
+            return Physical(self.value, self.dimensions, new_factor, self._precision)
             
     def __repr__(self):
         return self._repr_template_()
@@ -412,12 +419,19 @@ class Physical(object):
         defined = units_env["defined"]
         all_units = ChainMap(defined, derived)
         for dimension_key in all_units.keys():
-            if vec.multiply(dimension_key, vec.dot(dimensions,dimensions)) == \
-               vec.multiply(dimensions, vec.dot(dimensions, dimension_key)):
+            if Physical._check_dims_parallel(dimension_key, dimensions):
                 quotient = vec.divide(dimensions,dimension_key, ignore_zeros = True)
                 return quotient
         return None     
     
+    @staticmethod
+    @functools.lru_cache(maxsize=None)
+    def _check_dims_parallel(d1: Dimensions, d2: Dimensions) -> bool:
+        """
+        Returns True if d1 and d2 are parallel vectors. False otherwise.
+        """
+        return vec.multiply(d1, vec.dot(d2,d2)) == vec.multiply(d2, vec.dot(d1, d2))
+                  
     @staticmethod
     def _dims_basis_multiple(dims: Dimensions) -> Optional[Dimensions]:
         """
@@ -566,7 +580,10 @@ class Physical(object):
         if isinstance(other, Physical):
             if self.dimensions == other.dimensions:
                 try:
-                    return Physical(self.value + other.value, self.dimensions, self.factor)
+                    return Physical(self.value + other.value, 
+                                    self.dimensions, 
+                                    self.factor, 
+                                    self._precision)
                 except:
                     raise ValueError(f"Cannot add between {self} and {other}: "+\
                                      ".value attributes are incompatible.")
@@ -576,7 +593,10 @@ class Physical(object):
         else:
             try:
                 other = other / self.factor
-                return Physical(self.value + other, self.dimensions, self.factor)   
+                return Physical(self.value + other, 
+                                self.dimensions, 
+                                self.factor,
+                                self._precision)   
             except:
                 raise ValueError(f"Cannot add between {self} and {other}: "+\
                                      ".value attributes are incompatible.")
@@ -591,7 +611,10 @@ class Physical(object):
         if isinstance(other, Physical):
             if self.dimensions == other.dimensions:
                 try:
-                    return Physical(self.value - other.value, self.dimensions, self.factor)
+                    return Physical(self.value - other.value, 
+                                    self.dimensions, 
+                                    self.factor,
+                                    self._precision)
                 except:
                     raise ValueError(f"Cannot subtract between {self} and {other}")
             else:
@@ -600,7 +623,10 @@ class Physical(object):
         else:
             try:
                 other = other / self.factor
-                return Physical(self.value - other, self.dimensions, self.factor)   
+                return Physical(self.value - other, 
+                                self.dimensions, 
+                                self.factor,
+                                self._precision)   
             except:
                 raise ValueError(f"Cannot subtract between {self} and {other}: "+\
                                      ".value attributes are incompatible.")
@@ -611,7 +637,10 @@ class Physical(object):
         else:
             try:
                 other = other / self.factor
-                return Physical(other - self.value, self.dimensions, self.factor)   
+                return Physical(other - self.value, 
+                                self.dimensions, 
+                                self.factor,
+                                self._precision)   
             except:
                 raise ValueError(f"Cannot subtract between {self} and {other}: "+\
                                      ".value attributes are incompatible.")
@@ -622,7 +651,10 @@ class Physical(object):
             
     def __mul__(self, other):
         if isinstance(other, NUMBER):
-            return Physical(self.value * other, self.dimensions, self.factor)
+            return Physical(self.value * other, 
+                            self.dimensions, 
+                            self.factor,
+                            self._precision)
         elif isinstance(other, Physical):
             new_dims = vec.add(self.dimensions, other.dimensions)
             new_power, new_dims_orig = Physical._powers_of_derived(new_dims, 
@@ -639,10 +671,16 @@ class Physical(object):
             if new_dims == Dimensions(0,0,0,0,0,0,0):
                 return new_value
             else:
-                return Physical(new_value, new_dims, new_factor)
+                return Physical(new_value, 
+                                new_dims, 
+                                new_factor,
+                                self._precision)
         else:
             try:
-                return Physical(self.value * other, self.dimensions, self.factor)
+                return Physical(self.value * other, 
+                                self.dimensions, 
+                                self.factor,
+                                self._precision)
             except:
                 raise ValueError(f"Cannot multiply between {self} and {other}: "+\
                                   ".value attributes are incompatible.")
@@ -655,7 +693,10 @@ class Physical(object):
     
     def __truediv__(self, other):
         if isinstance(other, NUMBER):
-            return Physical(self.value / other, self.dimensions, self.factor)
+            return Physical(self.value / other, 
+                            self.dimensions, 
+                            self.factor,
+                            self._precision)
         elif isinstance(other, Physical):
             new_dims = vec.subtract(self.dimensions, other.dimensions)
             new_power, new_dims_orig = Physical._powers_of_derived(new_dims, 
@@ -672,10 +713,16 @@ class Physical(object):
             if new_dims == Dimensions(0,0,0,0,0,0,0):
                 return new_value
             else:
-                return Physical(new_value, new_dims, new_factor)
+                return Physical(new_value, 
+                                new_dims, 
+                                new_factor,
+                                self._precision)
         else:
             try:
-                return Physical(self.value / other, self.dimensions, self.factor)
+                return Physical(self.value / other, 
+                                self.dimensions, 
+                                self.factor,
+                                self._precision)
             except:
                 raise ValueError(f"Cannot divide between {self} and {other}: "+\
                                   ".value attributes are incompatible.")
@@ -684,11 +731,16 @@ class Physical(object):
         if isinstance(other, NUMBER):
             new_value = other / self.value
             new_dimensions = vec.multiply(self.dimensions, -1)
-            return Physical(new_value, new_dimensions, self.factor)
+            return Physical(new_value, 
+                            new_dimensions, 
+                            self.factor,
+                            self._precision)
         else:
             try:
                 return Physical(other / self.value, 
-                                vec.multiply(self.dimensions, -1), self.factor)
+                                vec.multiply(self.dimensions, -1), 
+                                self.factor,
+                                self._precision)
             except:
                   raise ValueError(f"Cannot divide between {other} and {self}: "+\
                                   ".value attributes are incompatible.")
@@ -702,7 +754,10 @@ class Physical(object):
             new_value = self.value ** other
             new_dimensions = vec.multiply(self.dimensions, other)
             new_factor = self.factor ** other
-            return Physical(new_value, new_dimensions, factor = new_factor)
+            return Physical(new_value, 
+                            new_dimensions, 
+                            new_factor,
+                            self._precision)
         else:
             raise ValueError("Cannot raise a Physical to the power of \
                                      another Physical -> ({self}**{other})".format(self,other))
