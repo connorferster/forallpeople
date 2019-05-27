@@ -39,6 +39,9 @@ def test__evaluate_dims_and_factor():
     assert func(si.Dimensions(1,1,1,0,0,0,0), 1, 
                 1, env_fact, env_dims) == ("", False)
     
+def test__format_symbol():
+    pass
+    
 def test__get_units_by_factor():
     ftlb = si.lb * si.ft
     ft2 = si.ft**2

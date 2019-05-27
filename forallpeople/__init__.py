@@ -349,6 +349,8 @@ class Physical(object):
                        .replace("*", symbol_string_close+dot_operator+symbol_string_open)\
                        .replace("Ω", ohm)  
         formatted_symbol = f"{symbol_string_open}{prefix}{symbol}{symbol_string_close}"
+        if "\\text{" in symbol: # special case for 'single dimension' Physicals...
+            formatted_symbol = f"{symbol[0:7]}{prefix}{symbol[7:]}"                  
         return formatted_symbol
     
     @staticmethod
@@ -431,6 +433,7 @@ class Physical(object):
         Returns True if d1 and d2 are parallel vectors. False otherwise.
         """
         return vec.multiply(d1, vec.dot(d2,d2)) == vec.multiply(d2, vec.dot(d1, d2))
+              
                   
     @staticmethod
     def _dims_basis_multiple(dims: Dimensions) -> Optional[Dimensions]:
@@ -447,9 +450,8 @@ class Physical(object):
             if count > 1:
                 return None
         return dims
-                             
-
        
+                  
     @staticmethod
     def _auto_prefix(value: float, power: Union[int, float]) -> str:
         """
@@ -469,6 +471,7 @@ class Physical(object):
                     return previous_prefix
                 else:                     
                     previous_prefix = prefix
+                  
                   
     @staticmethod        
     def _auto_prefix_kg(value: float, power: Union[int, float]) -> str:
@@ -491,6 +494,7 @@ class Physical(object):
                 else:                     
                     previous_prefix = prefix
     
+                  
     @staticmethod
     def _auto_prefix_value(value: float, power: Union[int, float]) -> float:
         """
