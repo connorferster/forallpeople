@@ -349,7 +349,7 @@ class Physical(object):
                        .replace("*", symbol_string_close+dot_operator+symbol_string_open)\
                        .replace("Ω", ohm)  
         formatted_symbol = f"{symbol_string_open}{prefix}{symbol}{symbol_string_close}"
-        if "\\text{" in symbol: # special case for 'single dimension' Physicals...
+        if symbol.startswith("\\text{"): # special case for 'single dimension' Physicals...
             formatted_symbol = f"{symbol[0:7]}{prefix}{symbol[7:]}"                  
         return formatted_symbol
     
