@@ -334,7 +334,7 @@ class Physical(object):
         #    return symbol
         symbol_string_open = ""
         symbol_string_close = ""
-        dot_operator = "·"
+        dot_operator = "⋅"
         ohm = "Ω"
         if repr_format == "html":
             dot_operator = "&#8901;"
@@ -345,7 +345,7 @@ class Physical(object):
             symbol_string_open = "\\text{"
             symbol_string_close = "}"
 
-        symbol = symbol.replace("·", symbol_string_close+dot_operator+symbol_string_open)\
+        symbol = symbol.replace("⋅", symbol_string_close+dot_operator+symbol_string_open)\
                        .replace("*", symbol_string_close+dot_operator+symbol_string_open)\
                        .replace("Ω", ohm)  
         formatted_symbol = f"{symbol_string_open}{prefix}{symbol}{symbol_string_close}"
@@ -813,7 +813,7 @@ class Environment:
         
         path = __file__.strip("__init__.py")
         filename = path + env_name + ".json"
-        with open(filename, 'r') as json_unit_definitions:
+        with open(filename, 'r', encoding="utf-8") as json_unit_definitions:
             units_environment = json.load(json_unit_definitions)
 
         # Load definitions
