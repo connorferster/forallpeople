@@ -508,7 +508,7 @@ class Physical(object):
                     return value / (power_of_ten ** power)
         else:
             reverse_prefixes = sorted(prefixes.items(), key = lambda pre_fact: pre_fact[1])
-            previous_power_ten = reverse_prefixes[0][1] # Gets the smallest factor to start
+            previous_power_of_ten = reverse_prefixes[0][1] # Gets the smallest factor to start
             for prefix, power_of_ten in reversed(list(prefixes.items())):
                 if abs(value) < power_of_ten ** power:
                     return value / (previous_power_of_ten ** power)
@@ -538,11 +538,14 @@ class Physical(object):
     def __round__(self, n=0):
         return self.round(n)
                   
+    def __contains__(self, other):
+        return False
+                  
     def __eq__(self, other):
         if isinstance(other,NUMBER):
             return self.value == other
         elif type(other) == str:
-            return True
+            return False
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
             return self.value == other.value
         else:
