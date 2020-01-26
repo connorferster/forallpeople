@@ -64,6 +64,9 @@ class Physical(object):
         super(Physical, self).__setattr__("dimensions", dimensions)
         super(Physical, self).__setattr__("factor", factor)
         super(Physical, self).__setattr__("_precision", _precision)
+
+    def __setattr__(self, _, __):
+        raise AttributeError("Cannot set attribute.")
         
     ### API Methods ###
     @property
