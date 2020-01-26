@@ -25,6 +25,19 @@ able to check any calculations for dimension errors, print formatted calculation
 reports and summaries with Jupyter/IPython, and focus on productivity instead of
 fussing with managing units and dimensions.
 
+## Installing
+
+`pip install forallpeople`
+
+## Basic usage
+
+`forallpeople` is a library that was *specifically* designed to be used with `import *` for maximum convenience.
+
+`from forallpeople import *`
+
+This will initialize the name space with all of the basic SI units prefixes: 
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Using the Library
