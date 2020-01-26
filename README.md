@@ -2,7 +2,7 @@
 
 The metric system (now SI system):
 *"For all time. For all people."*
-- Nicolas de Caritat (Marquis de Condorcet)
+  - Nicolas de Caritat (Marquis de Condorcet)
 
 `forallpeople` is a robust library for performing units-aware calculations in Python.
 It has a small code base and favours "convention over configuration", although the
@@ -40,7 +40,7 @@ And then use all of the units listed above with the si prefix, e.g. `si.m`, `si.
 
 ### REPLs and Jupyter Notebook/Lab
 
-`forallpeople` prioritizes *usage conventions* over *python conventions*. Specifically, the library *deliberately* switches the intentions behind the __repr__() and __str__() methods: __repr__() will give the pretty printed version and __str__() will give a version of the unit that can be used to recreate the unit. As such, it becomes intuitive to use within any python repl and it really shines when used in a Jupyter Notebook. This also makes it natuarlly compatible with other common python libraries such as `pandas` and `numpy`.
+`forallpeople` prioritizes *usage conventions* over *python conventions*. Specifically, the library *deliberately* switches the intentions behind the `__repr__()` and `__str__()` methods: `__repr__()` will give the pretty printed version and `__str__()` will give a version of the unit that can be used to recreate the unit. As such, it becomes intuitive to use within any python repl and it really shines when used in a Jupyter Notebook. This also makes it natuarlly compatible with other common python libraries such as `pandas` and `numpy`.
 
 ## Examples
 
