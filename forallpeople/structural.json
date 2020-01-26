@@ -29,17 +29,17 @@
     "Value": 1e9},
 "Nm": {
     "Dimension": [1,2,-2,0,0,0,0],
-    "Symbol": "N⋅m"},
+    "Symbol": "N·m"},
 "N_m": {
     "Dimension": [1,0,-2,0,0,0,0],
     "Symbol": "N/m"},
 "lbft": {
     "Dimension": [1,2,-2,0,0,0,0],
-    "Symbol": "lb⋅ft",
+    "Symbol": "lb·ft",
     "Factor": "1/0.45359237/9.80665/0.3048"},
 "kipft": {
     "Dimension": [1,2,-2,0,0,0,0],
-    "Symbol": "kip⋅ft",
+    "Symbol": "kip·ft",
     "Factor": "1/0.45359237/9.80665/0.3048/1000"},
 "psf": {
     "Dimension": [1,-1,-2,0,0,0,0],

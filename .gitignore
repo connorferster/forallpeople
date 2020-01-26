@@ -1,0 +1,4 @@
+/env
+/.ipynb_checkpoints
+test_notebook.ipynb
+/forallpeople/__pycache__

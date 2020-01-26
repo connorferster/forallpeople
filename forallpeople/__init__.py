@@ -21,7 +21,7 @@ import functools
 import json
 import re
 from typing import NamedTuple, Union, Tuple, List, Any, Optional
-import tuplevector as vec
+import forallpeople.tuplevector as vec
 from collections import ChainMap
 
 NUMBER = (int, float)
@@ -146,7 +146,7 @@ class Physical(object):
         env_fact = environment.units_by_factor or dict()
         env_dims = environment.units_by_dimension or dict()
 
-        # Do the expensive vector math method call once only
+        # Do the expensive vector math method (call once, only)
         power, dims_orig = Physical._powers_of_derived(dims, env_dims)
 
         # Determine if there is a symbol and if it will be prefixed
@@ -277,13 +277,13 @@ class Physical(object):
         function it was called by. If 'repr_format' is not given, then terminal
         output is assumed.
         """
-        dot_operator = "⋅"
+        dot_operator = "·" # new · # old ⋅
         pre_super = ""
         post_super = ""
         pre_symbol = ""
         post_symbol = ""
         if repr_format == "html":
-            dot_operator = "&#8901;"
+            dot_operator = "&#8901;" #&#183;
             pre_super = "<sup>"
             post_super = "</sup>"
         elif repr_format == "latex":
@@ -438,7 +438,6 @@ class Physical(object):
     @staticmethod
     def _dims_basis_multiple(dims: Dimensions) -> Optional[Dimensions]:
         """
-        TODO!!!
         Returns a Dimensions object if 'dimensions' is a scalar multiple of one of the basis
         vectors (e.g. [3,0,0,0,0,0,0] is a scalar multiple of [1,0,0,0,0,0,0]).
         Returns None, otherwise.
