@@ -27,13 +27,13 @@ fussing with managing units and dimensions.
 
 ## Installing
 
-`pip install forallpeople`
+pip install forallpeople ::
 
 ## Basic usage
 
 `forallpeople` is a library that was *specifically* designed to be used with `import *` for maximum convenience.
 
-`from forallpeople import *`
+from forallpeople import * ::
 
 This will initialize the name space with all of the basic SI units prefixes: 
 
