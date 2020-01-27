@@ -8,6 +8,8 @@ The metric system (now SI system):
 It has a small code base and favours "convention over configuration", although the
 actual units environment you work in is fully customizable.
 
+<img src = "https://github.com/connorferster/forallpeople/blob/master/Jupyter.PNG">
+
 There are other units packages out there but `forallpeople` is designed for fast and
 simple daily use: units act as you would expect (they automatically combine and
 cancel out), they are labelled as you would expect (e.g. 'm' for meter, 'kg' for
