@@ -27,13 +27,13 @@ from collections import ChainMap
 NUMBER = (int, float)
 
 class Dimensions(NamedTuple):
-    kg: int
-    m: int
-    s: int
-    A: int
-    cd: int
-    K: int
-    mol: int
+    kg: float
+    m: float
+    s: float
+    A: float
+    cd: float
+    K: float
+    mol: float
 
 # The single class to describe all units...Physical (as in "a physical property")  
 class Physical(object):
