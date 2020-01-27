@@ -2,28 +2,29 @@
 
 The metric system (now SI system):
 *"For all time. For all people."*
-  - Nicolas de Caritat (Marquis de Condorcet)
+  -- Nicolas de Caritat (Marquis de Condorcet)
 
 `forallpeople` is a robust library for performing units-aware calculations in Python.
 It has a small code base and favours "convention over configuration", although the
 actual units environment you work in is fully customizable. It is Jupyter-ready and 
 tested on Windows.
 
-## Teaser in Jupyter
-
-<img src = "https://github.com/connorferster/forallpeople/blob/master/Jupyter.PNG">
-
-There are other units packages out there but `forallpeople` is designed for fast and
-simple daily use: units act as you would expect (they automatically combine and
-cancel out), they are labelled as you would expect (e.g. 'm' for meter, 'kg' for
-kilogram), unit quantities exist independently, and are ready-to-use upon import.
-
 Intended users: working engineers, scientists, teachers, and students who want to be
 able to check any calculations for dimension errors, print formatted calculation
 reports and summaries with Jupyter/IPython, and focus on productivity instead of
 fussing with managing units and dimensions.
 
-## Examples
+## Teaser in Jupyter
+
+<img src = "https://github.com/connorferster/forallpeople/blob/master/Jupyter.PNG">
+
+## Installation
+
+You can install this package from PyPI.
+
+`pip install forallpeople`
+
+## Additional Examples
 
 A simple example:
 
@@ -61,11 +62,6 @@ Another example, showing auto-reduction of units and auto-prefixing:
 >>> voltage.data
 'Physical(value=600.0, dimensions=Dimensions(kg=1, m=2, s=-3, A=-1, cd=0, K=0, mol=0), factor=1, _precision=3)'
 ```
-
-
-## Installing
-
-`pip install forallpeople`
 
 ## Basic usage
 ### Import just the basic SI units:
