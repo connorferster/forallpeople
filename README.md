@@ -6,7 +6,10 @@ The metric system (now SI system):
 
 `forallpeople` is a robust library for performing units-aware calculations in Python.
 It has a small code base and favours "convention over configuration", although the
-actual units environment you work in is fully customizable.
+actual units environment you work in is fully customizable. It is Jupyter-ready and 
+tested on Windows.
+
+## Teaser in Jupyter
 
 <img src = "https://github.com/connorferster/forallpeople/blob/master/Jupyter.PNG">
 
