@@ -56,7 +56,9 @@ A simple example:
 
 The basic import will import the basic SI units but the real power of `forallpeople` comes when you use a customized **units environment**. The module comes with three environments, `'default'`, `'us_customary'`, and `'structural'`.
 
-The `default` environment defines the derived SI units (e.g. pascal, newton, sievert, katal, etc.). When an environment is defined, units will be displayed in the defined derived unit if the dimensions of unit match the dimensions (or is a linear combination of the dimensions).
+The `default` environment defines the derived SI units (e.g. pascal, newton, sievert, katal, etc.). When an environment is defined, units with dimensions matching that of a unit defined in the environment will display in the defined units. 
+
+For example, `Dimensions(m=1, kg=1, s=-2, A=0, cd=0, K=0, mol=0)` are the dimensions of a newton `kg*m/s**2`. If a given environment (such as the `'default'` environment) has this units definition then the displayed unit will be in newtons, N.
 
 An example showing the difference between the basic import and loading an environment:
 
@@ -67,12 +69,13 @@ An example showing the difference between the basic import and loading an enviro
 >>> force = mass * acceleration
 >>> force
 5000.000 kg·m·s⁻²
->>> environment('default')
->>> from forallpeople import *
->>> force
-5.000 kN
->>> # Loading an environment will also instantiate variables of units defined in the environment
+>>> environment('default')   # now we have loaded the default environment
+>>> force                    # and when we ask to see the quantity again...
+5.000 kN                     # we see it in the units of N.
+
+>>> # If we are using 'import *', we can re-import to instantiate variables of units defined in the environment
 >>> # e.g.
+>>> from forallpeople import *
 >>> load = 52300 * N     # N is now a variable
 >>> load
 52.300 kN
@@ -81,21 +84,27 @@ An example showing the difference between the basic import and loading an enviro
 5.400 kPa
 ```
 
-Another example, showing auto-reduction of units and auto-prefixing:
+Using `from forallpeople import *` is for convenience: populating the global namespace with variable names enables fast and intuitive use but requires a "re-import" if the user wants to load a pre-defined environment and instantiate all of its units as variables.
+
+However, the module can be imported in a more pythonic fashion:
 ```
->>> current = 0.5 * A
+import forallpeople as si
+si.environment('default')
+```
+
+An example using the pythonic import:
+```
+>>> import forallpeople as si
+>>> si.environment('default')
+>>> current = 0.5 * si.A
 >>> current
 500.000 mA
->>> resistance = 1200 * Ohm
+>>> resistance = 1200 * si.Ohm
 >>> resistance
 1.200 kΩ
 >>> voltage = current * resistance
 >>> voltage
 600.000 V
->>> type(voltage)
-<class 'forallpeople.Physical'>
->>> voltage.data
-'Physical(value=600.0, dimensions=Dimensions(kg=1, m=2, s=-3, A=-1, cd=0, K=0, mol=0), factor=1, _precision=3)'
 ```
 
 
