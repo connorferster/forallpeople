@@ -24,7 +24,13 @@ You can install this package from PyPI.
 
 `pip install forallpeople`
 
-## Additional Examples
+## Basic Usage
+
+Note: `forallpeople` is a library that was *specifically* designed to be used with `import *` for maximum convenience.
+
+`from forallpeople import *`
+
+This will initialize the namespace with all of the basic SI units: `m`, `kg`, `s`, `A`, `cd`, `K`, `mol`.
 
 A simple example:
 
@@ -46,6 +52,35 @@ A simple example:
 'Physical(value=17.808333333333334, dimensions=Dimensions(kg=1, m=-3, s=0, A=0, cd=0, K=0, mol=0), factor=1, _precision=3)'
 ```
 
+## Initializing an environment with the default units environment
+
+The basic import will import the basic SI units but the real power of `forallpeople` comes when you use a customized **units environment**. The module comes with three environments, `'default'`, `'us_customary'`, and `'structural'`.
+
+The `default` environment defines the derived SI units (e.g. pascal, newton, sievert, katal, etc.). When an environment is defined, units will be displayed in the defined derived unit if the dimensions of unit match the dimensions (or is a linear combination of the dimensions).
+
+An example showing the difference between the basic import and loading an environment:
+
+```
+>>> from forallpeople import *
+>>> mass = 2000 * kg
+>>> acceleration = 2.5 * m/s**2
+>>> force = mass * acceleration
+>>> force
+5000.000 kg·m·s⁻²
+>>> environment('default')
+>>> from forallpeople import *
+>>> force
+5.000 kN
+>>> # Loading an environment will also instantiate variables of units defined in the environment
+>>> # e.g.
+>>> load = 52300 * N     # N is now a variable
+>>> load
+52.300 kN
+>>> water_pressure = 5400 * Pa    # Pa is now a variable
+>>> water_pressure
+5.400 kPa
+```
+
 Another example, showing auto-reduction of units and auto-prefixing:
 ```
 >>> current = 0.5 * A
@@ -63,14 +98,7 @@ Another example, showing auto-reduction of units and auto-prefixing:
 'Physical(value=600.0, dimensions=Dimensions(kg=1, m=2, s=-3, A=-1, cd=0, K=0, mol=0), factor=1, _precision=3)'
 ```
 
-## Basic usage
-### Import just the basic SI units:
 
-Note: `forallpeople` is a library that was *specifically* designed to be used with `import *` for maximum convenience.
-
-`from forallpeople import *`
-
-This will initialize the namespace with all of the basic SI units: `m`, `kg`, `s`, `A`, `cd`, `K`, `mol`.
 
 ### Import the basic SI units and all of the SI derived units through the default environment
 
