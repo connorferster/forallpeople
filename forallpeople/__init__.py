@@ -54,13 +54,13 @@ class Physical(object):
                      "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹", "0": "⁰", 
                      "-": "⁻", ".": "'"}
     _eps = 1e-7
-    
+
     __slots__ = ("value", "dimensions", "factor", "_precision")
-    
-    def __init__(self, 
-                 value: Union[int, float], 
-                 dimensions: Dimensions, 
-                 factor: float, 
+
+    def __init__(self,
+                 value: Union[int, float],
+                 dimensions: Dimensions,
+                 factor: float,
                  _precision: int = 3):
         """Constructor"""
         super(Physical, self).__setattr__("value", value)
@@ -70,16 +70,16 @@ class Physical(object):
 
     def __setattr__(self, _, __):
         raise AttributeError("Cannot set attribute.")
-        
+
     ### API Methods ###
     @property
     def latex(self):
         return self._repr_latex_()
-    
+
     @property
     def html(self):
         return self._repr_html_()
-    
+
     @property
     def repr(self):
         """
@@ -87,17 +87,17 @@ class Physical(object):
         """
         repr_str = "Physical(value={}, dimensions={}, factor={}, _precision={})"
         return repr_str.format(self.value,
-                               self.dimensions, 
+                               self.dimensions,
                                self.factor,
                                self._precision)
-    
+
     def round(self, n: int):
         """
         Returns a new Physical with a new precision, 'n'. Precision controls
         the number of decimal places displayed in repr and str.
         """
         return Physical(self.value, self.dimensions, self.factor, n)
-    
+
     def in_units(self, unit_name=""):
         """
         Returns None and alters the instance into one of the elligible 
@@ -114,26 +114,26 @@ class Physical(object):
                 print(key)
             for key in defined.get(dims_orig, {}):
                 print(key)
-        
+
         if unit_name:
             defined_match = defined.get(dims_orig, {}).get(unit_name, {})
             derived_match = derived.get(dims_orig, {}).get(unit_name, {})
             unit_match = defined_match or derived_match
             new_factor = unit_match.get("Factor", 1) ** power
             return Physical(self.value, self.dimensions, new_factor, self._precision)
-            
+
     def __repr__(self):
         return self._repr_template_()
-    
+
     def _repr_html_(self):
         return self._repr_template_(template="html")
-        
+
     def _repr_markdown_(self):
         return self._repr_template_(template="html")
-        
+
     def _repr_latex_(self):
         return self._repr_template_(template="latex")
-     
+
     def _repr_template_(self, template: str = "") -> str:
         """
         Returns a string that appropriately represents the Physical
@@ -147,7 +147,7 @@ class Physical(object):
         factor = self.factor
         val = self.value
         eps = self._eps
-        
+
         # Access external environment
         env_fact = environment.units_by_factor or dict()
         env_dims = environment.units_by_dimension or dict()
@@ -158,32 +158,32 @@ class Physical(object):
         # Determine if there is a symbol and if it will be prefixed
         symbol, prefix_bool = Physical._evaluate_dims_and_factor(
                                 dims_orig, factor, power, env_fact, env_dims)
-        
+
         # Get the appropriate prefix
         prefix = ""
         if prefix_bool and dims_orig == Dimensions(1,0,0,0,0,0,0):
             prefix = Physical._auto_prefix_kg(val, power)
         elif prefix_bool:
             prefix = Physical._auto_prefix(val, power)
-            
+
         # Format the exponent (may not be used, though)
         exponent = Physical._format_exponent(power, repr_format=template, eps=eps)
-            
+
         # Format the units
         if not symbol and Physical._dims_basis_multiple(dims):
-            components = Physical._get_unit_components_from_dims(dims) 
+            components = Physical._get_unit_components_from_dims(dims)
             units_symbol = Physical._get_unit_string(components, repr_format=template)
             units = units_symbol
             units = Physical._format_symbol(prefix, units_symbol, repr_format=template)
             exponent = ""
         elif not symbol:
-            components = Physical._get_unit_components_from_dims(dims) 
+            components = Physical._get_unit_components_from_dims(dims)
             units_symbol = Physical._get_unit_string(components, repr_format=template)
             units = units_symbol
-            exponent = ""                                                 
+            exponent = ""
         else:
             units = Physical._format_symbol(prefix, symbol, repr_format=template)
-        
+
         # Determine the appropriate display value
         value = val * factor
         if prefix_bool:
@@ -196,11 +196,11 @@ class Physical(object):
             space = r"\ "
             pre_super = "^{"
             post_super = "}"
-        elif template == "html": 
+        elif template == "html":
             space = " "
             pre_super = "<sup>"
             post_super = "</sup>"
-            
+
         if not exponent:
             pre_super = ""
             post_super = ""
@@ -208,23 +208,24 @@ class Physical(object):
 
 #    def __str__(self):
 #        return repr(self)
-                  
-    @staticmethod              
-    def _evaluate_dims_and_factor( 
-                                  dims_orig: Dimensions, 
+
+    @staticmethod
+    def _evaluate_dims_and_factor(
+                                  dims_orig: Dimensions,
                                   factor: Union[int, float],
                                   power: Union[int, float],
-                                  env_fact: dict, 
+                                  env_fact: dict,
                                   env_dims: dict) -> tuple:
-        """Part of the __str__ and __repr__ process. A tuple containing the 
+        """Part of the __str__ and __repr__ process.
+	Returns a tuple containing the
         appropriate symbol as a string (if applicable; '' if not) and a
         boolean indicating whether or not the dimension and factor combination
         is elligible for a prefix."""
-        defined = Physical._get_units_by_factor(factor=factor, dims = dims_orig, 
-                                            units_env = env_fact, power = power)  
+        defined = Physical._get_units_by_factor(factor=factor, dims = dims_orig,
+                                            units_env = env_fact, power = power)
         derived = Physical._get_derived_unit(dims = dims_orig, units_env = env_dims)
         single_dim = Physical._dims_basis_multiple(dims_orig)
-                  
+
         if defined:
             units_match = defined
             prefix_bool = False
@@ -233,8 +234,8 @@ class Physical(object):
             prefix_bool = True
         else:
             units_match = derived
-            prefix_bool = False  
-                  
+            prefix_bool = False
+
         if units_match:
             name = tuple(units_match.keys())[0]
             symbol = units_match.get(name, {}).get("Symbol", "")
@@ -242,9 +243,9 @@ class Physical(object):
         else:
             symbol = ""
         return (symbol, prefix_bool)
-                  
-    @staticmethod 
-    def _get_units_by_factor(factor: float, dims: Dimensions, 
+
+    @staticmethod
+    def _get_units_by_factor(factor: float, dims: Dimensions,
                              units_env: dict, power: Union[int,float]) -> dict:
         """
         Returns a units_dict from the environment instance if the numerical
@@ -260,24 +261,24 @@ class Physical(object):
             units_name = ""
         retrieved_dims = units_match.get(units_name, dict()).get("Dimension", dict())
         if dims != retrieved_dims:
-            return dict()       
+            return dict()
         return units_match
-                  
-    @staticmethod   
+
+    @staticmethod
     def _get_derived_unit(dims: Dimensions, units_env: dict) -> dict:
         """
-        Returns a units definition dict that matches 'dimensions'. 
+        Returns a units definition dict that matches 'dimensions'.
         If 'dimensions' is a derived unit raised to a power (e.g. N**2),
         then its original dimensions are checked instead of the altered ones.
         Returns {} if no unit definition matches 'dimensions'.
         """
         derived_units = units_env.get('derived')
-        return derived_units.get(dims, dict())   
-                  
-    @staticmethod              
+        return derived_units.get(dims, dict())
+
+    @staticmethod
     def _get_unit_string(unit_components: list, repr_format: str) -> str:
         """
-        Part of the __str__ and __repr__ process. Returns a string representing 
+        Part of the __str__ and __repr__ process. Returns a string representing
         the SI unit components of the Physical instance extracted from the list of
         tuples, 'unit_components', using 'repr_format' as given by the _repr_x_
         function it was called by. If 'repr_format' is not given, then terminal
@@ -298,7 +299,7 @@ class Physical(object):
             post_symbol = "}"
             pre_super = "^{"
             post_super = "}"
-        
+
         str_components = []
         kg_only = ""
         for symbol, exponent in unit_components:
@@ -314,12 +315,12 @@ class Physical(object):
             str_components.append(this_component)
         if kg_only == "kg": # Hack for lone special case of a kg only Physical
             return dot_operator.join(str_components).replace("kg", "g")
-        return dot_operator.join(str_components) 
-    
-    @staticmethod              
+        return dot_operator.join(str_components)
+
+    @staticmethod
     def _get_unit_components_from_dims(dims: Dimensions):
         """
-        Returns a list of tuples to represent the current units based 
+        Returns a list of tuples to represent the current units based
         on the current dimensions. Dimension ignored if 0.
         e.g. [('kg', 1), ('m', -1), ('s', -2)]
         """
@@ -330,7 +331,7 @@ class Physical(object):
                 unit_tuple = (unit_symbols[idx], dim)
                 unit_components.append(unit_tuple)
         return unit_components
-  
+
     @staticmethod
     def _format_symbol(prefix: str, symbol: str, repr_format: str = "") -> str:
         """

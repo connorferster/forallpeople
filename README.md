@@ -2,23 +2,35 @@
 
 The metric system (now SI system):
 *"For all time. For all people."*
-  - Nicolas de Caritat (Marquis de Condorcet)
+  -- Nicolas de Caritat (Marquis de Condorcet)
 
 `forallpeople` is a robust library for performing units-aware calculations in Python.
 It has a small code base and favours "convention over configuration", although the
-actual units environment you work in is fully customizable.
-
-There are other units packages out there but `forallpeople` is designed for fast and
-simple daily use: units act as you would expect (they automatically combine and
-cancel out), they are labelled as you would expect (e.g. 'm' for meter, 'kg' for
-kilogram), unit quantities exist independently, and are ready-to-use upon import.
+actual units environment you work in is fully customizable. It is Jupyter-ready and 
+tested on Windows.
 
 Intended users: working engineers, scientists, teachers, and students who want to be
 able to check any calculations for dimension errors, print formatted calculation
 reports and summaries with Jupyter/IPython, and focus on productivity instead of
 fussing with managing units and dimensions.
 
-## Examples
+## Teaser in Jupyter
+
+<img src = "https://github.com/connorferster/forallpeople/blob/master/Jupyter.PNG">
+
+## Installation
+
+You can install this package from PyPI.
+
+`pip install forallpeople`
+
+## Basic Usage
+
+Note: `forallpeople` is a library that was *specifically* designed to be used with `import *` for maximum convenience.
+
+`from forallpeople import *`
+
+This will initialize the namespace with all of the basic SI units: `m`, `kg`, `s`, `A`, `cd`, `K`, `mol`.
 
 A simple example:
 
@@ -40,8 +52,52 @@ A simple example:
 'Physical(value=17.808333333333334, dimensions=Dimensions(kg=1, m=-3, s=0, A=0, cd=0, K=0, mol=0), factor=1, _precision=3)'
 ```
 
-Another example, showing auto-reduction of units and auto-prefixing:
+## Initializing an environment with the default units environment
+
+The basic import will import the basic SI units but the real power of `forallpeople` comes when you use a customized **units environment**. The module comes with three environments, `'default'`, `'us_customary'`, and `'structural'`.
+
+The `default` environment defines the derived SI units (e.g. pascal, newton, sievert, katal, etc.). When an environment is defined, units with dimensions matching that of a unit defined in the environment will display in the defined units. 
+
+For example, `Dimensions(m=1, kg=1, s=-2, A=0, cd=0, K=0, mol=0)` are the dimensions of a newton `kg*m/s**2`. If a given environment (such as the `'default'` environment) has this units definition then the displayed unit will be in newtons, N.
+
+An example showing the difference between the basic import and loading an environment:
+
 ```
+<<<<<<< HEAD
+=======
+>>> from forallpeople import *
+>>> mass = 2000 * kg
+>>> acceleration = 2.5 * m/s**2
+>>> force = mass * acceleration
+>>> force
+5000.000 kg·m·s⁻²
+>>> environment('default')   # now we have loaded the default environment
+>>> force                    # and when we ask to see the quantity again...
+5.000 kN                     # we see it in the units of N.
+
+>>> # If we are using 'import *', we can re-import to instantiate variables of units defined in the environment
+>>> # e.g.
+>>> from forallpeople import *
+>>> load = 52300 * N     # N is now a variable
+>>> load
+52.300 kN
+>>> water_pressure = 5400 * Pa    # Pa is now a variable
+>>> water_pressure
+5.400 kPa
+```
+
+Using `from forallpeople import *` is for convenience: populating the global namespace with variable names enables fast and intuitive use but requires a "re-import" if the user wants to load a pre-defined environment and instantiate all of its units as variables.
+
+However, the module can be imported in a more pythonic fashion:
+```
+import forallpeople as si
+si.environment('default')
+```
+
+An example using the pythonic import:
+```
+>>> import forallpeople as si
+>>>>>>> b7714ab8a0afe9f4b74088884aa84b943d96bf8c
 >>> si.environment('default')
 >>> current = 0.5 * si.A
 >>> current
@@ -52,12 +108,9 @@ Another example, showing auto-reduction of units and auto-prefixing:
 >>> voltage = current * resistance
 >>> voltage
 600.000 V
->>> type(voltage)
-<class 'forallpeople.Physical'>
->>> voltage.data
-'Physical(value=600.0, dimensions=Dimensions(kg=1, m=2, s=-3, A=-1, cd=0, K=0, mol=0), factor=1, _precision=3)'
 ```
 
+<<<<<<< HEAD
 ## Installing
 
 `pip install forallpeople`
@@ -76,6 +129,9 @@ as physical quantities. Additionally, it will import the pre-instantiated SI bas
 * `si.cd` - candela
 * `si.K` - kelvin
 * `si.mol` - mole
+=======
+
+>>>>>>> b7714ab8a0afe9f4b74088884aa84b943d96bf8c
 
 This allows you to perform units-aware calculations with all of the SI base units but the results from all calculations will
 be shown in the form of a combination of the base units, e.g.:
