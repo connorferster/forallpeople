@@ -21,18 +21,20 @@ fussing with managing units and dimensions.
 
 ## Installing
 
+You can install using pip:
+
 `pip install forallpeople`
 
 ## Basic usage
 
-You can install `forallpeople` using pip:
+The most basic use is just to import the library:
 
 `import forallpeople as si`
 
 This will import the `Physical` class. It is the primary class in the module and is used to describe all physical quantities. 
 `Physical` instances are **immutable**.
 
-Upon import, the SI base units are instantiated and are available in the namespace as variables:
+Upon import, the SI base units are instantiated and are available in the namespace as the following variables:
 
 * `si.m` - meter
 * `si.kg` - kilogram
