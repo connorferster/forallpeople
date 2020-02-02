@@ -63,8 +63,6 @@ For example, `Dimensions(m=1, kg=1, s=-2, A=0, cd=0, K=0, mol=0)` are the dimens
 An example showing the difference between the basic import and loading an environment:
 
 ```
-<<<<<<< HEAD
-=======
 >>> from forallpeople import *
 >>> mass = 2000 * kg
 >>> acceleration = 2.5 * m/s**2
@@ -97,7 +95,6 @@ si.environment('default')
 An example using the pythonic import:
 ```
 >>> import forallpeople as si
->>>>>>> b7714ab8a0afe9f4b74088884aa84b943d96bf8c
 >>> si.environment('default')
 >>> current = 0.5 * si.A
 >>> current
@@ -110,7 +107,6 @@ An example using the pythonic import:
 600.000 V
 ```
 
-<<<<<<< HEAD
 ## Installing
 
 `pip install forallpeople`
@@ -129,9 +125,6 @@ as physical quantities. Additionally, it will import the pre-instantiated SI bas
 * `si.cd` - candela
 * `si.K` - kelvin
 * `si.mol` - mole
-=======
-
->>>>>>> b7714ab8a0afe9f4b74088884aa84b943d96bf8c
 
 This allows you to perform units-aware calculations with all of the SI base units but the results from all calculations will
 be shown in the form of a combination of the base units, e.g.:
