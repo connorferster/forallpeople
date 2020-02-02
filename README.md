@@ -44,7 +44,7 @@ Upon import, the SI base units are instantiated and are available in the namespa
 * `si.K` - kelvin
 * `si.mol` - mole
 
-Because we have loaded an environment, all results from all calculations will
+Because we have not loaded an environment yet, all results from all calculations will
 be shown in the form of a combination of the SI base units, e.g.:
 
 ```
