@@ -24,6 +24,9 @@ from typing import NamedTuple, Union, Tuple, List, Any, Optional
 import tuplevector as vec
 from collections import ChainMap
 
+#TODO: Ensure that the latex representation of derived units with symbol
+# e.g. kN·m properly replace their dots for latex display.
+
 NUMBER = (int, float)
 
 class Dimensions(NamedTuple):
@@ -38,7 +41,7 @@ class Dimensions(NamedTuple):
 # The single class to describe all units...Physical (as in "a physical property")  
 class Physical(object):
     """
-    A class that defines any physical quantity that *can* be described
+    A class that defines any physical quantity that can be described
     within the BIPM SI unit system.
     """
     _prefixes = {'Y': 1e24, 'Z': 1e21, 'E': 1e18, 'P': 1e15, 
@@ -78,7 +81,7 @@ class Physical(object):
         return self._repr_html_()
 
     @property
-    def data(self):
+    def repr(self):
         """
         Returns a repr that can be used to create another Physical instance.
         """
