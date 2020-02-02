@@ -21,7 +21,7 @@ import functools
 import json
 import re
 from typing import NamedTuple, Union, Tuple, List, Any, Optional
-import forallpeople.tuplevector as vec
+import tuplevector as vec
 from collections import ChainMap
 
 NUMBER = (int, float)
