@@ -26,6 +26,8 @@ from collections import ChainMap
 
 #TODO: Ensure that the latex representation of derived units with symbol
 # e.g. kN·m properly replace their dots for latex display.
+#TODO: Implement __format__ for formatting results directly
+
 
 NUMBER = (int, float)
 
@@ -284,7 +286,7 @@ class Physical(object):
         function it was called by. If 'repr_format' is not given, then terminal
         output is assumed.
         """
-        dot_operator = "·" # new · # old ⋅
+        dot_operator = "·" # new: · , # old: ⋅
         pre_super = ""
         post_super = ""
         pre_symbol = ""
@@ -399,7 +401,8 @@ class Physical(object):
         e.g. a force would have dimensions = [1,1,-2,0,0,0,0] so a Physical object
         that had dimensions = [2,2,-4,0,0,0,0] would really be a force to the power of 
         2.
-        The function returns the 2.
+        This function returns the 2, stating that `dims` is the second power of a
+        derived dimension in `units_env`.
         """
         quotient_1 = Physical._dims_quotient(dims, units_env)
         quotient_2 = Physical._dims_basis_multiple(dims)
@@ -419,7 +422,7 @@ class Physical(object):
     def _dims_quotient(dimensions: Dimensions, 
                        units_env: dict) -> Optional[Dimensions]:
         """
-        Returns a Dimensions object representing the element-wise quotient betwe
+        Returns a Dimensions object representing the element-wise quotient between
         'dimensions' and a defined unit if 'dimensions' is a scalar multiple
         of a defined unit in the global environment variable.
         Returns None otherwise.
@@ -445,9 +448,15 @@ class Physical(object):
     @staticmethod
     def _dims_basis_multiple(dims: Dimensions) -> Optional[Dimensions]:
         """
-        Returns a Dimensions object if 'dimensions' is a scalar multiple of one of the basis
-        vectors (e.g. [3,0,0,0,0,0,0] is a scalar multiple of [1,0,0,0,0,0,0]).
+        Returns `dims` if `dims` is a scalar multiple of one of the basis vectors. 
         Returns None, otherwise.
+        This is used as a check to see if `dims` contains only a single dimension,
+        even if that single dimension is to a higher power.
+        e.g. 
+        if `dims` equals Dimensions(2, 0, 0, 0, 0, 0, 0) then `dims` will be
+        returned.
+        if `dims` equals Dimensions(0, 1, 1, 0, 0, 0, 0) then None will be returned.
+        if `dims` equals Dimensions(0, 14, 0, 0, 0, 0, 0) then `dims` will be returned.
         """
         count = 0
         for dim in dims:

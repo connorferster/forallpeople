@@ -135,17 +135,29 @@ environment('default') # or your own defined environment name
 from forallpeople import *
 ```
 
-Note the import, loading an environment, and then importing again. The reason for this is to allow the module to load the newly instantiated variable names into the namespace. In essence, when you import the first time, you import the basic variable names into your global namespace. When you load an environment, you load additional names into the *module's* namespace but, since you have not named it, you cannot access them. It is only when you perform the import again, and python recognizes that there are now new elements in the module's namespace to import, that you will get the new variable names into your global namespace.
+Note the import, loading an environment, and then importing again. 
+
+The reason for this is to allow the module to load the newly instantiated variable names into the namespace. In essence, when you import the first time, you import the basic variable names into your global namespace. When you load an environment, you load additional names into the *module's* namespace but, since you have not named the module's namespace, you cannot access them. It is only when you perform the import again, and python recognizes that there are now new elements in the module's namespace to import, that you will get the new variable names into your global namespace.
 
 
 ## How Physical instances work
 
 `forallpeople` is all about describing **physical quantities** and defines a single class, `Physical`, to describe them. `Physical` instances are composed of four components (as attributes): 
 
-* .value = a `float` that is the numerical value of the quantity as described by the SI base units
-* .dimensions = a `NamedTuple` that describes the dimensionality of the physical quantity
-* .factor = a `float` that can be used to define a physical quantity in an alternate unit system that is linearly based upon the SI units (e.g. US customary units, imperial, etc.)
-* ._precision = an `int` that describes the number of decimal places to display when the `Physical` instance is rendered through `.__repr__()`
+* `<instance>.value` = a `float` that is the numerical value of the quantity in the SI base units
+* `<instance>.dimensions` = a `NamedTuple`, called `Dimensions`, that describes the dimensionality of the physical quantity
+* `<instance>.factor` = a `float` that can be used to define a physical quantity in an alternate unit system that is linearly based upon the SI units (e.g. US customary units, imperial, etc.)
+* `<instance>._precision` = an `int` that describes the number of decimal places to display when the `Physical` instance is rendered through `.__repr__()`, default value is `3`.
+
+Because `Physical` instances are immutable (just like `int`, `float`, and `bool`), the user cannot set these attributes directly. It also means that any operation operating on a `Physical` instance returns a new instance.As such, the intended way of creating new instances is as the result of calculations.
+
+### Dimension vectors
+
+`Physical` instances track the dimensions of their physical quantities by using vectors. The vector is stored in the `Dimensions` class, which is a `NamedTuple`. Using the vector library, `tuplevector` (which is "baked in" to `forallpeople`), we can perform vector arithmetic on `Dimensions` objects directly. 
+
+e.g.
+
+
 
 
 ## REPLs and Jupyter Notebook/Lab
