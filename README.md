@@ -155,7 +155,31 @@ Because `Physical` instances are immutable (just like `int`, `float`, and `bool`
 
 `Physical` instances track the dimensions of their physical quantities by using vectors. The vector is stored in the `Dimensions` class, which is a `NamedTuple`. Using the vector library, `tuplevector` (which is "baked in" to `forallpeople`), we can perform vector arithmetic on `Dimensions` objects directly. 
 
-e.g.
+### Arithmetic on Physicals
+
+Arithmetic on `Physical` instances work mostly how you would expect, with few caveats:
+
+* Addition/Subtraction: 
+    * Two (or more) instances will add/sub if dimensions are equal
+    * One instance and one (or more) number(s) (`float`, `int`) will add/sub and assume the units of the instance
+    * e.g. `a = 5*si.m + 2*si.m`,  `b = 5*si.kg + 10`
+* Multiplication:
+    * Instances will multiply with each other and their dimensions will combine
+    * Instances will multiply with numbers and will assume the units of instance(s) that were also a part of the multiplication
+    * e.g. `c = 12 *si.m * 2*si.kg * si.s`, `d = 4.5*si.m * 2.3`
+* Division (true division):
+    * Instances will divide by each other and their dimensions will combine
+    * Instances will divide with numbers and will assume the units of the instance(s) that were also a part of the division
+    * If two instances of the same dimension are divided, the result will be a `float` (i.e. the units are completely cancelled out; there is no "dimensionless" `Physical`: either a quantity has units as a `Physical` or it is a number)
+    * e.g. `f = 24.5 * si.m / (2.3 * si.s)`, `g = 
+* Floor division:
+    * Is intentionally not implemented in `Physical`. This is because it creates ambiguity when working within an environment where units with factors are defined (does floor division return the value of floor division of the SI base unit value or the apparent value after multiplied by it's `.factor`? Either would return results that may be unexpected.)
+    * Floor division can be achieved by using true division and calling `int()` on the result, although this returns an `int` and not a `Physical`
+* Power:
+  * You can raise an instance to any power, if it is a number (`int`, `float`). You cannot raise a Physical instance to the power of another instance (what would that even mean?)
+
+
+
 
 
 

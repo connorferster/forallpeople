@@ -24,9 +24,8 @@ from typing import NamedTuple, Union, Tuple, List, Any, Optional
 import forallpeople.tuplevector as vec
 from collections import ChainMap
 
-#TODO: Ensure that the latex representation of derived units with symbol
-# e.g. kN·m properly replace their dots for latex display.
 #TODO: Implement __format__ for formatting results directly
+#TODO: Implement .split() to separate the value of the Physical and the unit into a 2-tuple
 
 
 NUMBER = (int, float)
@@ -99,6 +98,20 @@ class Physical(object):
         the number of decimal places displayed in repr and str.
         """
         return Physical(self.value, self.dimensions, self.factor, n)
+
+    def split(self, base_value: bool = True) -> tuple:
+        """
+        Returns a tuple separating the value of `self` with the units of `self`.
+        If base_value is True, then the value will be the value in base units. If False, then
+        the apparent value of `self` will be used.
+
+        This method is to allow flexibility in working with Physical instances when working 
+        with numerically optimized libraries such as numpy which cannot accept non-numerical 
+        objects in some of their operations (such as in matrix inversion).
+        """
+        if base_value:
+            return (self.value, Physical(1,self.dimensions, self.factor, self._precision))
+        return (float(self), Physical(1,self.dimensions, self.factor, self._precision))
 
     def in_units(self, unit_name=""):
         """
@@ -532,6 +545,8 @@ class Physical(object):
                     
     ### "Magic" Methods ###
                   
+
+
     def __float__(self): 
         value = self.value
         dims = self.dimensions
@@ -543,10 +558,26 @@ class Physical(object):
         else:
             float_value = Physical._auto_prefix_value(value, power)
         return float(float_value)
-                  
+
     def __int__(self): 
         return int(float(self))
-                  
+
+    def __neg__(self):
+        return self * -1
+
+    def __abs__(self):
+        if self.value < 0:
+            return self * -1
+        return self
+
+    def __bool__(self):
+        return True
+
+    # def __format__(self, fmt_spec = ''): # format for a custom vector2d class; how to implement on top of _repr_template_?
+    #     components = (format(c, fmt_spec) for c in self)
+    #     return '({}, {})'.format(*components)
+
+
     def __hash__(self):
         return hash((self.value, self.dimensions, self.factor))
                   
@@ -784,10 +815,7 @@ class Physical(object):
             raise ValueError("Cannot raise a Physical to the power of \
                                      another Physical -> ({self}**{other})".format(self,other))
             
-    def __abs__(self):
-        if self.value < 0:
-            return self * -1
-        return self
+
     
 class Environment:
     """
