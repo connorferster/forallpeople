@@ -47,7 +47,7 @@ Upon import, the SI base units are instantiated and are available in the namespa
 Because we have not loaded an environment yet, all results from all calculations will
 be shown in the form of a combination of the SI base units, e.g.:
 
-```
+```python
 >>> area = 3*si.m * 4*si.m
 >>> area
 12.000 m²
@@ -68,7 +68,7 @@ However, you would probably rather see the final units in *pascals*. To do this,
 
 Now, the above calculation will appear more conventional:
 
-```
+```python
 >>> area = 3*si.m * 4*si.m
 >>> force = 2500 * si.kg * si.m / si.s**2
 >>> force
@@ -81,7 +81,7 @@ When you load an environment, whether it is the `default` environment or one you
 
 It is important to note that, no matter what environment is loaded or not loaded, your Physical instances will always carry their value in the SI base units, e.g.:
 
-```
+```python
 >>> pressure = force / area
 >>> pressure = 208.333 Pa
 >>> pressure.repr
@@ -114,7 +114,7 @@ The `'default'` environment defines and loads the following units as variables:
 
 Because the units of `si.N` are one of the `Physical` instances that have now been instantiated and loaded into the `si` namespace, you can perform this calculation directly: 
 
-```
+```python
 >>> area = 3*si.m * 4*si.m
 >>> force = 2500 * si.N
 >>> force / area
@@ -125,7 +125,7 @@ Because the units of `si.N` are one of the `Physical` instances that have now be
 
 `forallpeople` employs "auto-prefixing" and, as such, does not specifically allow the user to choose the order of magnitude to display the unit in. In this way, the library chooses the principal of "convention over configuration". For example:
 
-```
+```python
 >>> current = 0.5 * A
 >>> current
 500.000 mA # 'current' is auto-prefixed to 500 milliamperes
@@ -151,7 +151,7 @@ This means that auto-prefixing is not used in the following circumstances:
 
 When the auto-prefixing is triggered for a unit and that unit is of a power other than `1`, then auto-prefixing considers the prefix to also be part of the unit's power. For example:
 
-```
+```python
 >>> a = 5000 * si.m
 >>> a
 5.000 km
@@ -173,7 +173,7 @@ However, using `import *` can also quickly clutter up one's namespace, especiall
 
 If one wishes to use `from forallpeople import *` with environments, it requires an additional step:
 
-```
+```python
 from forallpeople import *
 environment('default') # or your own defined environment name
 from forallpeople import *
@@ -230,7 +230,7 @@ Arithmetic on `Physical` instances work mostly how you would expect, with few ca
 
 An environment is simply a JSON document stored within the package folder in the following format:
 
-```
+```json
 {
   "Name": {
     "Dimension": [0,0,0,0,0,0,0], # The dimensions of your physical quantity listed in order of kg, m, s, A, cd, K, mol
@@ -243,7 +243,7 @@ An environment is simply a JSON document stored within the package folder in the
 
 For example, if you wanted to create an environment that defined only kilopascals and pounds-force in US customary units, you would do it like this:
 
-```
+```json
 {
   "kPa": {
     "Dimension": [1,-1,-2,0,0,0,0], # kg = 1, m = -1, s = -2, A = 0, cd = 0, K = 0, mol = 0
