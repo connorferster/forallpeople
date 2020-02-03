@@ -25,7 +25,9 @@ import forallpeople.tuplevector as vec
 from collections import ChainMap
 
 #TODO: Implement __format__ for formatting results directly
-#TODO: Implement .split() to separate the value of the Physical and the unit into a 2-tuple
+#TODO: To get proper reciprocal behaviour with factored defined units, the factor must also be the reciprocal
+#      Further, the units environment has to also search for the reciprocal values of the defined units with factors.
+#      Additionally, reciprocal values for basic derived units are not displaying values properly, even with round()
 
 
 NUMBER = (int, float)
@@ -356,7 +358,7 @@ class Physical(object):
         #    return symbol
         symbol_string_open = ""
         symbol_string_close = ""
-        dot_operator = "⋅"
+        dot_operator = "·"
         ohm = "Ω"
         if repr_format == "html":
             dot_operator = "&#8901;"
@@ -367,7 +369,7 @@ class Physical(object):
             symbol_string_open = "\\text{"
             symbol_string_close = "}"
 
-        symbol = symbol.replace("⋅", symbol_string_close+dot_operator+symbol_string_open)\
+        symbol = symbol.replace("·", symbol_string_close+dot_operator+symbol_string_open)\
                        .replace("*", symbol_string_close+dot_operator+symbol_string_open)\
                        .replace("Ω", ohm)  
         formatted_symbol = f"{symbol_string_open}{prefix}{symbol}{symbol_string_close}"
