@@ -121,6 +121,50 @@ Because the units of `si.N` are one of the `Physical` instances that have now be
 >>> 208.333 Pa
 ```
 
+## Auto-prefixing
+
+`forallpeople` employs "auto-prefixing" and, as such, does not specifically allow the user to choose the order of magnitude to display the unit in. In this way, the library chooses the principal of "convention over configuration". For example:
+
+```
+>>> current = 0.5 * A
+>>> current
+500.000 mA # 'current' is auto-prefixed to 500 milliamperes
+>>> resistance = 1200 * Ohm
+>>> resistance
+1.200 kΩ # 'resistance' is auto-prefixed to kilo-ohms
+>>> voltage = current * resistance
+>>> voltage
+600.000 V # 'voltage' does not have a prefix because its value is above 1 V but less than 1000 V
+```
+
+The prefixes of the entire SI units system (from `10**-24` to `10**24`) are built-in to the `Physical` class.
+
+However, auto-prefixing is only triggered in certain, intuitive circumstances:
+
+1. The unit is **one of** `m`, `kg`, `s`, `A`, `cd`, `K`, or  `mol` (i.e. the SI base units)
+2. The unit is a derived unit in the SI unit system (i.e. it is defined in the environment and has a `.factor == 1`)
+
+This means that auto-prefixing is not used in the following circumstances:
+
+1. The unit is defined in the environment with a factor (e.g. `lb`: it would not make sense to have a `klb` or a `mlb`)
+2. The unit is a compound unit but not defined in the environment (e.g. it would not make sense to have a `kkg*m/s`)
+
+When the auto-prefixing is triggered for a unit and that unit is of a power other than `1`, then auto-prefixing considers the prefix to also be part of the unit's power. For example:
+
+```
+>>> a = 5000 * si.m
+>>> a
+5.000 km
+>>> a**2
+25.000 km² # This may seem intuitive but it's important to remember that the 'kilo' prefix is also being squared
+
+>>> b = 500000 * si.m 
+>>> b
+500.000 km
+>>> b**2
+250000.000 km² # Why isn't this being shown as 250 Mm²? Because it would take 1,000,000 km² to make a Mm². This is only 250,000 km².
+```
+
 ## Usage with "from forallpeople import *"
 
 Forallpeople was designed to be used with `import *` for ease of use and to reduce re-typing, i.e. `si.m` becomes simply `m`. This also makes `forallpeople` more compatible with computational reporting packages such as `handcalcs`. 
