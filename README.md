@@ -230,7 +230,7 @@ Arithmetic on `Physical` instances work mostly how you would expect, with few ca
 
 An environment is simply a JSON document stored within the package folder in the following format:
 
-```json
+```
 {
   "Name": {
     "Dimension": [0,0,0,0,0,0,0], # The dimensions of your physical quantity listed in order of kg, m, s, A, cd, K, mol
@@ -243,7 +243,7 @@ An environment is simply a JSON document stored within the package folder in the
 
 For example, if you wanted to create an environment that defined only kilopascals and pounds-force in US customary units, you would do it like this:
 
-```json
+```
 {
   "kPa": {
     "Dimension": [1,-1,-2,0,0,0,0], # kg = 1, m = -1, s = -2, A = 0, cd = 0, K = 0, mol = 0
@@ -272,24 +272,37 @@ For example, if you wanted to create an environment that defined only kilopascal
 
 `forallpeople` prioritizes *usage conventions* over *python conventions*. Specifically, the library *deliberately* switches the intentions behind the `__repr__()` and `__str__()` methods: `__repr__()` will give the pretty printed version and `__str__()` will give a version of the unit that can be used to recreate the unit. As such, it becomes intuitive to use within any python repl and it really shines when used in a Jupyter Notebook. This also makes it natuarlly compatible with other common python libraries such as `pandas` and `numpy`.
 
-## Anatomy of the Physical instance
+## Using Physicals with Numpy
 
+`Physical` instances can be used with many `numpy` operations. See below example:
 
-
-`forallpeople` automatically reduces units into defined units:
+```python
+>>> a = 5 * si.kN
+>>> b = 3.5 * si.kN
+>>> c = 7.7 * si.kN
+>>> d = 6.6 * si.kN
+>>> m1 = np.matrix([[a, b], [b, a]])
+>>> m2 = np.matrix([[c, d], [d, c]])
+>>> m1
+matrix([[5.000 kN, 3.500 kN],
+        [3.500 kN, 5.000 kN]], dtype=object)
+>>> m2
+matrix([[7.700 kN, 6.600 kN],
+        [6.600 kN, 7.700 kN]], dtype=object)
+>>> m1 + m2
+matrix([[12.700 kN, 10.100 kN],
+        [10.100 kN, 12.700 kN]], dtype=object)
+>>> m1 @ m2
+matrix([[61.600 kN², 59.950 kN²],
+        [59.950 kN², 61.600 kN²]], dtype=object)
+>>> m2 - m1
+matrix([[2.700 kN, 3.100 kN],
+        [3.100 kN, 2.700 kN]], dtype=object)
+>>> m1 / m2
+matrix([[0.6493506493506493, 0.5303030303030303],
+        [0.5303030303030303, 0.6493506493506493]], dtype=object)
 ```
->>> current = 0.5 * A
->>> current
-500.000 mA
->>> resistance = 1200 * Ohm
->>> resistance
-1.200 kΩ
->>> voltage = current * resistance
->>> voltage
-600.000 V
-```
 
-You can see the dimensions and constituents of each 
 
 ## Gotchas
 
