@@ -262,12 +262,6 @@ For example, if you wanted to create an environment that defined only kilopascal
 * Note also that arithmetical expressions in Factor are eval'd to allow for the most accurate input of factors; to prevent a security risk, Factor is regex'd to ensure that only numbers and arithmetic symbols are in Factor and not any alphabetic characters (see Environment._load_environment in source code to validate).
 
 
-
-
-
-
-
-
 ## REPLs and Jupyter Notebook/Lab
 
 `forallpeople` prioritizes *usage conventions* over *python conventions*. Specifically, the library *deliberately* switches the intentions behind the `__repr__()` and `__str__()` methods: `__repr__()` will give the pretty printed version and `__str__()` will give a version of the unit that can be used to recreate the unit. As such, it becomes intuitive to use within any python repl and it really shines when used in a Jupyter Notebook. This also makes it natuarlly compatible with other common python libraries such as `pandas` and `numpy`.
@@ -302,13 +296,7 @@ matrix([[2.700 kN, 3.100 kN],
 matrix([[0.6493506493506493, 0.5303030303030303],
         [0.5303030303030303, 0.6493506493506493]], dtype=object)
 ```
-
-
-## Gotchas
-
-* Does not know "prefixed units" automatically; they must be declared as variables or set up in the environment
-
-`forallpeople` 
+ 
 
 
 

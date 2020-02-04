@@ -491,13 +491,13 @@ class Physical(object):
         prefixes = Physical._prefixes
         if abs(value) >= 1:
             for prefix, power_of_ten in prefixes.items():
-                if abs(value) >= power_of_ten ** power:                    
+                if abs(value) >= power_of_ten ** abs(power):                    
                     return prefix
         else:
             reverse_prefixes = sorted(prefixes.items(), key = lambda prefix: prefix[0])
             previous_prefix = reverse_prefixes[0][0] # Gets the smallest prefix to start
             for prefix, power_of_ten in reversed(list(prefixes.items())):
-                if abs(value) < power_of_ten ** power:
+                if abs(value) < power_of_ten ** abs(power):
                     return previous_prefix
                 else:                     
                     previous_prefix = prefix
@@ -513,13 +513,13 @@ class Physical(object):
         prefixes = Physical._prefixes
         if abs(value) >= 1:
             for prefix, power_of_ten in prefixes.items():
-                if abs(value) >= (power_of_ten/1000) ** power:                    
+                if abs(value) >= (power_of_ten/1000) ** abs(power):                    
                     return prefix
         else:
             reverse_prefixes = sorted(prefixes.items(), key = lambda prefix: prefix[0])
             previous_prefix = reverse_prefixes[0][0] # Gets the smallest prefix to start
             for prefix, power_of_ten in reversed(list(prefixes.items())):
-                if abs(value) < (power_of_ten/1000) ** power:
+                if abs(value) < (power_of_ten/1000) ** abs(power):
                     return previous_prefix
                 else:                     
                     previous_prefix = prefix
@@ -534,14 +534,14 @@ class Physical(object):
         prefixes = Physical._prefixes
         if abs(value) >= 1:
             for prefix, power_of_ten in prefixes.items():
-                if abs(value) >= power_of_ten ** power:
+                if abs(value) >= power_of_ten ** abs(power): 
                     return value / (power_of_ten ** power)
         else:
             reverse_prefixes = sorted(prefixes.items(), key = lambda pre_fact: pre_fact[1])
             previous_power_of_ten = reverse_prefixes[0][1] # Gets the smallest factor to start
             for prefix, power_of_ten in reversed(list(prefixes.items())):
-                if abs(value) < power_of_ten ** power:
-                    return value / (previous_power_of_ten ** power)
+                if abs(value) < power_of_ten ** abs(power): 
+                    return value / (previous_power_of_ten ** abs(power))
                 else:                     
                     previous_power_of_ten = power_of_ten
                     
