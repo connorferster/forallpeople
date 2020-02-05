@@ -121,6 +121,95 @@ Because the units of `si.N` are one of the `Physical` instances that have now be
 >>> 208.333 Pa
 ```
 
+## API
+
+Each `Physical` instance offers the following methods and properties:
+
+### Properties
+
+* `.value`: A `float` that represents the numerical value of the physical quantity in SI base units
+* `.dimensions`: A `Dimensions` object (a `NamedTuple`) that describes the dimension of the quantity as a vector
+* `.factor`: A `float` that represents a factor that the value should be multiplied by to linearly scale the quantity into an alternate unit system (e.g. US customary units or UK imperial) that is defined in SI units.
+* `.latex`: A `str` that represents the pretty printed `repr()` of the quanity in latex code.
+* `.html`: A `str` that represents the pretty printed `repr()` of the quantity in HTML code.
+* `.repr`: A `str` that represents the traditional machine readable `repr()` of the quantity: `Physical` instances default to a pretty printed `__repr__()` instead of a machine readable `__repr__()` because it makes them more compatible with other libraries (e.g. `numpy`, `pandas`, `handcalcs`, and `jupyter`).
+
+### Methods
+
+Almost all methods return a new `Physical` because all instances are **immutable**.
+
+* `.round(self, n: int)`: Returns a `Physical` instance identical to `self` except with the display precision set to `n`. You can also call the python built-in `round()` on the instance to get the same behaviour.
+* `.split(self)`: Returns a 2-tuple where the 0-th element is the `.value` of the quantity and the 1-th element is the `Physical` instance with a value set to `1` (i.e. just the dimensional part of the quantity). To reconstitute, multiply the two tuple elements together. This is useful to perform computations in `numpy` that only accept numerical input (e.g. `numpy.linalg.inv()`): the value can be computed separately from the dimension and then reconstituted afterwards.
+* `.in_units(self, unit_name: str = "")`: Returns a new `Physical` instance with a `.factor` corresponding to a dimensionally compatible unit defined in the `environment`. If `.in_units()` is called without any arguments, then a list of available units for that quantity is printed to `stdout`.
+
+## Calculations with "empirical" formulas (dimensionally inconsistent formulas)
+
+It is not uncommon for engineering formulas to use formulas whose dimensions seem to magically appear on their own. The kinds of formulae are compatible with `forallpeople` if the "hidden dimensons" are recognized and accounted for by the user.
+
+Example: in the Canadian concrete design code it is recognized that the `sqrt(MPa)` results in units of `MPa` instead of `MPa
+
+## Using * imports
+
+Forallpeople was designed to be used with `import *` for ease of use and to reduce re-typing, i.e. `si.m` becomes simply `m`. This also makes `forallpeople` more compatible with computational reporting packages such as `handcalcs`. 
+
+If one wishes to use `from forallpeople import *` with environments, it requires an additional step:
+
+```python
+from forallpeople import *
+environment('default') # or your own defined environment name
+from forallpeople import *
+```
+
+Note the import, loading an environment, and then importing again. 
+
+The reason for this is to allow the module to load the newly instantiated variable names into the namespace. In essence, when you import the first time, you import the basic variable names into your global namespace. When you load an environment, you load additional names into the *module's* namespace but, since you have not named the module's namespace, you cannot access them. It is only when you perform the import again, and python recognizes that there are now new elements in the module's namespace to import, that you will get the new variable names into your global namespace.
+
+However, using `import *` can also quickly clutter up one's namespace, especially if the user loads multiple environments: the variable names of the new `Physical` instances are simply appended to the global namespace.
+
+## How Physical instances work
+
+`forallpeople` is all about describing **physical quantities** and defines a single class, `Physical`, to describe them. `Physical` instances are composed of four components (as attributes): 
+
+* `<instance>.value` = a `float` that is the numerical value of the quantity in the SI base units
+* `<instance>.dimensions` = a `NamedTuple`, called `Dimensions`, that describes the dimensionality of the physical quantity
+* `<instance>.factor` = a `float` that can be used to define a physical quantity in an alternate unit system that is linearly based upon the SI units (e.g. US customary units, imperial, etc.)
+* `<instance>._precision` = an `int` that describes the number of decimal places to display when the `Physical` instance is rendered through `.__repr__()`, default value is `3`.
+
+Because `Physical` instances are immutable (just like `int`, `float`, and `bool`), the user cannot set these attributes directly. It also means that any operation operating on a `Physical` instance returns a new instance.As such, the intended way of creating new instances is as the result of calculations.
+
+### Dimension vectors
+
+`Physical` instances track the dimensions of their physical quantities by using vectors. The vector is stored in the `Dimensions` class, which is a `NamedTuple`. Using the vector library, `tuplevector` (which is "baked in" to `forallpeople`), we can perform vector arithmetic on `Dimensions` objects directly. 
+
+### Arithmetic on Physicals
+
+Arithmetic on `Physical` instances work mostly how you would expect, with few caveats:
+
+* Addition/Subtraction: 
+  * Two (or more) instances will add/sub if dimensions are equal
+  * One instance and one (or more) number(s) (`float`, `int`) will add/sub and assume the units of the instance
+  * e.g. `a = 5*si.m + 2*si.m`,  `b = 5*si.kg + 10`
+* Multiplication:
+  * Instances will multiply with each other and their dimensions will combine
+  * Instances will multiply with numbers and will assume the units of instance(s) that were also a part of the multiplication
+  * e.g. `c = 12 *si.m * 2*si.kg * si.s`, `d = 4.5*si.m * 2.3`
+* Division (true division):
+  * Instances will divide by each other and their dimensions will combine
+  * Instances will divide with numbers and will assume the units of the instance(s) that were also a part of the division
+  * If two instances of the same dimension are divided, the result will be a `float` (i.e. the units are completely cancelled out; there is no "dimensionless" `Physical`: either a quantity has units as a `Physical` or it is a number)
+  * e.g. `f = 24.5 * si.m / (2.3 * si.s)`, `g = 
+* Floor division:
+  * Is intentionally not implemented in `Physical`. This is because it creates ambiguity when working within an environment where units with factors are defined (does floor division return the value of floor division of the SI base unit value or the apparent value after multiplied by it's `.factor`? Either would return results that may be unexpected.)
+  * Floor division can be achieved by using true division and calling `int()` on the result, although this returns an `int` and not a `Physical`
+* Power:
+  * You can raise an instance to any power, if it is a number (`int`, `float`). You cannot raise a Physical instance to the power of another instance (what would that even mean?)
+* Abs:
+  * Returns the absolute value of the instance
+* Neg:
+  * Equivalent to instance * -1
+
+
+
 ## Auto-prefixing
 
 `forallpeople` employs "auto-prefixing" and, as such, does not specifically allow the user to choose the order of magnitude to display the unit in. In this way, the library chooses the principal of "convention over configuration". For example:
@@ -164,67 +253,6 @@ When the auto-prefixing is triggered for a unit and that unit is of a power othe
 >>> b**2
 250000.000 km² # Why isn't this being shown as 250 Mm²? Because it would take 1,000,000 km² to make a Mm². This is only 250,000 km².
 ```
-
-## Usage with "from forallpeople import *"
-
-Forallpeople was designed to be used with `import *` for ease of use and to reduce re-typing, i.e. `si.m` becomes simply `m`. This also makes `forallpeople` more compatible with computational reporting packages such as `handcalcs`. 
-
-However, using `import *` can also quickly clutter up one's namespace, especially if the user loads multiple environments: the variable names of the new `Physical` instances are simply appended to the global namespace.
-
-If one wishes to use `from forallpeople import *` with environments, it requires an additional step:
-
-```python
-from forallpeople import *
-environment('default') # or your own defined environment name
-from forallpeople import *
-```
-
-Note the import, loading an environment, and then importing again. 
-
-The reason for this is to allow the module to load the newly instantiated variable names into the namespace. In essence, when you import the first time, you import the basic variable names into your global namespace. When you load an environment, you load additional names into the *module's* namespace but, since you have not named the module's namespace, you cannot access them. It is only when you perform the import again, and python recognizes that there are now new elements in the module's namespace to import, that you will get the new variable names into your global namespace.
-
-
-## How Physical instances work
-
-`forallpeople` is all about describing **physical quantities** and defines a single class, `Physical`, to describe them. `Physical` instances are composed of four components (as attributes): 
-
-* `<instance>.value` = a `float` that is the numerical value of the quantity in the SI base units
-* `<instance>.dimensions` = a `NamedTuple`, called `Dimensions`, that describes the dimensionality of the physical quantity
-* `<instance>.factor` = a `float` that can be used to define a physical quantity in an alternate unit system that is linearly based upon the SI units (e.g. US customary units, imperial, etc.)
-* `<instance>._precision` = an `int` that describes the number of decimal places to display when the `Physical` instance is rendered through `.__repr__()`, default value is `3`.
-
-Because `Physical` instances are immutable (just like `int`, `float`, and `bool`), the user cannot set these attributes directly. It also means that any operation operating on a `Physical` instance returns a new instance.As such, the intended way of creating new instances is as the result of calculations.
-
-### Dimension vectors
-
-`Physical` instances track the dimensions of their physical quantities by using vectors. The vector is stored in the `Dimensions` class, which is a `NamedTuple`. Using the vector library, `tuplevector` (which is "baked in" to `forallpeople`), we can perform vector arithmetic on `Dimensions` objects directly. 
-
-### Arithmetic on Physicals
-
-Arithmetic on `Physical` instances work mostly how you would expect, with few caveats:
-
-* Addition/Subtraction: 
-  * Two (or more) instances will add/sub if dimensions are equal
-  * One instance and one (or more) number(s) (`float`, `int`) will add/sub and assume the units of the instance
-  * e.g. `a = 5*si.m + 2*si.m`,  `b = 5*si.kg + 10`
-* Multiplication:
-  * Instances will multiply with each other and their dimensions will combine
-  * Instances will multiply with numbers and will assume the units of instance(s) that were also a part of the multiplication
-  * e.g. `c = 12 *si.m * 2*si.kg * si.s`, `d = 4.5*si.m * 2.3`
-* Division (true division):
-  * Instances will divide by each other and their dimensions will combine
-  * Instances will divide with numbers and will assume the units of the instance(s) that were also a part of the division
-  * If two instances of the same dimension are divided, the result will be a `float` (i.e. the units are completely cancelled out; there is no "dimensionless" `Physical`: either a quantity has units as a `Physical` or it is a number)
-  * e.g. `f = 24.5 * si.m / (2.3 * si.s)`, `g = 
-* Floor division:
-  * Is intentionally not implemented in `Physical`. This is because it creates ambiguity when working within an environment where units with factors are defined (does floor division return the value of floor division of the SI base unit value or the apparent value after multiplied by it's `.factor`? Either would return results that may be unexpected.)
-  * Floor division can be achieved by using true division and calling `int()` on the result, although this returns an `int` and not a `Physical`
-* Power:
-  * You can raise an instance to any power, if it is a number (`int`, `float`). You cannot raise a Physical instance to the power of another instance (what would that even mean?)
-* Abs:
-  * Returns the absolute value of the instance
-* Neg:
-  * Equivalent to instance * -1
 
 ## How to define your own environments
 

@@ -76,15 +76,15 @@ class Physical(object):
 
     ### API Methods ###
     @property
-    def latex(self):
+    def latex(self) -> str:
         return self._repr_latex_()
 
     @property
-    def html(self):
+    def html(self) -> str:
         return self._repr_html_()
 
     @property
-    def repr(self):
+    def repr(self) -> str:
         """
         Returns a repr that can be used to create another Physical instance.
         """
@@ -94,14 +94,14 @@ class Physical(object):
                                self.factor,
                                self._precision)
 
-    def round(self, n: int):
+    def round(self, n: int) -> Physical:
         """
         Returns a new Physical with a new precision, 'n'. Precision controls
         the number of decimal places displayed in repr and str.
         """
         return Physical(self.value, self.dimensions, self.factor, n)
 
-    def split(self, base_value: bool = True) -> tuple:
+    def split(self, base_value: bool = True) -> Tuple[float, Physical]:
         """
         Returns a tuple separating the value of `self` with the units of `self`.
         If base_value is True, then the value will be the value in base units. If False, then
@@ -114,6 +114,8 @@ class Physical(object):
         if base_value:
             return (self.value, Physical(1,self.dimensions, self.factor, self._precision))
         return (float(self), Physical(1,self.dimensions, self.factor, self._precision))
+
+    def sqrt(self) -> Physical:
 
     def in_units(self, unit_name=""):
         """
@@ -171,10 +173,12 @@ class Physical(object):
 
         # Do the expensive vector math method (call once, only)
         power, dims_orig = Physical._powers_of_derived(dims, env_dims)
+        print("power, dims_orig: ", power, dims_orig)
 
         # Determine if there is a symbol and if it will be prefixed
         symbol, prefix_bool = Physical._evaluate_dims_and_factor(
                                 dims_orig, factor, power, env_fact, env_dims)
+        print("Symbol, prefix_bool: ", symbol, prefix_bool)
 
         # Get the appropriate prefix
         prefix = ""
@@ -203,8 +207,12 @@ class Physical(object):
 
         # Determine the appropriate display value
         value = val * factor
+        if factor and power < 0:
+            value = val * (1 / factor)
         if prefix_bool:
             value = Physical._auto_prefix_value(val, power)
+
+
 
         pre_super = ""
         post_super = ""
@@ -242,7 +250,7 @@ class Physical(object):
                                             units_env = env_fact, power = power)
         derived = Physical._get_derived_unit(dims = dims_orig, units_env = env_dims)
         single_dim = Physical._dims_basis_multiple(dims_orig)
-
+        print('defined: ', defined)
         if defined:
             units_match = defined
             prefix_bool = False
