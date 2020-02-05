@@ -25,9 +25,7 @@ import forallpeople.tuplevector as vec
 from collections import ChainMap
 
 #TODO: Implement __format__ for formatting results directly
-#TODO: To get proper reciprocal behaviour with factored defined units, the factor must also be the reciprocal
-#      Further, the units environment has to also search for the reciprocal values of the defined units with factors.
-#      Additionally, reciprocal values for basic derived units are not displaying values properly, even with round()
+
 
 
 NUMBER = (int, float)
@@ -94,14 +92,14 @@ class Physical(object):
                                self.factor,
                                self._precision)
 
-    def round(self, n: int) -> Physical:
+    def round(self, n: int):
         """
         Returns a new Physical with a new precision, 'n'. Precision controls
         the number of decimal places displayed in repr and str.
         """
         return Physical(self.value, self.dimensions, self.factor, n)
 
-    def split(self, base_value: bool = True) -> Tuple[float, Physical]:
+    def split(self, base_value: bool = True) -> tuple:
         """
         Returns a tuple separating the value of `self` with the units of `self`.
         If base_value is True, then the value will be the value in base units. If False, then
@@ -115,7 +113,12 @@ class Physical(object):
             return (self.value, Physical(1,self.dimensions, self.factor, self._precision))
         return (float(self), Physical(1,self.dimensions, self.factor, self._precision))
 
-    def sqrt(self) -> Physical:
+    def sqrt(self, n: float = 2.0):
+        """
+        Returns a Physical instance that represents the square root of `self`.
+        `n` can be set to an alternate number to compute an alternate root (e.g. 3.0 for cube root)
+        """
+        return self ** (1 / n)
 
     def in_units(self, unit_name=""):
         """
@@ -278,7 +281,7 @@ class Physical(object):
         environment instance and the dimensions stored in the units_dict are
         equal to 'dims'. Returns an empty dict, otherwise.
         """
-        new_factor = factor **(1/power)
+        new_factor = factor **(1/abs(power))
         units_match = units_env.get(new_factor, dict())
         try:
             units_name = tuple(units_match.keys())[0]

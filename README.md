@@ -139,6 +139,7 @@ Each `Physical` instance offers the following methods and properties:
 Almost all methods return a new `Physical` because all instances are **immutable**.
 
 * `.round(self, n: int)`: Returns a `Physical` instance identical to `self` except with the display precision set to `n`. You can also call the python built-in `round()` on the instance to get the same behaviour.
+* `.sqrt(self, n: float)`: Returns a `Physical` that represents the square root of `self`. `n` can be set to any other number to compute alternate roots.
 * `.split(self)`: Returns a 2-tuple where the 0-th element is the `.value` of the quantity and the 1-th element is the `Physical` instance with a value set to `1` (i.e. just the dimensional part of the quantity). To reconstitute, multiply the two tuple elements together. This is useful to perform computations in `numpy` that only accept numerical input (e.g. `numpy.linalg.inv()`): the value can be computed separately from the dimension and then reconstituted afterwards.
 * `.in_units(self, unit_name: str = "")`: Returns a new `Physical` instance with a `.factor` corresponding to a dimensionally compatible unit defined in the `environment`. If `.in_units()` is called without any arguments, then a list of available units for that quantity is printed to `stdout`.
 
