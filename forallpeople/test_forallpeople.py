@@ -129,7 +129,6 @@ def test__check_dims_parallel():
     assert "stub" == False
 
 
-
 def test__get_derived_unit():
     func = si.Physical._get_derived_unit
     assert func(si.Dimensions(1,1,-2,0,0,0,0), env_dims) == \
