@@ -97,6 +97,18 @@ def test_repr():
                                'Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0), ' +\
                                'factor=3.280839895013123, _precision=3)'
 
+def test_html():
+    assert "stub" == False
+
+def test_round():
+    assert "stub" == False
+
+def test_split():
+    assert "stub" == False
+
+def test_sqrt():
+    assert "stub" == False
+
 def test_in_units():
     ft = 1*si.ft
     m = 1*si.m
@@ -106,6 +118,17 @@ def test_in_units():
     assert m.in_units("ft").factor == 1/0.3048
     assert kip.in_units("lb").factor == (1000*si.lb).factor
     assert ((10*lb)**2).in_units("kip").factor == (0.1*si.kip*si.kip).factor
+
+def test___repr__template():
+    assert "stub" == False
+
+def test__format_symbol():
+    assert "stub" == False
+
+def test__check_dims_parallel():
+    assert "stub" == False
+
+
 
 def test__get_derived_unit():
     func = si.Physical._get_derived_unit
@@ -234,7 +257,6 @@ def test___add__():
         si.kg + si.m
         si.N + si.psf
     
-    
 def test___iadd__():
     with pytest.raises(ValueError):
         si.m += 3
@@ -276,9 +298,7 @@ def test___mul__():
     assert 2 * si.ft == si.Physical(0.6096, si.Dimensions(0,1,0,0,0,0,0), 1/0.3048)
     assert (si.Physical(10, si.Dimensions(-1,-1,0,0,0,0,0), 1) 
             * si.Physical(2, si.Dimensions(1,1,0,0,0,0,0), 1)) == 20
-    #assert (10*si.ksf) * (5*si.ft) * (2*si.ft) == 100*si.kip # TODO: Fix this gotcha
-    assert ((10*si.ksf) * ((5*si.ft) * (2*si.ft))).value == \
-            pytest.approx((100*si.kip).value)
+    assert (10*si.ksf) * (5*si.ft) * (2*si.ft) == 100*si.kip # TODO: Fix this gotcha
     assert si.m * si.ft == si.Physical(.3048, si.Dimensions(0,2,0,0,0,0,0), 1.0)
     
 def test___imul__():
@@ -292,7 +312,6 @@ def test___truediv__():
     assert (5*si.kN) / 2 == 2.5*si.kN
     assert (si.kip / (2*si.ft * 5*si.ft)).value == pytest.approx((0.100*si.ksf).value)
 
-    
 def test___rtruediv__():
     assert 2 / si.m == si.Physical(2, si.Dimensions(0,-1,0,0,0,0,0), 1)
     assert 10 / si.N == si.Physical(10, si.Dimensions(-1,-1,2,0,0,0,0), 1)
@@ -337,9 +356,21 @@ def test_fsqrt():
 ## Integration tests
 def test_defined_unit_persistence():
     a = units["E"]
+    x = units["D"]
     b = 1 / a**2
+
+    area = 2.3 * si.ft * 1.2 * si.ft
+    c = a / area
+
+    d = a.in_units('lb')
+    e = 2.8 * si.lb
+    f = 1 / d**2 * e * 10
+    g = 1/ f + x/1e3
+
     assert repr(b) == "25.000 kip⁻²"
     assert b.repr == "Physical(value=1.2634765224402213e-06, dimensions=Dimensions(kg=-2, m=-2, s=4, A=0, cd=0, K=0, mol=0), factor=19786675.538470734, _precision=3)"
+    assert repr(c) == "0.072 ksf"
+    assert repr(g) == "1653.380 lb"
 
-#def test
+
 

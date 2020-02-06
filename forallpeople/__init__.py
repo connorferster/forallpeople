@@ -53,7 +53,7 @@ class Physical(object):
                      "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹", "0": "⁰", 
                      "-": "⁻", ".": "'"}
     _eps = 1e-7
-    _factor_precision = 7
+    _total_precision = 6
 
     __slots__ = ("value", "dimensions", "factor", "_precision")
 
@@ -267,6 +267,7 @@ class Physical(object):
         return (symbol, prefix_bool)
 
     @staticmethod
+    #@functools.lru_cache(maxsize=None) #Not possible to use LRU cache here?
     def _get_units_by_factor(factor: float, dims: Dimensions,
                              units_env: dict, power: Union[int,float]) -> dict:
         """
@@ -276,7 +277,7 @@ class Physical(object):
         equal to 'dims'. Returns an empty dict, otherwise.
         """
         new_factor = factor **(1/power)
-        units_match = units_env.get(round(new_factor, Physical._factor_precision), dict())
+        units_match = units_env.get(round(new_factor, Physical._total_precision), dict())
         try:
             units_name = tuple(units_match.keys())[0]
         except IndexError:
@@ -596,43 +597,43 @@ class Physical(object):
                   
     def __eq__(self, other):
         if isinstance(other,NUMBER):
-            return self.value == other
+            return round(self.value, Physical._total_precision) == other
         elif type(other) == str:
             return False
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
-            return self.value == other.value
+            return round(self.value, Physical._total_precision) == round(other.value, Physical._total_precision)
         else:
             raise ValueError("Can only compare between Physical instances of equal dimension.")
             
     def __gt__(self, other):
         if isinstance(other,NUMBER):
-            return self.value > other
+            return round(self.value, Physical._total_precision) > other
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
-            return self.value > other.value
+            return round(self.value, Physical._total_precision) > round(other.value, Physical._total_precision)
         else:
             raise ValueError("Can only compare between Physical instances of equal dimension.")
             
     def __ge__(self, other):
         if isinstance(other,NUMBER):
-            return self.value >= other
+            return round(self.value, Physical._total_precision) >= other
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
-            return self.value >= other.value
+            return round(self.value, Physical._total_precision) >= round(other.value, Physical._total_precision)
         else:
             raise ValueError("Can only compare between Physical instances of equal dimension.")
             
     def __lt__(self, other):
         if isinstance(other,NUMBER):
-            return self.value < other
+            return round(self.value, Physical._total_precision) < other
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
-            return self.value < other.value
+            return round(self.value, Physical._total_precision) < round(other.value, Physical._total_precision)
         else:
             raise ValueError("Can only compare between Physical instances of equal dimension.")
             
     def __le__(self, other):
         if isinstance(other,NUMBER):
-            return self.value <= other
+            return round(self.value, Physical._total_precision) <= other
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
-            return self.value <= other.value
+            return round(self.value, Physical._total_precision) <= round(other.value, Physical._total_precision)
         else:
             raise ValueError("Can only compare between Physical instances of equal dimension.")
             
@@ -843,7 +844,7 @@ class Environment:
     def __call__(self, env_name: str):
         self.environment = self._load_environment(env_name)
         for name, definition in self.environment.items():
-            factor = round(definition.get("Factor", 1), Physical._factor_precision)
+            factor = round(definition.get("Factor", 1), Physical._total_precision)
             dimension = definition.get("Dimension")
             value = definition.get("Value", 1)
             if factor == 1 and value == 1:
