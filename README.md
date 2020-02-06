@@ -208,7 +208,7 @@ Arithmetic on `Physical` instances work mostly how you would expect, with few ca
   * Instances will divide by each other and their dimensions will combine
   * Instances will divide with numbers and will assume the units of the instance(s) that were also a part of the division
   * If two instances of the same dimension are divided, the result will be a `float` (i.e. the units are completely cancelled out; there is no "dimensionless" `Physical`: either a quantity has units as a `Physical` or it is a number)
-  * e.g. `f = 24.5 * si.m / (2.3 * si.s)`, `g = 
+  * e.g. `5 * si.m / (2 * si.m)` -> `2.5`
 * Floor division:
   * Is intentionally not implemented in `Physical`. This is because it creates ambiguity when working within an environment where units with factors are defined (does floor division return the value of floor division of the SI base unit value or the apparent value after multiplied by it's `.factor`? Either would return results that may be unexpected.)
   * Floor division can be achieved by using true division and calling `int()` on the result, although this returns an `int` and not a `Physical`
@@ -297,7 +297,7 @@ For example, if you wanted to create an environment that defined only kilopascal
   }
 }
 ```
-*  Note, JSON does not allow comments; comments are included in this example for explanation purposes, only. If you copy/paste this example into your JSON environemnt file, be sure to remove the comments.
+* Note, JSON does not allow comments; comments are included in this example for explanation purposes, only. If you copy/paste this example into your JSON environemnt file, be sure to remove the comments.
 * Note also that arithmetical expressions in Factor are eval'd to allow for the most accurate input of factors; to prevent a security risk, Factor is regex'd to ensure that only numbers and arithmetic symbols are in Factor and not any alphabetic characters (see Environment._load_environment in source code to validate).
 
 
