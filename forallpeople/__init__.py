@@ -925,22 +925,22 @@ _the_si_base_units = {
     "mol": Physical(1, Dimensions(0,0,0,0,0,0,1), 1.)}
 globals().update(_the_si_base_units)
     
-def fsqrt(p: Physical) -> Physical:
-    """"
-    Returns the fake square root of 'p'.
-    The fake square root is the square root of the apparent
-    value of a Physical. 
-     e.g. 9 * kN**2 <- apparent_value = 9 kN
-                       actual_value = 9000 N
-                       fsqrt(9*kN) = 3 kN
-                       sqrt(9*kN) = 94.868 N
+#def fsqrt(p: Physical) -> Physical:
+    # """"
+    # Returns the fake square root of 'p'.
+    # The fake square root is the square root of the apparent
+    # value of a Physical. 
+    #  e.g. 9 * kN**2 <- apparent_value = 9 kN
+    #                    actual_value = 9000 N
+    #                    fsqrt(9*kN) = 3 kN
+    #                    sqrt(9*kN) = 94.868 N
                        
-    """
-    if isinstance(p, NUMBER):
-        return (p)**(1/2)
-    elif isinstance(p, Physical):
-        val = float(p)
-        unit_holder = p / val
-        new_value = val**(1/2)
-        return new_value * unit_holder
+    # """
+    # if isinstance(p, NUMBER):
+    #     return (p)**(1/2)
+    # elif isinstance(p, Physical):
+    #     val = float(p)
+    #     unit_holder = p / val
+    #     new_value = val**(1/2)
+    #     return new_value * unit_holder
 
