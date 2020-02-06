@@ -26,8 +26,6 @@ from collections import ChainMap
 
 #TODO: Implement __format__ for formatting results directly
 
-
-
 NUMBER = (int, float)
 
 class Dimensions(NamedTuple):
@@ -55,6 +53,7 @@ class Physical(object):
                      "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹", "0": "⁰", 
                      "-": "⁻", ".": "'"}
     _eps = 1e-7
+    _factor_precision = 7
 
     __slots__ = ("value", "dimensions", "factor", "_precision")
 
@@ -176,12 +175,10 @@ class Physical(object):
 
         # Do the expensive vector math method (call once, only)
         power, dims_orig = Physical._powers_of_derived(dims, env_dims)
-        print("power, dims_orig: ", power, dims_orig)
 
         # Determine if there is a symbol and if it will be prefixed
         symbol, prefix_bool = Physical._evaluate_dims_and_factor(
                                 dims_orig, factor, power, env_fact, env_dims)
-        print("Symbol, prefix_bool: ", symbol, prefix_bool)
 
         # Get the appropriate prefix
         prefix = ""
@@ -210,12 +207,9 @@ class Physical(object):
 
         # Determine the appropriate display value
         value = val * factor
-        if factor and power < 0:
-            value = val * (1 / factor)
+
         if prefix_bool:
             value = Physical._auto_prefix_value(val, power)
-
-
 
         pre_super = ""
         post_super = ""
@@ -232,6 +226,7 @@ class Physical(object):
         if not exponent:
             pre_super = ""
             post_super = ""
+
         return f"{value:.{precision}f}{space}{units}{pre_super}{exponent}{post_super}"
 
 #    def __str__(self):
@@ -245,7 +240,7 @@ class Physical(object):
                                   env_fact: dict,
                                   env_dims: dict) -> tuple:
         """Part of the __str__ and __repr__ process.
-	Returns a tuple containing the
+	    Returns a tuple containing the
         appropriate symbol as a string (if applicable; '' if not) and a
         boolean indicating whether or not the dimension and factor combination
         is elligible for a prefix."""
@@ -253,7 +248,6 @@ class Physical(object):
                                             units_env = env_fact, power = power)
         derived = Physical._get_derived_unit(dims = dims_orig, units_env = env_dims)
         single_dim = Physical._dims_basis_multiple(dims_orig)
-        print('defined: ', defined)
         if defined:
             units_match = defined
             prefix_bool = False
@@ -281,8 +275,8 @@ class Physical(object):
         environment instance and the dimensions stored in the units_dict are
         equal to 'dims'. Returns an empty dict, otherwise.
         """
-        new_factor = factor **(1/abs(power))
-        units_match = units_env.get(new_factor, dict())
+        new_factor = factor **(1/power)
+        units_match = units_env.get(round(new_factor, Physical._factor_precision), dict())
         try:
             units_name = tuple(units_match.keys())[0]
         except IndexError:
@@ -721,13 +715,15 @@ class Physical(object):
                             self.dimensions, 
                             self.factor,
                             self._precision)
+
         elif isinstance(other, Physical):
             new_dims = vec.add(self.dimensions, other.dimensions)
             new_power, new_dims_orig = Physical._powers_of_derived(new_dims, 
-                                                                   environment.units_by_dimension)   
+                                                                   environment.units_by_dimension)
             new_factor = self.factor*other.factor
-            if not self._get_units_by_factor(new_factor, new_dims_orig, 
-                                             environment.units_by_factor, new_power):
+            test_factor = self._get_units_by_factor(new_factor, new_dims_orig, 
+                                             environment.units_by_factor, new_power)
+            if not test_factor:
                   new_factor = 1
             try:
                 new_value = self.value * other.value
@@ -797,15 +793,16 @@ class Physical(object):
         if isinstance(other, NUMBER):
             new_value = other / self.value
             new_dimensions = vec.multiply(self.dimensions, -1)
+            new_factor = self.factor ** -1 # added new_factor
             return Physical(new_value, 
                             new_dimensions, 
-                            self.factor,
+                            new_factor, # updated from self.factor to new_factor
                             self._precision)
         else:
             try:
                 return Physical(other / self.value, 
                                 vec.multiply(self.dimensions, -1), 
-                                self.factor,
+                                self.factor ** -1, #updated to ** -1
                                 self._precision)
             except:
                   raise ValueError(f"Cannot divide between {other} and {self}: "+\
@@ -846,7 +843,7 @@ class Environment:
     def __call__(self, env_name: str):
         self.environment = self._load_environment(env_name)
         for name, definition in self.environment.items():
-            factor = definition.get("Factor", 1)
+            factor = round(definition.get("Factor", 1), Physical._factor_precision)
             dimension = definition.get("Dimension")
             value = definition.get("Value", 1)
             if factor == 1 and value == 1:
@@ -945,3 +942,4 @@ def fsqrt(p: Physical) -> Physical:
         unit_holder = p / val
         new_value = val**(1/2)
         return new_value * unit_holder
+
