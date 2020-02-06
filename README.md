@@ -147,7 +147,17 @@ Almost all methods return a new `Physical` because all instances are **immutable
 
 It is not uncommon for engineering formulas to use formulas whose dimensions seem to magically appear on their own. The kinds of formulae are compatible with `forallpeople` if the "hidden dimensons" are recognized and accounted for by the user.
 
-Example: in the Canadian concrete design code it is recognized that the `sqrt(MPa)` results in units of `MPa` instead of `MPa
+Example: in the Canadian concrete design code it is recognized that the `sqrt(MPa)` results in units of `MPa` instead of `MPa⁰'⁵`. To compensate for this, because `forallpeople` requires units to dimensionally consistent, we have to multiply our result by `1 * MPa⁰'⁵`. 
+
+```python
+>>> import forallpeople as si
+>>> si.environment('structural')
+>>> f_c = 35 * si.MPa
+>>> f_c_sqrt = f_c.sqrt() * (1*si.MPA ** 0.5)
+>>> f_c_sqrt
+5.916 MPa
+```
+
 
 ## Using * imports
 
