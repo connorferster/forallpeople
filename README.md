@@ -2,7 +2,7 @@
 
 The metric system (now SI system):
 *"For all time. For all people."*
-  -- Nicolas de Caritat (Marquis de Condorcet)
+Nicolas de Caritat (Marquis de Condorcet)
 
 `forallpeople` is a robust library for performing units-aware calculations in Python.
 It has a small code base and favours "convention over configuration", although the
