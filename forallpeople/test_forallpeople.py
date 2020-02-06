@@ -71,7 +71,7 @@ def test_get_unit_components_from_dims():
 
 def test__get_unit_string():
     func = si.Physical._get_unit_string
-    assert func([("kg", 1), ("m", 1), ("s", -2)], '') == 'kg⋅m⋅s⁻²'
+    assert func([("kg", 1), ("m", 1), ("s", -2)], '') == 'kg·m·s⁻²'
     assert func([("kg", 1), ("m", 1), ("s", -2)], 'html') == \
            'kg&#8901;m&#8901;s<sup>-2</sup>'
     assert func([("kg", 1), ("m", 1), ("s", -2)], 'latex') == \
@@ -89,13 +89,25 @@ def test_latex():
     assert (2.5*si.kg*si.m**2.5).latex == r"2.500\ \text{kg} \cdot \text{m}^{2.5}"
 
 
-def test_data():
-    assert si.MPa.data == "Physical(value=1000000.0, dimensions=" +\
+def test_repr():
+    assert si.MPa.repr == "Physical(value=1000000.0, dimensions=" +\
                                 "Dimensions(kg=1, m=-1, s=-2, A=0, cd=0, K=0, mol=0), "+\
                                 "factor=1, _precision=3)"
-    assert si.ft.data == 'Physical(value=0.3048, dimensions=' +\
+    assert si.ft.repr == 'Physical(value=0.3048, dimensions=' +\
                                'Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0), ' +\
                                'factor=3.280839895013123, _precision=3)'
+
+def test_html():
+    assert "stub" == False
+
+def test_round():
+    assert "stub" == False
+
+def test_split():
+    assert "stub" == False
+
+def test_sqrt():
+    assert "stub" == False
 
 def test_in_units():
     ft = 1*si.ft
@@ -106,6 +118,16 @@ def test_in_units():
     assert m.in_units("ft").factor == 1/0.3048
     assert kip.in_units("lb").factor == (1000*si.lb).factor
     assert ((10*lb)**2).in_units("kip").factor == (0.1*si.kip*si.kip).factor
+
+def test___repr__template():
+    assert "stub" == False
+
+def test__format_symbol():
+    assert "stub" == False
+
+def test__check_dims_parallel():
+    assert "stub" == False
+
 
 def test__get_derived_unit():
     func = si.Physical._get_derived_unit
@@ -234,7 +256,6 @@ def test___add__():
         si.kg + si.m
         si.N + si.psf
     
-    
 def test___iadd__():
     with pytest.raises(ValueError):
         si.m += 3
@@ -276,9 +297,7 @@ def test___mul__():
     assert 2 * si.ft == si.Physical(0.6096, si.Dimensions(0,1,0,0,0,0,0), 1/0.3048)
     assert (si.Physical(10, si.Dimensions(-1,-1,0,0,0,0,0), 1) 
             * si.Physical(2, si.Dimensions(1,1,0,0,0,0,0), 1)) == 20
-    #assert (10*si.ksf) * (5*si.ft) * (2*si.ft) == 100*si.kip # TODO: Fix this gotcha
-    assert ((10*si.ksf) * ((5*si.ft) * (2*si.ft))).value == \
-            pytest.approx((100*si.kip).value)
+    assert (10*si.ksf) * (5*si.ft) * (2*si.ft) == 100*si.kip # TODO: Fix this gotcha
     assert si.m * si.ft == si.Physical(.3048, si.Dimensions(0,2,0,0,0,0,0), 1.0)
     
 def test___imul__():
@@ -292,10 +311,10 @@ def test___truediv__():
     assert (5*si.kN) / 2 == 2.5*si.kN
     assert (si.kip / (2*si.ft * 5*si.ft)).value == pytest.approx((0.100*si.ksf).value)
 
-    
 def test___rtruediv__():
     assert 2 / si.m == si.Physical(2, si.Dimensions(0,-1,0,0,0,0,0), 1)
     assert 10 / si.N == si.Physical(10, si.Dimensions(-1,-1,2,0,0,0,0), 1)
+    assert 1 / si.kip == si.Physical(value=0.00022480894309971045, dimensions=si.Dimensions(kg=-1, m=-1, s=2, A=0, cd=0, K=0, mol=0), factor=4448.221615260501, _precision=3)
     
 def test___pow__():
     assert si.N**2 == si.Physical(1, si.Dimensions(2,2,-4,0,0,0,0), 1)
@@ -326,6 +345,31 @@ def test_fsqrt():
     assert si.fsqrt(9*si.kPa) == 3*si.kPa
     assert si.fsqrt(9*si.MPa) == 3*si.MPa
 
-## General arithmetic tests ##
-def test_calc_mixed_units():
-    pass
+#units = {"A": 0.05*si.kg,
+#         "B": 3.2e-3*si.m,
+#         "C": 1000*si.ft,
+#         "D": 1e6*si.N,
+#         "E": 0.2*si.kip,
+#         "F": 5*si.N*1e3*si.kip}
+
+## Integration tests
+def test_defined_unit_persistence():
+    a = units["E"]
+    x = units["D"]
+    b = 1 / a**2
+
+    area = 2.3 * si.ft * 1.2 * si.ft
+    c = a / area
+
+    d = a.in_units('lb')
+    e = 2.8 * si.lb
+    f = 1 / d**2 * e * 10
+    g = 1/ f + x/1e3
+
+    assert repr(b) == "25.000 kip⁻²"
+    assert b.repr == "Physical(value=1.2634765224402213e-06, dimensions=Dimensions(kg=-2, m=-2, s=4, A=0, cd=0, K=0, mol=0), factor=19786675.538470734, _precision=3)"
+    assert repr(c) == "0.072 ksf"
+    assert repr(g) == "1653.380 lb"
+
+
+

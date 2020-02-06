@@ -24,8 +24,7 @@ from typing import NamedTuple, Union, Tuple, List, Any, Optional
 import tuplevector as vec
 from collections import ChainMap
 
-#TODO: Ensure that the latex representation of derived units with symbol
-# e.g. kN·m properly replace their dots for latex display.
+#TODO: Implement __format__ for formatting results directly
 
 NUMBER = (int, float)
 
@@ -54,6 +53,7 @@ class Physical(object):
                      "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹", "0": "⁰", 
                      "-": "⁻", ".": "'"}
     _eps = 1e-7
+    _total_precision = 6
 
     __slots__ = ("value", "dimensions", "factor", "_precision")
 
@@ -73,15 +73,15 @@ class Physical(object):
 
     ### API Methods ###
     @property
-    def latex(self):
+    def latex(self) -> str:
         return self._repr_latex_()
 
     @property
-    def html(self):
+    def html(self) -> str:
         return self._repr_html_()
 
     @property
-    def repr(self):
+    def repr(self) -> str:
         """
         Returns a repr that can be used to create another Physical instance.
         """
@@ -97,6 +97,27 @@ class Physical(object):
         the number of decimal places displayed in repr and str.
         """
         return Physical(self.value, self.dimensions, self.factor, n)
+
+    def split(self, base_value: bool = True) -> tuple:
+        """
+        Returns a tuple separating the value of `self` with the units of `self`.
+        If base_value is True, then the value will be the value in base units. If False, then
+        the apparent value of `self` will be used.
+
+        This method is to allow flexibility in working with Physical instances when working 
+        with numerically optimized libraries such as numpy which cannot accept non-numerical 
+        objects in some of their operations (such as in matrix inversion).
+        """
+        if base_value:
+            return (self.value, Physical(1,self.dimensions, self.factor, self._precision))
+        return (float(self), Physical(1,self.dimensions, self.factor, self._precision))
+
+    def sqrt(self, n: float = 2.0):
+        """
+        Returns a Physical instance that represents the square root of `self`.
+        `n` can be set to an alternate number to compute an alternate root (e.g. 3.0 for cube root)
+        """
+        return self ** (1 / n)
 
     def in_units(self, unit_name=""):
         """
@@ -186,6 +207,7 @@ class Physical(object):
 
         # Determine the appropriate display value
         value = val * factor
+
         if prefix_bool:
             value = Physical._auto_prefix_value(val, power)
 
@@ -204,6 +226,7 @@ class Physical(object):
         if not exponent:
             pre_super = ""
             post_super = ""
+
         return f"{value:.{precision}f}{space}{units}{pre_super}{exponent}{post_super}"
 
 #    def __str__(self):
@@ -217,7 +240,7 @@ class Physical(object):
                                   env_fact: dict,
                                   env_dims: dict) -> tuple:
         """Part of the __str__ and __repr__ process.
-	Returns a tuple containing the
+	    Returns a tuple containing the
         appropriate symbol as a string (if applicable; '' if not) and a
         boolean indicating whether or not the dimension and factor combination
         is elligible for a prefix."""
@@ -225,7 +248,6 @@ class Physical(object):
                                             units_env = env_fact, power = power)
         derived = Physical._get_derived_unit(dims = dims_orig, units_env = env_dims)
         single_dim = Physical._dims_basis_multiple(dims_orig)
-
         if defined:
             units_match = defined
             prefix_bool = False
@@ -245,6 +267,7 @@ class Physical(object):
         return (symbol, prefix_bool)
 
     @staticmethod
+    #@functools.lru_cache(maxsize=None) #Not possible to use LRU cache here?
     def _get_units_by_factor(factor: float, dims: Dimensions,
                              units_env: dict, power: Union[int,float]) -> dict:
         """
@@ -254,7 +277,7 @@ class Physical(object):
         equal to 'dims'. Returns an empty dict, otherwise.
         """
         new_factor = factor **(1/power)
-        units_match = units_env.get(new_factor, dict())
+        units_match = units_env.get(round(new_factor, Physical._total_precision), dict())
         try:
             units_name = tuple(units_match.keys())[0]
         except IndexError:
@@ -284,7 +307,7 @@ class Physical(object):
         function it was called by. If 'repr_format' is not given, then terminal
         output is assumed.
         """
-        dot_operator = "·" # new · # old ⋅
+        dot_operator = "·" # new: · , # old: ⋅
         pre_super = ""
         post_super = ""
         pre_symbol = ""
@@ -341,7 +364,7 @@ class Physical(object):
         #    return symbol
         symbol_string_open = ""
         symbol_string_close = ""
-        dot_operator = "⋅"
+        dot_operator = "·"
         ohm = "Ω"
         if repr_format == "html":
             dot_operator = "&#8901;"
@@ -352,7 +375,7 @@ class Physical(object):
             symbol_string_open = "\\text{"
             symbol_string_close = "}"
 
-        symbol = symbol.replace("⋅", symbol_string_close+dot_operator+symbol_string_open)\
+        symbol = symbol.replace("·", symbol_string_close+dot_operator+symbol_string_open)\
                        .replace("*", symbol_string_close+dot_operator+symbol_string_open)\
                        .replace("Ω", ohm)  
         formatted_symbol = f"{symbol_string_open}{prefix}{symbol}{symbol_string_close}"
@@ -399,7 +422,8 @@ class Physical(object):
         e.g. a force would have dimensions = [1,1,-2,0,0,0,0] so a Physical object
         that had dimensions = [2,2,-4,0,0,0,0] would really be a force to the power of 
         2.
-        The function returns the 2.
+        This function returns the 2, stating that `dims` is the second power of a
+        derived dimension in `units_env`.
         """
         quotient_1 = Physical._dims_quotient(dims, units_env)
         quotient_2 = Physical._dims_basis_multiple(dims)
@@ -419,7 +443,7 @@ class Physical(object):
     def _dims_quotient(dimensions: Dimensions, 
                        units_env: dict) -> Optional[Dimensions]:
         """
-        Returns a Dimensions object representing the element-wise quotient betwe
+        Returns a Dimensions object representing the element-wise quotient between
         'dimensions' and a defined unit if 'dimensions' is a scalar multiple
         of a defined unit in the global environment variable.
         Returns None otherwise.
@@ -445,9 +469,15 @@ class Physical(object):
     @staticmethod
     def _dims_basis_multiple(dims: Dimensions) -> Optional[Dimensions]:
         """
-        Returns a Dimensions object if 'dimensions' is a scalar multiple of one of the basis
-        vectors (e.g. [3,0,0,0,0,0,0] is a scalar multiple of [1,0,0,0,0,0,0]).
+        Returns `dims` if `dims` is a scalar multiple of one of the basis vectors. 
         Returns None, otherwise.
+        This is used as a check to see if `dims` contains only a single dimension,
+        even if that single dimension is to a higher power.
+        e.g. 
+        if `dims` equals Dimensions(2, 0, 0, 0, 0, 0, 0) then `dims` will be
+        returned.
+        if `dims` equals Dimensions(0, 1, 1, 0, 0, 0, 0) then None will be returned.
+        if `dims` equals Dimensions(0, 14, 0, 0, 0, 0, 0) then `dims` will be returned.
         """
         count = 0
         for dim in dims:
@@ -467,13 +497,13 @@ class Physical(object):
         prefixes = Physical._prefixes
         if abs(value) >= 1:
             for prefix, power_of_ten in prefixes.items():
-                if abs(value) >= power_of_ten ** power:                    
+                if abs(value) >= power_of_ten ** abs(power):                    
                     return prefix
         else:
             reverse_prefixes = sorted(prefixes.items(), key = lambda prefix: prefix[0])
             previous_prefix = reverse_prefixes[0][0] # Gets the smallest prefix to start
             for prefix, power_of_ten in reversed(list(prefixes.items())):
-                if abs(value) < power_of_ten ** power:
+                if abs(value) < power_of_ten ** abs(power):
                     return previous_prefix
                 else:                     
                     previous_prefix = prefix
@@ -489,13 +519,13 @@ class Physical(object):
         prefixes = Physical._prefixes
         if abs(value) >= 1:
             for prefix, power_of_ten in prefixes.items():
-                if abs(value) >= (power_of_ten/1000) ** power:                    
+                if abs(value) >= (power_of_ten/1000) ** abs(power):                    
                     return prefix
         else:
             reverse_prefixes = sorted(prefixes.items(), key = lambda prefix: prefix[0])
             previous_prefix = reverse_prefixes[0][0] # Gets the smallest prefix to start
             for prefix, power_of_ten in reversed(list(prefixes.items())):
-                if abs(value) < (power_of_ten/1000) ** power:
+                if abs(value) < (power_of_ten/1000) ** abs(power):
                     return previous_prefix
                 else:                     
                     previous_prefix = prefix
@@ -510,19 +540,21 @@ class Physical(object):
         prefixes = Physical._prefixes
         if abs(value) >= 1:
             for prefix, power_of_ten in prefixes.items():
-                if abs(value) >= power_of_ten ** power:
+                if abs(value) >= power_of_ten ** abs(power): 
                     return value / (power_of_ten ** power)
         else:
             reverse_prefixes = sorted(prefixes.items(), key = lambda pre_fact: pre_fact[1])
             previous_power_of_ten = reverse_prefixes[0][1] # Gets the smallest factor to start
             for prefix, power_of_ten in reversed(list(prefixes.items())):
-                if abs(value) < power_of_ten ** power:
-                    return value / (previous_power_of_ten ** power)
+                if abs(value) < power_of_ten ** abs(power): 
+                    return value / (previous_power_of_ten ** abs(power))
                 else:                     
                     previous_power_of_ten = power_of_ten
                     
     ### "Magic" Methods ###
                   
+
+
     def __float__(self): 
         value = self.value
         dims = self.dimensions
@@ -534,10 +566,26 @@ class Physical(object):
         else:
             float_value = Physical._auto_prefix_value(value, power)
         return float(float_value)
-                  
+
     def __int__(self): 
         return int(float(self))
-                  
+
+    def __neg__(self):
+        return self * -1
+
+    def __abs__(self):
+        if self.value < 0:
+            return self * -1
+        return self
+
+    def __bool__(self):
+        return True
+
+    # def __format__(self, fmt_spec = ''): # format for a custom vector2d class; how to implement on top of _repr_template_?
+    #     components = (format(c, fmt_spec) for c in self)
+    #     return '({}, {})'.format(*components)
+
+
     def __hash__(self):
         return hash((self.value, self.dimensions, self.factor))
                   
@@ -549,43 +597,43 @@ class Physical(object):
                   
     def __eq__(self, other):
         if isinstance(other,NUMBER):
-            return self.value == other
+            return round(self.value, Physical._total_precision) == other
         elif type(other) == str:
             return False
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
-            return self.value == other.value
+            return round(self.value, Physical._total_precision) == round(other.value, Physical._total_precision)
         else:
             raise ValueError("Can only compare between Physical instances of equal dimension.")
             
     def __gt__(self, other):
         if isinstance(other,NUMBER):
-            return self.value > other
+            return round(self.value, Physical._total_precision) > other
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
-            return self.value > other.value
+            return round(self.value, Physical._total_precision) > round(other.value, Physical._total_precision)
         else:
             raise ValueError("Can only compare between Physical instances of equal dimension.")
             
     def __ge__(self, other):
         if isinstance(other,NUMBER):
-            return self.value >= other
+            return round(self.value, Physical._total_precision) >= other
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
-            return self.value >= other.value
+            return round(self.value, Physical._total_precision) >= round(other.value, Physical._total_precision)
         else:
             raise ValueError("Can only compare between Physical instances of equal dimension.")
             
     def __lt__(self, other):
         if isinstance(other,NUMBER):
-            return self.value < other
+            return round(self.value, Physical._total_precision) < other
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
-            return self.value < other.value
+            return round(self.value, Physical._total_precision) < round(other.value, Physical._total_precision)
         else:
             raise ValueError("Can only compare between Physical instances of equal dimension.")
             
     def __le__(self, other):
         if isinstance(other,NUMBER):
-            return self.value <= other
+            return round(self.value, Physical._total_precision) <= other
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
-            return self.value <= other.value
+            return round(self.value, Physical._total_precision) <= round(other.value, Physical._total_precision)
         else:
             raise ValueError("Can only compare between Physical instances of equal dimension.")
             
@@ -668,13 +716,15 @@ class Physical(object):
                             self.dimensions, 
                             self.factor,
                             self._precision)
+
         elif isinstance(other, Physical):
             new_dims = vec.add(self.dimensions, other.dimensions)
             new_power, new_dims_orig = Physical._powers_of_derived(new_dims, 
-                                                                   environment.units_by_dimension)   
+                                                                   environment.units_by_dimension)
             new_factor = self.factor*other.factor
-            if not self._get_units_by_factor(new_factor, new_dims_orig, 
-                                             environment.units_by_factor, new_power):
+            test_factor = self._get_units_by_factor(new_factor, new_dims_orig, 
+                                             environment.units_by_factor, new_power)
+            if not test_factor:
                   new_factor = 1
             try:
                 new_value = self.value * other.value
@@ -744,15 +794,16 @@ class Physical(object):
         if isinstance(other, NUMBER):
             new_value = other / self.value
             new_dimensions = vec.multiply(self.dimensions, -1)
+            new_factor = self.factor ** -1 # added new_factor
             return Physical(new_value, 
                             new_dimensions, 
-                            self.factor,
+                            new_factor, # updated from self.factor to new_factor
                             self._precision)
         else:
             try:
                 return Physical(other / self.value, 
                                 vec.multiply(self.dimensions, -1), 
-                                self.factor,
+                                self.factor ** -1, #updated to ** -1
                                 self._precision)
             except:
                   raise ValueError(f"Cannot divide between {other} and {self}: "+\
@@ -775,10 +826,7 @@ class Physical(object):
             raise ValueError("Cannot raise a Physical to the power of \
                                      another Physical -> ({self}**{other})".format(self,other))
             
-    def __abs__(self):
-        if self.value < 0:
-            return self * -1
-        return self
+
     
 class Environment:
     """
@@ -796,7 +844,7 @@ class Environment:
     def __call__(self, env_name: str):
         self.environment = self._load_environment(env_name)
         for name, definition in self.environment.items():
-            factor = definition.get("Factor", 1)
+            factor = round(definition.get("Factor", 1), Physical._total_precision)
             dimension = definition.get("Dimension")
             value = definition.get("Value", 1)
             if factor == 1 and value == 1:
@@ -895,3 +943,4 @@ def fsqrt(p: Physical) -> Physical:
         unit_holder = p / val
         new_value = val**(1/2)
         return new_value * unit_holder
+
