@@ -88,7 +88,7 @@ It is important to note that, no matter what environment is loaded or not loaded
 >>> 'Physical(value=208.33333333333334, dimensions=Dimensions(kg=1, m=-1, s=-2, A=0, cd=0, K=0, mol=0), factor=1, _precision=3)'
 ```
 
-Additionally, when you load an environment, the units defined in the environment will be instantiated  as `Physical`s and you can utilize them as variables in calculations.
+Additionally, when you load an environment, the units defined in the environment will be instantiated  as `Physical` and you can utilize them as variables in calculations.
 
 The `'default'` environment defines and loads the following units as variables:
 
