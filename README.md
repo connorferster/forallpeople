@@ -199,16 +199,16 @@ Arithmetic on `Physical` instances work mostly how you would expect, with few ca
 * Addition/Subtraction: 
   * Two (or more) instances will add/sub if dimensions are equal
   * One instance and one (or more) number(s) (`float`, `int`) will add/sub and assume the units of the instance
-  * e.g. `a = 5*si.m + 2*si.m`,  `b = 5*si.kg + 10`
+  * e.g. `a = 5*si.m + 2*si.m` ,  `b = 5*si.kg + 10`
 * Multiplication:
   * Instances will multiply with each other and their dimensions will combine
   * Instances will multiply with numbers and will assume the units of instance(s) that were also a part of the multiplication
-  * e.g. `c = 12 *si.m * 2*si.kg * si.s`, `d = 4.5*si.m * 2.3`
+  * e.g. `c = 12 *si.m * 2*si.kg * si.s` , `d = 4.5*si.m * 2.3`
 * Division (true division):
   * Instances will divide by each other and their dimensions will combine
   * Instances will divide with numbers and will assume the units of the instance(s) that were also a part of the division
   * If two instances of the same dimension are divided, the result will be a `float` (i.e. the units are completely cancelled out; there is no "dimensionless" `Physical`: either a quantity has units as a `Physical` or it is a number)
-  * e.g. `5 * si.m / (2 * si.m)` -> `2.5`
+  * e.g. `5 * si.m / (2 * si.m)` -> `2.5`
 * Floor division:
   * Is intentionally not implemented in `Physical`. This is because it creates ambiguity when working within an environment where units with factors are defined (does floor division return the value of floor division of the SI base unit value or the apparent value after multiplied by it's `.factor`? Either would return results that may be unexpected.)
   * Floor division can be achieved by using true division and calling `int()` on the result, although this returns an `int` and not a `Physical`
@@ -257,7 +257,6 @@ When the auto-prefixing is triggered for a unit and that unit is of a power othe
 5.000 km
 >>> a**2
 25.000 km² # This may seem intuitive but it's important to remember that the 'kilo' prefix is also being squared
-
 >>> b = 500000 * si.m 
 >>> b
 500.000 km
@@ -269,34 +268,24 @@ When the auto-prefixing is triggered for a unit and that unit is of a power othe
 
 An environment is simply a JSON document stored within the package folder in the following format:
 
-```
-{
-  "Name": {
-    "Dimension": [0,0,0,0,0,0,0], # The dimensions of your physical quantity listed in order of kg, m, s, A, cd, K, mol
-    "Value": 1, # Optional (assumes 1/Factor if omitted), the initial value of your physical quantity
-    "Factor": 1, # Optional (assumes 1 if omitted), the factor to multiply your value by to give you your apparent value
-    "Symbol": "" # Optional (assumes "Name" if omitted), if your unit has a special symbol, this is where you put it
-  }
-}
-```
+    "Name": {
+        "Dimension": [0,0,0,0,0,0,0],
+        "Value": 1,
+        "Factor": 1,
+        "Symbol": ""}
+
 
 For example, if you wanted to create an environment that defined only kilopascals and pounds-force in US customary units, you would do it like this:
 
-```
-{
-  "kPa": {
-    "Dimension": [1,-1,-2,0,0,0,0], # kg = 1, m = -1, s = -2, A = 0, cd = 0, K = 0, mol = 0
-    "Value": 1000, # A kilopascal is 1000 pascals
-    # "Symbol" and "Factor" are omitted; the symbol will therefore be "kPA" and the factor will be 1 because we are in the SI units system
-  },
-  "lb-f": {
-    "Dimension": [1, 1, -2, 0, 0, 0, 0], # kg = 1, m = 1, s = -2, A = 0, K = 0, mol = 0
-    "Factor": "1/0.45359237/9.80665", # Arithmetical expressions in Factor will be evaluated
-    "Symbol": "lb"}, # In this example, we just want 'lb' display instead of 'lb-f'
-    # Value is omitted so it will be taken as 1 / Factor
-  }
-}
-```
+    "kPa": {
+        "Dimension": [1,-1,-2,0,0,0,0],
+        "Value": 1000},
+    "lb-f": {
+        "Dimension": [1, 1, -2, 0, 0, 0, 0],
+        "Factor": "1/0.45359237/9.80665",
+        "Symbol": "lb"}
+
+
 * Note, JSON does not allow comments; comments are included in this example for explanation purposes, only. If you copy/paste this example into your JSON environemnt file, be sure to remove the comments.
 * Note also that arithmetical expressions in Factor are eval'd to allow for the most accurate input of factors; to prevent a security risk, Factor is regex'd to ensure that only numbers and arithmetic symbols are in Factor and not any alphabetic characters (see Environment._load_environment in source code to validate).
 
@@ -317,23 +306,29 @@ For example, if you wanted to create an environment that defined only kilopascal
 >>> m1 = np.matrix([[a, b], [b, a]])
 >>> m2 = np.matrix([[c, d], [d, c]])
 >>> m1
-matrix([[5.000 kN, 3.500 kN],
-        [3.500 kN, 5.000 kN]], dtype=object)
+matrix([
+[5.000 kN, 3.500 kN],
+[3.500 kN, 5.000 kN]], dtype=object)
 >>> m2
-matrix([[7.700 kN, 6.600 kN],
-        [6.600 kN, 7.700 kN]], dtype=object)
+matrix([
+[7.700 kN, 6.600 kN],
+[6.600 kN, 7.700 kN]], dtype=object)
 >>> m1 + m2
-matrix([[12.700 kN, 10.100 kN],
-        [10.100 kN, 12.700 kN]], dtype=object)
+matrix([
+[12.700 kN, 10.100 kN],
+[10.100 kN, 12.700 kN]], dtype=object)
 >>> m1 @ m2
-matrix([[61.600 kN², 59.950 kN²],
-        [59.950 kN², 61.600 kN²]], dtype=object)
+matrix([
+[61.600 kN², 59.950 kN²],
+[59.950 kN², 61.600 kN²]], dtype=object)
 >>> m2 - m1
-matrix([[2.700 kN, 3.100 kN],
-        [3.100 kN, 2.700 kN]], dtype=object)
+matrix([
+[2.700 kN, 3.100 kN],
+[3.100 kN, 2.700 kN]], dtype=object)
 >>> m1 / m2
-matrix([[0.6493506493506493, 0.5303030303030303],
-        [0.5303030303030303, 0.6493506493506493]], dtype=object)
+matrix([
+[0.6493506493506493, 0.5303030303030303],
+[0.5303030303030303, 0.6493506493506493]], dtype=object)
 ```
  
 
