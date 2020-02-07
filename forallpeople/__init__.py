@@ -21,7 +21,7 @@ import functools
 import json
 import re
 from typing import NamedTuple, Union, Tuple, List, Any, Optional
-import tuplevector as vec
+import forallpeople.tuplevector as vec
 from collections import ChainMap
 
 #TODO: Implement __format__ for formatting results directly
