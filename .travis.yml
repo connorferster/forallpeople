@@ -1,3 +1,4 @@
 language: python
 rvm:
  - 3.6
+script: pytest
