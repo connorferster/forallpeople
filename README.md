@@ -132,7 +132,7 @@ Each `Physical` instance offers the following methods and properties:
 * `.factor`: A `float` that represents a factor that the value should be multiplied by to linearly scale the quantity into an alternate unit system (e.g. US customary units or UK imperial) that is defined in SI units.
 * `.latex`: A `str` that represents the pretty printed `repr()` of the quanity in latex code.
 * `.html`: A `str` that represents the pretty printed `repr()` of the quantity in HTML code.
-* `.repr`: A `str` that represents the traditional machine readable `repr()` of the quantity: `Physical` instances default to a pretty printed `__repr__()` instead of a machine readable `__repr__()` because it makes them more compatible with other libraries (e.g. `numpy`, `pandas`, handcalcs[https://github.com/connorferster/handcalcs], and `jupyter`).
+* `.repr`: A `str` that represents the traditional machine readable `repr()` of the quantity: `Physical` instances default to a pretty printed `__repr__()` instead of a machine readable `__repr__()` because it makes them more compatible with other libraries (e.g. `numpy`, `pandas`, [handcalcs](https://github.com/connorferster/handcalcs), and `jupyter`).
 
 ### Methods
 
@@ -161,7 +161,7 @@ Example: in the Canadian concrete design code it is recognized that the `sqrt(MP
 
 ## Using * imports
 
-Forallpeople was designed to be used with `import *` for ease of use and to reduce re-typing, i.e. `si.m` becomes simply `m`. This also makes `forallpeople` more compatible with computational reporting packages such as handcalcs[https://github.com/connorferster/handcalcs]. 
+Forallpeople was designed to be used with `import *` for ease of use and to reduce re-typing, i.e. `si.m` becomes simply `m`. This also makes `forallpeople` more compatible with computational reporting packages such as [handcalcs](https://github.com/connorferster/handcalcs). 
 
 If one wishes to use `from forallpeople import *` with environments, it requires an additional step:
 
@@ -190,7 +190,7 @@ Because `Physical` instances are immutable (just like `int`, `float`, and `bool`
 
 ### Dimension vectors
 
-`Physical` instances track the dimensions of their physical quantities by using vectors. The vector is stored in the `Dimensions` class, which is a `NamedTuple`. Using the vector library, tuplevector[https://github.com/connorferster/tuplevector] (which is "baked in" to `forallpeople`), we can perform vector arithmetic on `Dimensions` objects directly. 
+`Physical` instances track the dimensions of their physical quantities by using vectors. The vector is stored in the `Dimensions` class, which is a `NamedTuple`. Using the vector library, [tuplevector](https://github.com/connorferster/tuplevector) (which is "baked in" to `forallpeople`), we can perform vector arithmetic on `Dimensions` objects directly. 
 
 ### Arithmetic on Physicals
 
