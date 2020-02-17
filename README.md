@@ -16,7 +16,7 @@ fussing with managing units and dimensions.
 
 ## Teaser in Jupyter
 
-<img src = "https://github.com/connorferster/forallpeople/blob/master/Jupyter.PNG">
+<img src = "https://github.com/connorferster/forallpeople/blob/master/Jupyter_example.PNG">
 
 
 ## Installing
@@ -132,7 +132,7 @@ Each `Physical` instance offers the following methods and properties:
 * `.factor`: A `float` that represents a factor that the value should be multiplied by to linearly scale the quantity into an alternate unit system (e.g. US customary units or UK imperial) that is defined in SI units.
 * `.latex`: A `str` that represents the pretty printed `repr()` of the quanity in latex code.
 * `.html`: A `str` that represents the pretty printed `repr()` of the quantity in HTML code.
-* `.repr`: A `str` that represents the traditional machine readable `repr()` of the quantity: `Physical` instances default to a pretty printed `__repr__()` instead of a machine readable `__repr__()` because it makes them more compatible with other libraries (e.g. `numpy`, `pandas`, `handcalcs`, and `jupyter`).
+* `.repr`: A `str` that represents the traditional machine readable `repr()` of the quantity: `Physical` instances default to a pretty printed `__repr__()` instead of a machine readable `__repr__()` because it makes them more compatible with other libraries (e.g. `numpy`, `pandas`, handcalcs[https://github.com/connorferster/handcalcs], and `jupyter`).
 
 ### Methods
 
@@ -145,7 +145,7 @@ Almost all methods return a new `Physical` because all instances are **immutable
 
 ## Calculations with "empirical" formulas (dimensionally inconsistent formulas)
 
-It is not uncommon for engineering formulas to use formulas whose dimensions seem to magically appear on their own. The kinds of formulae are compatible with `forallpeople` if the "hidden dimensons" are recognized and accounted for by the user.
+It is not uncommon for engineering formulas to use formulas whose dimensions seem to magically appear on their own. The kinds of formulae are compatible with `forallpeople` if the "hidden dimensions" are recognized and accounted for by the user.
 
 Example: in the Canadian concrete design code it is recognized that the `sqrt(MPa)` results in units of `MPa` instead of `MPa⁰'⁵`. To compensate for this, because `forallpeople` requires units to dimensionally consistent, we have to multiply our result by `1 * MPa⁰'⁵`. 
 
@@ -161,7 +161,7 @@ Example: in the Canadian concrete design code it is recognized that the `sqrt(MP
 
 ## Using * imports
 
-Forallpeople was designed to be used with `import *` for ease of use and to reduce re-typing, i.e. `si.m` becomes simply `m`. This also makes `forallpeople` more compatible with computational reporting packages such as `handcalcs`. 
+Forallpeople was designed to be used with `import *` for ease of use and to reduce re-typing, i.e. `si.m` becomes simply `m`. This also makes `forallpeople` more compatible with computational reporting packages such as handcalcs[https://github.com/connorferster/handcalcs]. 
 
 If one wishes to use `from forallpeople import *` with environments, it requires an additional step:
 
@@ -186,11 +186,11 @@ However, using `import *` can also quickly clutter up one's namespace, especiall
 * `<instance>.factor` = a `float` that can be used to define a physical quantity in an alternate unit system that is linearly based upon the SI units (e.g. US customary units, imperial, etc.)
 * `<instance>._precision` = an `int` that describes the number of decimal places to display when the `Physical` instance is rendered through `.__repr__()`, default value is `3`.
 
-Because `Physical` instances are immutable (just like `int`, `float`, and `bool`), the user cannot set these attributes directly. It also means that any operation operating on a `Physical` instance returns a new instance.As such, the intended way of creating new instances is as the result of calculations.
+Because `Physical` instances are immutable (just like `int`, `float`, and `bool`), the user cannot set these attributes directly. It also means that any operation operating on a `Physical` instance returns a new instance. As such, the intended way of creating new instances is as the result of calculations.
 
 ### Dimension vectors
 
-`Physical` instances track the dimensions of their physical quantities by using vectors. The vector is stored in the `Dimensions` class, which is a `NamedTuple`. Using the vector library, `tuplevector` (which is "baked in" to `forallpeople`), we can perform vector arithmetic on `Dimensions` objects directly. 
+`Physical` instances track the dimensions of their physical quantities by using vectors. The vector is stored in the `Dimensions` class, which is a `NamedTuple`. Using the vector library, tuplevector[https://github.com/connorferster/tuplevector] (which is "baked in" to `forallpeople`), we can perform vector arithmetic on `Dimensions` objects directly. 
 
 ### Arithmetic on Physicals
 
