@@ -92,10 +92,10 @@ def test_latex():
 def test_repr():
     assert si.MPa.repr == "Physical(value=1000000.0, dimensions=" +\
                                 "Dimensions(kg=1, m=-1, s=-2, A=0, cd=0, K=0, mol=0), "+\
-                                "factor=1, _precision=3)"
+                                "factor=1, precision=3, _prefixed=)"
     assert si.ft.repr == 'Physical(value=0.3048, dimensions=' +\
                                'Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0), ' +\
-                               'factor=3.280839895013123, _precision=3)'
+                               'factor=3.280839895013123, _precision=3, _prefixed=)'
 
 def test_html():
     assert "stub" == False
@@ -341,10 +341,9 @@ def test___float__():
     
 ## Tests of supplementary math functions ##
 
-def test_fsqrt():
-    assert si.fsqrt(9*si.kPa) == 3*si.kPa
-    assert si.fsqrt(9*si.MPa) == 3*si.MPa
-
+def test_sqrt():
+    assert (9*si.kPa).sqrt() == 3*si.kPa**0.5
+    assert (9*si.MPa).sqrt() == 3*si.MPa**0.5
 #units = {"A": 0.05*si.kg,
 #         "B": 3.2e-3*si.m,
 #         "C": 1000*si.ft,
