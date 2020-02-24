@@ -147,7 +147,7 @@ class Physical(object):
         Returns a new Physical with a new precision, 'n'. Precision controls
         the number of decimal places displayed in repr and str.
         """
-        return Physical(self.value, self.dimensions, self.factor, n)
+        return Physical(self.value, self.dimensions, self.factor, n, self._prefixed)
 
     def split(self, base_value: bool = True) -> tuple:
         """
@@ -161,8 +161,8 @@ class Physical(object):
         """
         if base_value:
             return (
-                self.value,
-                Physical(1, self.dimensions, self.factor, self.precision),
+                self.value * self.factor,
+                Physical(1 / self.factor, self.dimensions, self.factor, self.precision),
             )
         return (float(self), Physical(1, self.dimensions, self.factor, self.precision))
 
@@ -239,14 +239,14 @@ class Physical(object):
         symbol, prefix_bool = Physical._evaluate_dims_and_factor(
             dims_orig, factor, power, env_fact, env_dims
         )
-
+        print(dims_orig, prefix_bool)
         # Get the appropriate prefix
-        if prefix_bool and dims_orig == Dimensions(1, 0, 0, 0, 0, 0, 0):
-            prefix = Physical._auto_prefix_kg(val, power)
-        elif prefix_bool and prefixed:
+        if prefix_bool and prefixed:
             prefix = prefixed
+        elif prefix_bool and dims_orig == Dimensions(1, 0, 0, 0, 0, 0, 0):
+            prefix = Physical._auto_prefix(val, power, kg=True)
         elif prefix_bool:
-            prefix = Physical._auto_prefix(val, power)
+            prefix = Physical._auto_prefix(val, power, kg=False)
 
         # Format the exponent (may not be used, though)
         exponent = Physical._format_exponent(power, repr_format=template, eps=eps)
@@ -272,7 +272,10 @@ class Physical(object):
         if prefix_bool:
             # If the quantity has a "pre-fixed" prefix, it will override
             # the value generated in _auto_prefix_value
-            value = Physical._auto_prefix_value(val, power, prefixed)
+            if dims_orig == Dimensions(1, 0, 0, 0, 0, 0, 0):
+                value = Physical._auto_prefix_value(val, power, prefixed, kg=True)
+            else:
+                value = Physical._auto_prefix_value(val, power, prefixed)
 
         pre_super = ""
         post_super = ""
@@ -561,22 +564,27 @@ class Physical(object):
         return dims
 
     @staticmethod
-    def _auto_prefix(value: float, power: Union[int, float]) -> str:
+    def _auto_prefix(value: float, power: Union[int, float], kg: bool = False) -> str:
         """
         Returns a string "prefix" of an appropriate value if self.value should be prefixed
         i.e. it is a big enough number (e.g. 5342 >= 1000; returns "k" for "kilo")
         """
+        kg_factor = 1
+        if kg:
+            kg_factor = 1000
+        print(kg_factor)
         prefixes = Physical._prefixes
         if abs(value) >= 1:
             for prefix, power_of_ten in prefixes.items():
-                if abs(value) >= power_of_ten ** abs(power):
+                print(prefix, power_of_ten, power_of_ten / kg_factor)
+                if abs(value) >= (power_of_ten / kg_factor) ** abs(power):
                     return prefix
         else:
             reverse_prefixes = sorted(prefixes.items(), key=lambda prefix: prefix[0])
             # Get the smallest prefix to start...
             previous_prefix = reverse_prefixes[0][0]
             for prefix, power_of_ten in reversed(list(prefixes.items())):
-                if abs(value) < power_of_ten ** abs(power):
+                if abs(value) < (power_of_ten / kg_factor) ** abs(power):
                     return previous_prefix
                 else:
                     previous_prefix = prefix
@@ -605,19 +613,22 @@ class Physical(object):
 
     @staticmethod
     def _auto_prefix_value(
-        value: float, power: Union[int, float], prefixed: str = ""
+        value: float, power: Union[int, float], prefixed: str = "", kg: bool = False,
     ) -> float:
         """
         Converts the value to a prefixed value if the instance has a symbol defined in
         the environment (i.e. is in the defined units dict)
         """
+        kg_factor = 1
+        if kg:
+            kg_factor = 1000
         prefixes = Physical._prefixes
         if prefixed:
-            return value / (prefixes[prefixed] ** power)
+            return value / ((prefixes[prefixed] / kg_factor) ** power)
         if abs(value) >= 1:
             for prefix, power_of_ten in prefixes.items():
-                if abs(value) >= power_of_ten ** abs(power):
-                    return value / (power_of_ten ** power)
+                if abs(value) >= (power_of_ten / kg_factor) ** abs(power):
+                    return value / ((power_of_ten / kg_factor) ** power)
         else:
             reverse_prefixes = sorted(
                 prefixes.items(), key=lambda pre_fact: pre_fact[1]
@@ -625,8 +636,9 @@ class Physical(object):
             # Get the smallest factor to start...
             previous_power_of_ten = reverse_prefixes[0][1]
             for prefix, power_of_ten in reversed(list(prefixes.items())):
-                if abs(value) < power_of_ten ** abs(power):
-                    return value / (previous_power_of_ten ** abs(power))
+                if abs(value) < (power_of_ten / kg_factor) ** abs(power):
+                    print(value / (previous_power_of_ten ** abs(power)))
+                    return value / ((previous_power_of_ten / kg_factor) ** abs(power))
                 else:
                     previous_power_of_ten = power_of_ten
 
@@ -823,7 +835,11 @@ class Physical(object):
             try:
                 other = other / self.factor
                 return Physical(
-                    other - self.value, self.dimensions, self.factor, self.precision
+                    other - self.value,
+                    self.dimensions,
+                    self.factor,
+                    self.precision,
+                    self._prefixed,
                 )
             except:
                 raise ValueError(
