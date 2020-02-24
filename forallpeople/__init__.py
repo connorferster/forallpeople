@@ -239,7 +239,6 @@ class Physical(object):
         symbol, prefix_bool = Physical._evaluate_dims_and_factor(
             dims_orig, factor, power, env_fact, env_dims
         )
-        print(dims_orig, prefix_bool)
         # Get the appropriate prefix
         if prefix_bool and prefixed:
             prefix = prefixed
@@ -572,11 +571,9 @@ class Physical(object):
         kg_factor = 1
         if kg:
             kg_factor = 1000
-        print(kg_factor)
         prefixes = Physical._prefixes
         if abs(value) >= 1:
             for prefix, power_of_ten in prefixes.items():
-                print(prefix, power_of_ten, power_of_ten / kg_factor)
                 if abs(value) >= (power_of_ten / kg_factor) ** abs(power):
                     return prefix
         else:
@@ -637,7 +634,6 @@ class Physical(object):
             previous_power_of_ten = reverse_prefixes[0][1]
             for prefix, power_of_ten in reversed(list(prefixes.items())):
                 if abs(value) < (power_of_ten / kg_factor) ** abs(power):
-                    print(value / (previous_power_of_ten ** abs(power)))
                     return value / ((previous_power_of_ten / kg_factor) ** abs(power))
                 else:
                     previous_power_of_ten = power_of_ten
