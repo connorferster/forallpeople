@@ -197,6 +197,13 @@ class Physical(object):
             new_factor = unit_match.get("Factor", 1) ** power
             return Physical(self.value, self.dimensions, new_factor, self.precision)
 
+    def si(self):
+        """
+        Return a new Physical instance with self.factor set to 1, thereby returning
+        the instance to SI units display.
+        """
+        return Physical(self.value, self.dimensions, 1, self._precision)
+
     ### repr Methods (the "workhorse" of Physical) ###
 
     def __repr__(self):
