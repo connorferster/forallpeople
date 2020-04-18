@@ -17,6 +17,7 @@ units = {
     "D": 1e6 * si.N,
     "E": 0.2 * si.kip,
     "F": 5 * si.N * 1e3 * si.kip,
+    "Matt": 0.22 * si.kip, ## 20200417Matt added for dummy merge test
 }
 parameters = [
     (value, si.Physical._powers_of_derived(value.dimensions, env_dims))
