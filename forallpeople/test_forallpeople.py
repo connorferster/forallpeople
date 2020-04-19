@@ -83,7 +83,7 @@ def test__get_units_by_factor():
     assert func((ftlb * si.ft).factor, (ftlb * si.ft).dimensions, env_fact, 1) == dict()
 
 
-def test_get_unit_components_from_dims():
+def test__get_unit_components_from_dims():
     func = si.Physical._get_unit_components_from_dims
     assert func(si.Dimensions(1, 1, -2, 0, 0, 0, 0)) == [("kg", 1), ("m", 1), ("s", -2)]
     assert func(si.Dimensions(1, 2, 3, 4, 5, 6, 7)) == [
@@ -97,6 +97,11 @@ def test_get_unit_components_from_dims():
     ]
     assert func(si.Dimensions(0, 0, 0, 0, 0, 0, 0)) == []
 
+def test__format_symbol():
+    assert False
+
+def test__format_exponent():
+    assert False
 
 def test__get_unit_string():
     func = si.Physical._get_unit_string
@@ -142,6 +147,10 @@ def test_repr():
 def test_html():
     assert (25 * si.m ** 2).html == "25.000 m<sup>2</sup>"
     assert (units["A"]).html == "50.000 g"
+
+def test_prefixed():
+    assert False
+
 
 
 def test_round():

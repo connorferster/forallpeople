@@ -28,6 +28,7 @@ import inspect
 from collections import ChainMap
 import copy
 from typing import NamedTuple, Union, Tuple, List, Any, Optional, Callable
+
 try:
     import tuplevector as vec
 except ModuleNotFoundError:
@@ -652,51 +653,47 @@ class Physical(object):
                     return value / ((previous_power_of_ten / kg_factor) ** abs(power))
                 else:
                     previous_power_of_ten = power_of_ten
-    
 
-    def test_for_array(self, other: Any) -> bool:
-        """
-        Returns True if other has attributes and methods indicative of
-        an "array"-type of container, e.g. numpy.ndarray or pandas.Series,
-        or pandas.DataFrame. Tests if other has the attribute '.shape'
-        and if it is subscriptable (accessible by numerical index).
-        """
-        if hasattr(other, "shape"):
-            if hasattr(other, "__getitem__"):
-                return True
-            elif hasattr(other, "iloc"):
-                return True
-        return False
+    # def test_for_array(self, other: Any) -> bool:
+    #     """
+    #     Returns True if other has attributes and methods indicative of
+    #     an "array"-type of container, e.g. numpy.ndarray or pandas.Series,
+    #     or pandas.DataFrame. Tests if other has the attribute '.shape'
+    #     and if it is subscriptable (accessible by numerical index).
+    #     """
+    #     if hasattr(other, "shape"):
+    #         if hasattr(other, "__getitem__"):
+    #             return True
+    #         elif hasattr(other, "iloc"):
+    #             return True
+    #     return False
 
-    def _element_wise_ops(self, other: Any, method: Callable) -> Any:
-        """
-        Returns the element wise operation of 'method' on 'other'
-        (an array type) with 'self'.
-        """
-        shape = other.shape
-        new_other = copy.copy(other)
-        has_iloc = hasattr(other, "iloc")
-        print("runs")
-        if len(shape) == 1:
-            for x in range(shape[0]):
-                    if has_iloc:
-                        new_other.iloc[x] = method(other.iloc[x])
-                    else:
-                        new_other[x] = method(other[x])
-        elif len(shape) == 2:
-            for x in range(shape[0]):
-                for y in range(shape[1]):
-                    print(other[x][y])
-                    if has_iloc:
-                        new_other.iloc[x, y] = method(other.iloc[x,y])
-                    else:
-                        print(method)
-                        new_other[x][y] = method(other[x][y])
-        return new_other
+    # def _element_wise_ops(self, other: Any, method: Callable) -> Any:
+    #     """
+    #     Returns the element wise operation of 'method' on 'other'
+    #     (an array type) with 'self'.
+    #     """
+    #     shape = other.shape
+    #     new_other = copy.copy(other)
+    #     has_iloc = hasattr(other, "iloc")
+    #     print("runs")
+    #     if len(shape) == 1:
+    #         for x in range(shape[0]):
+    #                 if has_iloc:
+    #                     new_other.iloc[x] = method(other.iloc[x])
+    #                 else:
+    #                     new_other[x] = method(other[x])
+    #     elif len(shape) == 2:
+    #         for x in range(shape[0]):
+    #             for y in range(shape[1]):
+    #                 print(other[x][y])
+    #                 if has_iloc:
+    #                     new_other.iloc[x, y] = method(other.iloc[x,y])
+    #                 else:
+    #                     print(method)
+    #                     new_other[x][y] = method(other[x][y])
+    #     return new_other
 
-        
-
- 
     ### "Magic" Methods ###
 
     def __float__(self):
@@ -804,7 +801,7 @@ class Physical(object):
             )
 
     def __add__(self, other):
-            
+
         if isinstance(other, Physical):
             if self.dimensions == other.dimensions:
                 try:
@@ -1065,7 +1062,7 @@ class Environment:
     def __init__(self, physical_class):
         self._physical_class = physical_class
 
-    def __call__(self, env_name: str, ret:bool = False):
+    def __call__(self, env_name: str, ret: bool = False):
         self.environment = self._load_environment(env_name)
         for name, definition in self.environment.items():
             factor = round(definition.get("Factor", 1), Physical._total_precision)
@@ -1082,7 +1079,6 @@ class Environment:
                 self.units_by_factor.update({factor: {name: definition}})
 
         return self._instantiator(self.environment, self._physical_class, ret)
-
 
     def _load_environment(self, env_name: str):
         """
@@ -1165,19 +1161,19 @@ _the_si_base_units = {
 }
 globals().update(_the_si_base_units)
 
-try: 
-    from IPython.core.magic import (Magics, magics_class, line_magic, register_line_magic)
+try:
+    from IPython.core.magic import Magics, magics_class, line_magic, register_line_magic
     from IPython import get_ipython
     from IPython.display import Latex, Markdown
+
     __Jupyter = get_ipython()
     __shell = __Jupyter.kernel.shell
-
 
     @register_line_magic
     def env(line):
         __shell.drop_by_id(environment.unit_vars)
-        new_environment = environment(line.replace('"', "").replace("'",''), ret = True)
-        #new_environment.update(_the_si_base_units)
+        new_environment = environment(line.replace('"', "").replace("'", ""), ret=True)
+        # new_environment.update(_the_si_base_units)
         __shell.push(_the_si_base_units, interactive=True)
         __shell.push(new_environment, interactive=True)
 
@@ -1187,9 +1183,10 @@ try:
         instance. We can register the magic with the
         `register_magic_function` method of the shell
         instance."""
-        ipython.register_magic_function(env, 'line')
+        ipython.register_magic_function(env, "line")
         __shell.push(_the_si_base_units)
+
+
 except:
     pass
 
-        
