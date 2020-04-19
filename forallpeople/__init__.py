@@ -1177,6 +1177,8 @@ try:
     def env(line):
         __shell.drop_by_id(environment.unit_vars)
         new_environment = environment(line.replace('"', "").replace("'",''), ret = True)
+        #new_environment.update(_the_si_base_units)
+        __shell.push(_the_si_base_units, interactive=True)
         __shell.push(new_environment, interactive=True)
 
     def load_ipython_extension(ipython):
