@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "forallpeople"
+version = "1.2.0"
+description = "SI units library for daily calculation work intended for daily calculation work"
+authors = ["Connor Ferster"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+
+[tool.poetry.dev-dependencies]
+pytest-cov = "^2.10.0"
+black = {version = "^19.10b0", allow-prereleases = true}
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
