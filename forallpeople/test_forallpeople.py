@@ -185,10 +185,10 @@ def test_sqrt():
 
 
 def test_in_units():
-    assert ft.in_units("m").factor == 1.0
-    assert m.in_units("ft").factor == 1 / 0.3048
-    assert kip.in_units("lb").factor == (1000 * lb).factor
-    assert ((10 * lb) ** 2).in_units("kip").factor == (0.1 * kip * kip).factor
+    assert ft.to("m").factor == 1.0
+    assert m.to("ft").factor == 1 / 0.3048
+    assert kip.to("lb").factor == (1000 * lb).factor
+    assert ((10 * lb) ** 2).to("kip").factor == (0.1 * kip * kip).factor
 
 
 def test__check_dims_parallel():
@@ -480,7 +480,7 @@ def test_defined_unit_persistence():
     area = 2.3 * ft * 1.2 * ft
     c = a / area
 
-    d = a.in_units("lb")
+    d = a.to("lb")
     e = 2.8 * lb
     f = 1 / d ** 2 * e * 10
     g = 1 / f + x / 1e3
