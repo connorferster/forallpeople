@@ -32,7 +32,7 @@ A module to model the seven SI base units:
   ...and other derived and non-SI units for practical calculations.
 """
 
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 # Try using this to instantiate variables
 # import builtins
 

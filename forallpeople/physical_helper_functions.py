@@ -215,7 +215,6 @@ def _format_symbol(prefix: str, symbol: str, repr_format: str = "") -> str:
     formatted_symbol = f"{symbol_string_open}{prefix}{symbol}{symbol_string_close}"
     if symbol.startswith("\\text{"):  # special case for 'single dimension' Physicals...
         formatted_symbol = f"{symbol[0:6]}{prefix}{symbol[6:]}"
-        print("symbol, formatted_symbol: ", symbol, formatted_symbol)
     return formatted_symbol
 
 
