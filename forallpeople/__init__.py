@@ -32,12 +32,8 @@ A module to model the seven SI base units:
   ...and other derived and non-SI units for practical calculations.
 """
 
-__version__ = "1.3.1"
-# Try using this to instantiate variables
-# import builtins
+__version__ = "2.0.0"
 
-# def insert_into_global_namespace():
-#     builtins.var = 'an object'
 from typing import Union, Optional
 
 
@@ -46,13 +42,10 @@ import forallpeople.physical_helper_functions as phf
 import forallpeople.tuplevector as vec
 from forallpeople.si_environment import Environment
 import builtins
+import sys
 
 NUMBER = (int, float)
 
-# if not "environment" in dir(builtins):
-#     environment = si_environment.Environment(Physical)
-
-# The single class to describe all units...Physical (as in "a physical property")
 class Physical(object):
     """
     A class that defines any physical quantity that can be described
@@ -637,35 +630,5 @@ _the_si_base_units = {
 }
 
 environment = Environment(Physical, builtins, _the_si_base_units)
-environment.push_units_into_user_namespace(_the_si_base_units)
+environment.push_vars(_the_si_base_units, sys.modules[__name__])
 
-# Jupyter extension
-
-try:
-    from IPython.core.magic import Magics, magics_class, line_magic, register_line_magic
-    from IPython import get_ipython
-    from IPython.display import Latex, Markdown
-
-    __Jupyter = get_ipython()
-    __shell = __Jupyter.kernel.shell
-
-    @register_line_magic
-    def si_env(line):
-        __shell.drop_by_id(environment.unit_vars)
-        new_environment = environment(line.replace('"', "").replace("'", ""))
-        # new_environment.update(_the_si_base_units)
-        __shell.push(_the_si_base_units, interactive=True)
-        __shell.push(new_environment, interactive=True)
-
-    def load_ipython_extension(ipython):
-        """This function is called when the extension is
-        loaded. It accepts an IPython InteractiveShell
-        instance. We can register the magic with the
-        `register_magic_function` method of the shell
-        instance."""
-        ipython.register_magic_function(env, "line")
-        __shell.push(_the_si_base_units)
-
-
-except:
-    pass

@@ -143,8 +143,8 @@ def test__get_superscript_string():
 
 
 def test_latex():
-    assert MPa.latex == r"1.000\ \text{MPa}"
-    assert (2.5 * kg * m ** 2.5).latex == r"2.500\ \text{kg} \cdot \text{m}^{2.5}"
+    assert MPa.latex == "1.000\\ \\text{MPa}"
+    assert (2.5 * kg * m ** 2.5).latex == "2.500\\ \\text{kg} \\cdot \\text{m}^{2.5}"
 
 
 def test_repr():

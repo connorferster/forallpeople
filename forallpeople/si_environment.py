@@ -16,20 +16,10 @@
 import pathlib
 import json
 import re
+import sys
 from types import ModuleType
 from forallpeople.dimensions import Dimensions
 
-# from forallpeople.physical import Physical
-
-# _the_si_base_units = {
-#     "kg": Physical(1, Dimensions(1, 0, 0, 0, 0, 0, 0), 1.0),
-#     "m": Physical(1, Dimensions(0, 1, 0, 0, 0, 0, 0), 1.0),
-#     "s": Physical(1, Dimensions(0, 0, 1, 0, 0, 0, 0), 1.0),
-#     "A": Physical(1, Dimensions(0, 0, 0, 1, 0, 0, 0), 1.0),
-#     "cd": Physical(1, Dimensions(0, 0, 0, 0, 1, 0, 0), 1.0),
-#     "K": Physical(1, Dimensions(0, 0, 0, 0, 0, 1, 0), 1.0),
-#     "mol": Physical(1, Dimensions(0, 0, 0, 0, 0, 0, 1), 1.0),
-# }
 
 
 class Environment:
@@ -40,25 +30,43 @@ class Environment:
     """
 
     environment = {}
-    units_by_dimension = {"derived": dict(), "defined": dict()}
-    units_by_factor = dict()
-    unit_vars = {}
 
-    def __init__(self, physical_class, builtins_module, si_base_units):
+    def __init__(self, physical_class: type, builtins_module: ModuleType, si_base_units: dict):
+        self.units_by_dimension = {"derived": dict(), "defined": dict()}
+        self.units_by_factor = dict()
         self._physical_class = physical_class
         self._builtins_module = builtins_module
         self._si_base_units = si_base_units
-        self.python_builtins = {
-            name: getattr(builtins_module, name) for name in dir(builtins_module)
-        }
+        self.this_module = sys.modules["forallpeople"]
+        self.push_module = None
         if not self.environment:
             self.environment = self._si_base_units
 
-    def __call__(self, env_name: str = ""):
+    def __call__(self, env_name: str = "", top_level: bool = False):
         if not env_name:
-            print(self.environment)
+            try:
+                print(self._generate_units_dict(self.environment, self._physical_class))
+            except TypeError:
+                print(self.environment)
             return
+
+        push_module = self.this_module
+        if top_level: push_module = self._builtins_module
+
+
+        if self.environment != self._si_base_units and self.push_module:
+            old_units_dict = self._generate_units_dict(self.environment, self._physical_class)
+
+            self.del_vars(old_units_dict, self.push_module)
+    
         self.environment = self._load_environment(env_name)
+        new_units_dict = self._generate_units_dict(self.environment, self._physical_class)
+        self.push_vars(new_units_dict, push_module)
+        self.push_vars(self._si_base_units, push_module)
+
+        # Update internal class dictionaries: self.units_by_dimension, self.units_by_factor
+        self.units_by_dimension = {"derived": dict(), "defined": dict()}
+        self.units_by_factor = dict()
         for name, definition in self.environment.items():
             factor = round(
                 definition.get("Factor", 1), self._physical_class._total_precision
@@ -74,10 +82,7 @@ class Environment:
                     {name: definition}
                 )
                 self.units_by_factor.update({factor: {name: definition}})
-
-        return self.push_units_into_user_namespace(
-            self._generate_units_dict(self.environment, self._physical_class)
-        )
+        self.push_module = push_module # Update previous push_module; could be either module or top-level
 
     def _load_environment(self, env_name: str):
         """
@@ -127,7 +132,7 @@ class Environment:
         portion of the environment dict. This is the method that instantiates all of the
         unit symbols defined in the environment json file.
         """
-        to_globals = {}
+        units_dict = {}
         # Transfer definitions
         for unit, definitions in environment.items():
             dimensions = definitions["Dimension"]
@@ -135,37 +140,16 @@ class Environment:
             symbol = definitions.get("Symbol", "")
             value = definitions.get("Value", 1)
             if symbol:
-                to_globals.update(
+                units_dict.update(
                     {unit: physical_class(1 / factor, dimensions, factor)}
                 )
             else:
-                to_globals.update({unit: physical_class(value, dimensions, factor)})
-        Environment.unit_vars = to_globals
-        return to_globals
+                units_dict.update({unit: physical_class(value, dimensions, factor)})
+        return units_dict
 
-    def push_units_into_user_namespace(self, units_dict: dict) -> None:
-        """
-        Returns None. For every item in 'unit_dict' add that item to the 
-        builtins module in order dynamically instantiate the units in the dict
-        to make them available to the user in the top-level namespace.
-        Cleans out the existing builtins attrs prior to pushing new values to
-        prevent polluting the namespace.
-        """
-        the_si_base_units = self._si_base_units
-        builtins_module = self._builtins_module
+    def push_vars(self, units_dict: dict, module: ModuleType) -> None:
+        module.__dict__.update(units_dict)
 
-        # First the clean
-        current_builtins = {
-            name: getattr(builtins_module, name) for name in dir(builtins_module)
-        }
-        for old_var_name, old_physical in current_builtins.items():
-            if (
-                old_var_name not in self.python_builtins
-                and old_var_name not in the_si_base_units
-            ):
-                delattr(builtins_module, old_var_name)
-
-        # Then the push
-        for var_name, physical in units_dict.items():
-            setattr(builtins_module, var_name, physical)
-
+    def del_vars(self, units_dict: dict, module: ModuleType) -> None:
+        for key in units_dict.keys():
+            module.__dict__.pop(key)
