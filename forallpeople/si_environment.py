@@ -13,13 +13,13 @@
 #    limitations under the License.
 
 
+from collections import ChainMap
 import pathlib
 import json
 import re
 import sys
 from types import ModuleType
 from forallpeople.dimensions import Dimensions
-
 
 
 class Environment:
@@ -31,7 +31,9 @@ class Environment:
 
     environment = {}
 
-    def __init__(self, physical_class: type, builtins_module: ModuleType, si_base_units: dict):
+    def __init__(
+        self, physical_class: type, builtins_module: ModuleType, si_base_units: dict
+    ):
         self.units_by_dimension = {"derived": dict(), "defined": dict()}
         self.units_by_factor = dict()
         self._physical_class = physical_class
@@ -45,22 +47,30 @@ class Environment:
     def __call__(self, env_name: str = "", top_level: bool = False):
         if not env_name:
             try:
-                print(self._generate_units_dict(self.environment, self._physical_class))
+                print(
+                        self._generate_units_dict(
+                            self.environment, self._physical_class
+                        ), "\n", self._si_base_units),
+                    
             except TypeError:
                 print(self.environment)
             return
 
         push_module = self.this_module
-        if top_level: push_module = self._builtins_module
-
+        if top_level:
+            push_module = self._builtins_module
 
         if self.environment != self._si_base_units and self.push_module:
-            old_units_dict = self._generate_units_dict(self.environment, self._physical_class)
+            old_units_dict = self._generate_units_dict(
+                self.environment, self._physical_class
+            )
 
             self.del_vars(old_units_dict, self.push_module)
-    
+
         self.environment = self._load_environment(env_name)
-        new_units_dict = self._generate_units_dict(self.environment, self._physical_class)
+        new_units_dict = self._generate_units_dict(
+            self.environment, self._physical_class
+        )
         self.push_vars(new_units_dict, push_module)
         self.push_vars(self._si_base_units, push_module)
 
@@ -82,7 +92,15 @@ class Environment:
                     {name: definition}
                 )
                 self.units_by_factor.update({factor: {name: definition}})
-        self.push_module = push_module # Update previous push_module; could be either module or top-level
+        self.push_module = push_module  # Update previous push_module; could be either module or top-level
+
+    
+    def push_vars(self, units_dict: dict, module: ModuleType) -> None:
+        module.__dict__.update(units_dict)
+
+    def del_vars(self, units_dict: dict, module: ModuleType) -> None:
+        for key in units_dict.keys():
+            module.__dict__.pop(key)
 
     def _load_environment(self, env_name: str):
         """
@@ -147,9 +165,4 @@ class Environment:
                 units_dict.update({unit: physical_class(value, dimensions, factor)})
         return units_dict
 
-    def push_vars(self, units_dict: dict, module: ModuleType) -> None:
-        module.__dict__.update(units_dict)
 
-    def del_vars(self, units_dict: dict, module: ModuleType) -> None:
-        for key in units_dict.keys():
-            module.__dict__.pop(key)

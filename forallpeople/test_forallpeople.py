@@ -16,7 +16,7 @@ import pytest
 import forallpeople as si
 import forallpeople.physical_helper_functions as phf
 
-si.environment("test_definitions")
+si.environment("test_definitions", top_level = True)
 
 
 ### TODO: add Ohms to definitions for testing

@@ -43,7 +43,7 @@ import forallpeople.tuplevector as vec
 from forallpeople.si_environment import Environment
 import builtins
 import sys
-
+import warnings
 NUMBER = (int, float)
 
 class Physical(object):
@@ -55,7 +55,7 @@ class Physical(object):
     _eps = 1e-7
     _total_precision = 6
 
-    __slots__ = ("value", "dimensions", "factor", "precision", "_prefixed")
+    __slots__ = ("value", "dimensions", "factor", "precision", "prefixed")
 
     def __init__(
         self,
@@ -70,7 +70,7 @@ class Physical(object):
         super(Physical, self).__setattr__("dimensions", dimensions)
         super(Physical, self).__setattr__("factor", factor)
         super(Physical, self).__setattr__("precision", precision)
-        super(Physical, self).__setattr__("_prefixed", prefixed)
+        super(Physical, self).__setattr__("prefixed", prefixed)
 
     def __setattr__(self, _, __):
         raise AttributeError("Cannot set attribute.")
@@ -84,12 +84,12 @@ class Physical(object):
     def html(self) -> str:
         return self._repr_html_()
 
-    def prefixed(self, prefixed: str = ""):
+    def prefix(self, prefixed: str = ""):
         """
         Return a Physical instance with 'prefixed' property set to 'prefix'
         """
         if self.factor != 1:
-            raise AttributeError("Cannot prefix a Physical if it has a factor.")
+            raise AttributeError("Cannot set a prefix on a Physical if it has a factor.")
         # check if elligible for prefixing; do not rely on __repr__ to ignore it
         return Physical(
             self.value, self.dimensions, self.factor, self.precision, prefixed
@@ -104,7 +104,7 @@ class Physical(object):
             "Physical(value={}, dimensions={}, factor={}, precision={}, _prefixed={})"
         )
         return repr_str.format(
-            self.value, self.dimensions, self.factor, self.precision, self._prefixed
+            self.value, self.dimensions, self.factor, self.precision, self.prefixed
         )  # check
 
     def round(self, n: int):
@@ -112,7 +112,7 @@ class Physical(object):
         Returns a new Physical with a new precision, 'n'. Precision controls
         the number of decimal places displayed in repr and str.
         """
-        return Physical(self.value, self.dimensions, self.factor, n, self._prefixed)
+        return Physical(self.value, self.dimensions, self.factor, n, self.prefixed)
 
     def split(self, base_value: bool = True) -> tuple:
         """
@@ -159,6 +159,7 @@ class Physical(object):
             defined_match = defined.get(dims_orig, {}).get(unit_name, {})
             derived_match = derived.get(dims_orig, {}).get(unit_name, {})
             unit_match = defined_match or derived_match
+            if not unit_match: warnings.warn(f"No unit defined for '{unit_name}''.")
             new_factor = unit_match.get("Factor", 1) ** power
             return Physical(self.value, self.dimensions, new_factor, self.precision)
 
@@ -196,7 +197,7 @@ class Physical(object):
         factor = self.factor
         val = self.value
         prefix = ""
-        prefixed = self._prefixed
+        prefixed = self.prefixed
         eps = self._eps
 
         # Access external environment
@@ -272,7 +273,7 @@ class Physical(object):
         value = self.value
         dims = self.dimensions
         factor = self.factor
-        prefixed = self._prefixed
+        prefixed = self.prefixed
         env_dims = environment.units_by_dimension or dict()
         power, _ = phf._powers_of_derived(dims, env_dims)
         if factor != 1:
@@ -301,7 +302,7 @@ class Physical(object):
 
     def __hash__(self):
         return hash(
-            (self.value, self.dimensions, self.factor, self.precision, self._prefixed)
+            (self.value, self.dimensions, self.factor, self.precision, self.prefixed)
         )
 
     def __round__(self, n=0):
@@ -381,7 +382,7 @@ class Physical(object):
                         self.dimensions,
                         self.factor,
                         self.precision,
-                        self._prefixed,
+                        self.prefixed,
                     )
                 except:
                     raise ValueError(
@@ -401,7 +402,7 @@ class Physical(object):
                     self.dimensions,
                     self.factor,
                     self.precision,
-                    self._prefixed,
+                    self.prefixed,
                 )
             except:
                 raise ValueError(
@@ -427,7 +428,7 @@ class Physical(object):
                         self.dimensions,
                         self.factor,
                         self.precision,
-                        self._prefixed,
+                        self.prefixed,
                     )
                 except:
                     raise ValueError(f"Cannot subtract between {self} and {other}")
@@ -444,7 +445,7 @@ class Physical(object):
                     self.dimensions,
                     self.factor,
                     self.precision,
-                    self._prefixed,
+                    self.prefixed,
                 )
             except:
                 raise ValueError(
@@ -463,7 +464,7 @@ class Physical(object):
                     self.dimensions,
                     self.factor,
                     self.precision,
-                    self._prefixed,
+                    self.prefixed,
                 )
             except:
                 raise ValueError(
@@ -484,7 +485,7 @@ class Physical(object):
                 self.dimensions,
                 self.factor,
                 self.precision,
-                self._prefixed,
+                self.prefixed,
             )
 
         elif isinstance(other, Physical):
@@ -536,7 +537,7 @@ class Physical(object):
                 self.dimensions,
                 self.factor,
                 self.precision,
-                self._prefixed,
+                self.prefixed,
             )
         elif isinstance(other, Physical):
             new_dims = vec.subtract(self.dimensions, other.dimensions)
@@ -603,7 +604,7 @@ class Physical(object):
 
     def __pow__(self, other):
         if isinstance(other, NUMBER):
-            if self._prefixed:
+            if self.prefixed:
                 return float(self) ** other
             new_value = self.value ** other
             new_dimensions = vec.multiply(self.dimensions, other)

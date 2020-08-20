@@ -109,7 +109,6 @@ def _get_units_by_factor(
     equal to 'dims'. Returns an empty dict, otherwise.
     """
     new_factor = factor ** (1 / power)
-    print(f"Factor: {factor}, New Factor: {new_factor}")
     units_match = units_env.get(round(new_factor, _total_precision), dict())
 
     try:
@@ -267,7 +266,10 @@ def _powers_of_derived(dims: Dimensions, units_env: dict) -> Union[int, float]:
     """
     quotient_1 = _dims_quotient(dims, units_env)
     quotient_2 = _dims_basis_multiple(dims)
-    quotient_1_mean = vec.mean(quotient_1, ignore_empty=True)
+    quotient_1_mean = None
+    if quotient_1 is not None:
+        quotient_1_mean = vec.mean(quotient_1, ignore_empty=True)
+        
     if quotient_1 is not None and quotient_1_mean != -1:
         power_of_derived = vec.mean(quotient_1, ignore_empty=True)
         base_dimensions = vec.divide(dims, quotient_1, ignore_zeros=True)
@@ -287,7 +289,7 @@ def _powers_of_derived(dims: Dimensions, units_env: dict) -> Union[int, float]:
     else:
         return (1, dims)
 
-
+#@functools.lru_cache(maxsize=None) Cannot use cache with dict input
 def _dims_quotient(dimensions: Dimensions, units_env: dict) -> Optional[Dimensions]:
     """
     Returns a Dimensions object representing the element-wise quotient between
@@ -304,11 +306,14 @@ def _dims_quotient(dimensions: Dimensions, units_env: dict) -> Optional[Dimensio
     for dimension_key in all_units.keys():
         if _check_dims_parallel(dimension_key, dimensions):
             quotient = vec.divide(dimensions, dimension_key, ignore_zeros=True)
-            if vec.mean(quotient, ignore_empty=True) != -1:
-                quotient_result = quotient
-            else:
+            mean = vec.mean(quotient, ignore_empty=True)
+            if mean == -1: 
                 potential_inv = quotient
-    return quotient_result or potential_inv
+            elif -1 < mean < 1:
+                return None # Ignore parallel dimensions if they are fractional dimensions
+            else:
+                quotient_result = quotient
+    return quotient_result or potential_inv # Inversion ok, if only option
 
 
 
