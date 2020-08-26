@@ -15,7 +15,7 @@
     "Value": 1e-6},
 "mA": {
     "Dimension": [0,0,0,1,0,0,0],
-    "Value": 1e-3}
+    "Value": 1e-3},
 "Ohm": {
     "Dimension": [1,2,-3,-2,0,0,0],
     "Symbol": "Ω"},
