@@ -32,7 +32,7 @@ A module to model the seven SI base units:
   ...and other derived and non-SI units for practical calculations.
 """
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 from typing import Union, Optional
 
@@ -265,7 +265,9 @@ class Physical(object):
             pre_super = ""
             post_super = ""
 
-        return f"{value:.{precision}f}{space}{units}{pre_super}{exponent}{post_super}"
+        if not prefix_bool:
+           return f"{value:.{precision}e} {space} {units}{pre_super}{exponent}{post_super}" 
+        return f"{value:.{precision}f} {space} {units}{pre_super}{exponent}{post_super}"
 
     ### "Magic" Methods ###
 
