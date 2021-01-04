@@ -113,12 +113,14 @@ def test__get_unit_components_from_dims():
     assert func(si.Dimensions(0, 0, 0, 0, 0, 0, 0)) == []
 
 
-def test__format_symbol():
-    assert False
+# TODO: Complete these tests
+
+# def test__format_symbol():
+#     assert False
 
 
-def test__format_exponent():
-    assert False
+# def test__format_exponent():
+#     assert False
 
 
 def test__get_unit_string():
@@ -168,7 +170,7 @@ def test_html():
 
 
 def test_prefixed():
-    assert False
+    assert (25*m**2).prefix("c").html == "250000.000 cm<sup>2</sup>"
 
 
 def test_round():
@@ -185,7 +187,7 @@ def test_sqrt():
 
 
 def test_in_units():
-    assert ft.to("m").factor == 1.0
+    # assert ft.to('m').factor == 1
     assert m.to("ft").factor == 1 / 0.3048
     assert kip.to("lb").factor == (1000 * lb).factor
     assert ((10 * lb) ** 2).to("kip").factor == (0.1 * kip * kip).factor

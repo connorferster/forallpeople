@@ -19,10 +19,9 @@ from typing import Union, Optional
 from forallpeople.dimensions import Dimensions
 import forallpeople.tuplevector as vec
 
-
 ### Helper methods for repr methods ###
 
-_prefixes = {
+_prefixes = { # Do not add custom prefixes between Y and y, e.g. "c": 1e-2
     "Y": 1e24,
     "Z": 1e21,
     "E": 1e18,
@@ -40,6 +39,10 @@ _prefixes = {
     "a": 1e-18,
     "z": 1e-21,
     "y": 1e-24,
+}
+
+_additional_prefixes = {
+    "c": 1e-2,
 }
 
 _superscripts = {
@@ -399,10 +402,12 @@ def _auto_prefix_value(
     Converts the value to a prefixed value if the instance has a symbol defined in
     the environment (i.e. is in the defined units dict)
     """
+    if prefixed == "unity": return value
     kg_factor = 1
     if kg:
         kg_factor = 1000
-    prefixes = _prefixes
+    if prefixed in _additional_prefixes: prefixes = _additional_prefixes
+    else: prefixes = _prefixes
     if prefixed:
         return value / ((prefixes[prefixed] / kg_factor) ** power)
     if abs(value) >= 1:
@@ -418,3 +423,116 @@ def _auto_prefix_value(
                 return value / ((previous_power_of_ten / kg_factor) ** abs(power))
             else:
                 previous_power_of_ten = power_of_ten
+
+
+def swap_scientific_notation_float(value: float, precision: int) -> str:
+    """
+    Returns a deque representing 'pycode_as_deque' with any python floats that
+    will get "cut-off" by the 'precision' arg when they are rounded as being 
+    rendered as strings in python's "e format" scientific notation.
+
+    A float is "cut-off" by 'precision' when it's number of significant digits will
+    be less than those required by precision. 
+
+    e.g. elem = 0.001353 with precision=3 will round to 0.001, with only one
+    significant digit (1 < 3). Therefore this float is "cut off" and will be 
+    formatted instead as "1.353e-3"
+
+    elem = 0.1353 with precision=3 will round to 0.135 with three significant digits
+    (3 == 3). Therefore this float will not be formatted.
+    """
+    print("Swap scinotfloat")
+    if test_for_small_float(value, precision):
+        new_value = (
+                "{:.{precision}e}".format(value, precision=precision)
+                .replace("e-0", "e-")
+                .replace("e+0", "e+")
+            )
+        return new_value
+    return
+
+
+def test_for_small_float(value: float, precision: int) -> bool:
+    """
+    Returns True if 'value' is a float whose rounded str representation
+    has fewer significant figures than the numer in 'precision'. 
+    Return False otherwise.
+    """
+    print("true")
+    if not isinstance(value, (float)):
+        return False
+    if value == 0:
+        return False
+    value_as_str = str(round(abs(value), precision))
+    if "e" in str(value):
+        return True
+    if "." in value_as_str:
+        left, *_right = value_as_str.split(".")
+        print(left)
+        if left != "0":
+            return False
+    print(round(value, precision), round(value, precision + 1))
+    if (
+        round(value, precision) != round(value, precision + 1)
+        or str(abs(round(value, precision))).replace("0", "").replace(".", "")
+        == str(abs(round(value, precision + 1))).replace("0", "").replace(".", "")
+        == ""
+    ):
+        return True
+    else:
+        return False
+
+
+    # if not isinstance(elem, (float)):
+    #     return False
+    # if elem == 0:
+    #     return False
+    # elem_as_str = str(round(abs(elem), precision))
+    # if "e" in str(elem):
+    #     return True
+    # if "." in elem_as_str:
+    #     left, *_right = elem_as_str.split(".")
+    #     if left != "0":
+    #         return False
+    # if (
+    #     round(elem, precision) != round(elem, precision + 1)
+    #     or str(abs(round(elem, precision))).replace("0", "").replace(".", "")
+    #     == str(abs(round(elem, precision + 1))).replace("0", "").replace(".", "")
+    #     == ""
+    # ):
+    #     return True
+    # else:
+    #     return False
+
+def swap_scientific_notation_str(value_as_str: str) -> str:
+    """
+    Returns a deque representing 'line' with any python 
+    float elements in the deque
+    that are in scientific notation "e" format converted into a Latex 
+    scientific notation.
+    """
+    print("swap sci not str")
+    b = "}"
+    if test_for_scientific_notation_str(value_as_str):
+        new_value_as_str = value_as_str.replace("e", " \\times 10 ^ {") + b
+        return new_value_as_str
+    return value_as_str
+
+def test_for_scientific_notation_str(value_as_str: str) -> bool:
+    """
+    Returns True if 'elem' represents a python float in scientific
+    "e notation".
+    e.g. 1.23e-3, 0.09e5
+    Returns False otherwise
+    """
+    print("sci not str")
+    test_for_float = False
+    try:
+        float(value_as_str)
+        test_for_float = True
+    except:
+        pass
+
+    if "e" in str(value_as_str).lower() and test_for_float:
+        return True
+    return False

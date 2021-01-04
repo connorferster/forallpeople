@@ -32,7 +32,7 @@ A module to model the seven SI base units:
   ...and other derived and non-SI units for practical calculations.
 """
 
-__version__ = "2.0.1"
+__version__ = "2.0.2"
 
 from typing import Union, Optional
 
@@ -71,7 +71,6 @@ class Physical(object):
         super(Physical, self).__setattr__("factor", factor)
         super(Physical, self).__setattr__("precision", precision)
         super(Physical, self).__setattr__("prefixed", prefixed)
-
     def __setattr__(self, _, __):
         raise AttributeError("Cannot set attribute.")
 
@@ -87,6 +86,8 @@ class Physical(object):
     def prefix(self, prefixed: str = ""):
         """
         Return a Physical instance with 'prefixed' property set to 'prefix'
+        if 'prefixed' is set to "unity" then the unit will be forced into its
+        unprefixed state.
         """
         if self.factor != 1:
             raise AttributeError("Cannot set a prefix on a Physical if it has a factor.")
@@ -213,7 +214,9 @@ class Physical(object):
             dims_orig, factor, power, env_fact, env_dims
         )
         # Get the appropriate prefix
-        if prefix_bool and prefixed:
+        if prefix_bool and prefixed == "unity":
+            prefix = ""
+        elif prefix_bool and prefixed:
             prefix = prefixed
         elif prefix_bool and dims_orig == Dimensions(1, 0, 0, 0, 0, 0, 0):
             prefix = phf._auto_prefix(val, power, kg=True)
@@ -265,9 +268,9 @@ class Physical(object):
             pre_super = ""
             post_super = ""
 
-        if not prefix_bool:
-           return f"{value:.{precision}e} {space} {units}{pre_super}{exponent}{post_super}" 
-        return f"{value:.{precision}f} {space} {units}{pre_super}{exponent}{post_super}"
+        # if not prefix_bool:
+        #    return f"{value:.{precision}f}{space}{units}{pre_super}{exponent}{post_super}" 
+        return f"{value:.{precision}f}{space}{units}{pre_super}{exponent}{post_super}"
 
     ### "Magic" Methods ###
 
