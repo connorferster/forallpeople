@@ -32,7 +32,7 @@ A module to model the seven SI base units:
   ...and other derived and non-SI units for practical calculations.
 """
 
-__version__ = "2.0.2"
+__version__ = "2.0.3"
 
 from typing import Union, Optional
 

@@ -441,7 +441,6 @@ def swap_scientific_notation_float(value: float, precision: int) -> str:
     elem = 0.1353 with precision=3 will round to 0.135 with three significant digits
     (3 == 3). Therefore this float will not be formatted.
     """
-    print("Swap scinotfloat")
     if test_for_small_float(value, precision):
         new_value = (
                 "{:.{precision}e}".format(value, precision=precision)
@@ -458,7 +457,6 @@ def test_for_small_float(value: float, precision: int) -> bool:
     has fewer significant figures than the numer in 'precision'. 
     Return False otherwise.
     """
-    print("true")
     if not isinstance(value, (float)):
         return False
     if value == 0:
@@ -468,10 +466,8 @@ def test_for_small_float(value: float, precision: int) -> bool:
         return True
     if "." in value_as_str:
         left, *_right = value_as_str.split(".")
-        print(left)
         if left != "0":
             return False
-    print(round(value, precision), round(value, precision + 1))
     if (
         round(value, precision) != round(value, precision + 1)
         or str(abs(round(value, precision))).replace("0", "").replace(".", "")
@@ -511,7 +507,6 @@ def swap_scientific_notation_str(value_as_str: str) -> str:
     that are in scientific notation "e" format converted into a Latex 
     scientific notation.
     """
-    print("swap sci not str")
     b = "}"
     if test_for_scientific_notation_str(value_as_str):
         new_value_as_str = value_as_str.replace("e", " \\times 10 ^ {") + b
@@ -525,7 +520,6 @@ def test_for_scientific_notation_str(value_as_str: str) -> bool:
     e.g. 1.23e-3, 0.09e5
     Returns False otherwise
     """
-    print("sci not str")
     test_for_float = False
     try:
         float(value_as_str)
