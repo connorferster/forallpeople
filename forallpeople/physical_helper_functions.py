@@ -12,10 +12,10 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-
+from __future__ import annotations
 from collections import ChainMap
 import functools
-from typing import Union, Optional
+from typing import Any, Union, Optional
 from forallpeople.dimensions import Dimensions
 import forallpeople.tuplevector as vec
 
@@ -454,7 +454,7 @@ def swap_scientific_notation_float(value: float, precision: int) -> str:
 def test_for_small_float(value: float, precision: int) -> bool:
     """
     Returns True if 'value' is a float whose rounded str representation
-    has fewer significant figures than the numer in 'precision'. 
+    has fewer significant figures than the number in 'precision'. 
     Return False otherwise.
     """
     if not isinstance(value, (float)):
@@ -478,27 +478,6 @@ def test_for_small_float(value: float, precision: int) -> bool:
     else:
         return False
 
-
-    # if not isinstance(elem, (float)):
-    #     return False
-    # if elem == 0:
-    #     return False
-    # elem_as_str = str(round(abs(elem), precision))
-    # if "e" in str(elem):
-    #     return True
-    # if "." in elem_as_str:
-    #     left, *_right = elem_as_str.split(".")
-    #     if left != "0":
-    #         return False
-    # if (
-    #     round(elem, precision) != round(elem, precision + 1)
-    #     or str(abs(round(elem, precision))).replace("0", "").replace(".", "")
-    #     == str(abs(round(elem, precision + 1))).replace("0", "").replace(".", "")
-    #     == ""
-    # ):
-    #     return True
-    # else:
-    #     return False
 
 def swap_scientific_notation_str(value_as_str: str) -> str:
     """
@@ -530,3 +509,15 @@ def test_for_scientific_notation_str(value_as_str: str) -> bool:
     if "e" in str(value_as_str).lower() and test_for_float:
         return True
     return False
+
+def is_nan(value: Any) -> bool:
+    """
+    Returns True if 'value' is some form of NaN, whether float('nan')
+    or a numpy or pandas Nan.
+    """
+    # Test for numpy.nan and float('nan')
+    if not value == value:
+        return True
+    else:
+        return False
+    

@@ -46,6 +46,7 @@ import sys
 import warnings
 NUMBER = (int, float)
 
+
 class Physical(object):
     """
     A class that defines any physical quantity that can be described
@@ -160,7 +161,7 @@ class Physical(object):
             defined_match = defined.get(dims_orig, {}).get(unit_name, {})
             derived_match = derived.get(dims_orig, {}).get(unit_name, {})
             unit_match = defined_match or derived_match
-            if not unit_match: warnings.warn(f"No unit defined for '{unit_name}''.")
+            if not unit_match: warnings.warn(f"No unit defined for '{unit_name}' on {self}.")
             new_factor = unit_match.get("Factor", 1) ** power
             return Physical(self.value, self.dimensions, new_factor, self.precision)
 
@@ -484,7 +485,9 @@ class Physical(object):
         )
 
     def __mul__(self, other):
-        if isinstance(other, NUMBER):
+        if phf.is_nan(other):
+            return other
+        elif isinstance(other, NUMBER):
             return Physical(
                 self.value * other,
                 self.dimensions,
@@ -536,7 +539,9 @@ class Physical(object):
         return self.__mul__(other)
 
     def __truediv__(self, other):
-        if isinstance(other, NUMBER):
+        if phf.is_nan(other):
+            return other
+        elif isinstance(other, NUMBER):
             return Physical(
                 self.value / other,
                 self.dimensions,
@@ -577,6 +582,8 @@ class Physical(object):
                 )
 
     def __rtruediv__(self, other):
+        if phf.is_nan(other):
+            return other
         if isinstance(other, NUMBER):
             new_value = other / self.value
             new_dimensions = vec.multiply(self.dimensions, -1)
