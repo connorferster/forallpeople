@@ -12,6 +12,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+import math
 import pytest
 import forallpeople as si
 import forallpeople.physical_helper_functions as phf
@@ -121,6 +122,10 @@ def test__get_unit_components_from_dims():
 
 # def test__format_exponent():
 #     assert False
+
+def test_nan_pass_through():
+    assert math.isnan(5*kg*float('nan'))
+    assert math.isnan(float('nan')*ft)
 
 
 def test__get_unit_string():
