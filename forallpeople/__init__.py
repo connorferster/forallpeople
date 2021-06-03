@@ -32,7 +32,7 @@ A module to model the seven SI base units:
   ...and other derived and non-SI units for practical calculations.
 """
 
-__version__ = "2.0.6"
+__version__ = "2.1.0"
 
 from typing import Union, Optional
 
@@ -186,15 +186,15 @@ class Physical(object):
     def _repr_latex_(self):
         return self._repr_template_(template="latex")
 
-    def _repr_template_(self, template: str = "") -> str:
+    def _repr_template_(self, template: str = "", format_spec=None) -> str:
         """
         Returns a string that appropriately represents the Physical
         instance. The parameter,'template', allows two optional values:
         'html' and 'latex'. which will only be utilized if the Physical
         exists in the Jupyter/iPython environment.
         """
-        # Access req'd attributes
-        precision = self.precision
+        if format_spec is None:
+            format_spec = f".{self.precision}f"
         dims = self.dimensions
         factor = self.factor
         val = self.value
@@ -271,7 +271,7 @@ class Physical(object):
 
         # if not prefix_bool:
         #    return f"{value:.{precision}f}{space}{units}{pre_super}{exponent}{post_super}" 
-        return f"{value:.{precision}f}{space}{units}{pre_super}{exponent}{post_super}"
+        return f"{value:{format_spec}}{space}{units}{pre_super}{exponent}{post_super}"
 
     ### "Magic" Methods ###
 
@@ -302,9 +302,8 @@ class Physical(object):
     def __bool__(self):
         return True
 
-    # def __format__(self, fmt_spec = ''):
-    #     components = (format(c, fmt_spec) for c in self)
-    #     return '({}, {})'.format(*components)
+    def __format__(self, format_spec = ''):
+        return self._repr_template_(template="", format_spec=format_spec)
 
     def __hash__(self):
         return hash(

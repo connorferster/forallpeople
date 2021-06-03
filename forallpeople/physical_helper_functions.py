@@ -209,7 +209,7 @@ def _format_symbol(prefix: str, symbol: str, repr_format: str = "") -> str:
         ohm = "&#0937;"
     elif repr_format == "latex":
         dot_operator = " \\cdot "
-        ohm = "\\Omega"
+        ohm = "$\\Omega$"
         symbol_string_open = "\\text{"
         symbol_string_close = "}"
 
