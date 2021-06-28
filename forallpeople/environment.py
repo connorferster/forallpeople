@@ -1,4 +1,9 @@
 import builtins
+from decimal import Decimal
+import pathlib
+import json
+import re
+from dimensions import Dimensions, DimensionError
 
 class Environment:
     """
@@ -19,7 +24,7 @@ class Environment:
     def __call__(self, env_name: str, ret: bool = False):
         self.environment = self._load_environment(env_name)
         for name, definition in self.environment.items():
-            factor = round(definition.get("Factor", 1), Physical._total_precision)
+            factor = round(definition.get("Factor", 1), self._physical_class._total_precision)
             dimension = definition.get("Dimension")
             value = definition.get("Value", 1)
             if factor == 1 and value == 1:
@@ -119,3 +124,12 @@ class Environment:
             setattr(builtins, var_name, physical)
         
 
+def parse_json_factor(factor: str) -> List[str]:
+    """
+    Returns a list representing the elements given in the "Factor" attribute
+    of a json environment file, separated by "*" and "/" operators.
+
+    e.g. factor = "0.3048**3/12**3/0.45359237/9.80665"
+    would return -> ["0.3048", "**", "3", "/", "12"]
+    """
+    pass

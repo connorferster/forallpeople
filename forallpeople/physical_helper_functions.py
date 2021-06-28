@@ -15,7 +15,7 @@
 from __future__ import annotations
 from collections import ChainMap
 import functools
-from typing import Any, Union, Optional
+from typing import Any, Union, Optional, List
 from forallpeople.dimensions import Dimensions
 import forallpeople.tuplevector as vec
 
@@ -101,7 +101,6 @@ def _evaluate_dims_and_factor(
     return (symbol, prefix_bool)
 
 
-#@functools.lru_cache(maxsize=None) #Not possible to use LRU cache here?
 def _get_units_by_factor(
     factor: float, dims: Dimensions, units_env: dict, power: Union[int, float]
 ) -> dict:
@@ -271,23 +270,23 @@ def _powers_of_derived(dims: Dimensions, units_env: dict) -> Union[int, float]:
     quotient_2 = _dims_basis_multiple(dims)
     quotient_1_mean = None
     if quotient_1 is not None:
-        quotient_1_mean = vec.mean(quotient_1, ignore_empty=True)
+        quotient_1_mean = cache_vec_mean(quotient_1, ignore_empty=True)
         
     if quotient_1 is not None and quotient_1_mean != -1:
-        power_of_derived = vec.mean(quotient_1, ignore_empty=True)
-        base_dimensions = vec.divide(dims, quotient_1, ignore_zeros=True)
+        power_of_derived = cache_vec_mean(quotient_1, ignore_empty=True)
+        base_dimensions = cache_vec_divide(dims, quotient_1, ignore_zeros=True)
         return ((power_of_derived or 1), base_dimensions)
     elif quotient_1_mean == -1 and quotient_2 is not None: # Situations like Hz and s
-        power_of_basis = vec.mean(quotient_2, ignore_empty=True)
-        base_dimensions = vec.divide(dims, quotient_2, ignore_zeros=True)
+        power_of_basis = cache_vec_mean(quotient_2, ignore_empty=True)
+        base_dimensions = cache_vec_divide(dims, quotient_2, ignore_zeros=True)
         return ((power_of_basis or 1), base_dimensions)
     elif quotient_1_mean == -1: # Now we can proceed with an inverse  unit
-        power_of_derived = vec.mean(quotient_1, ignore_empty=True)
-        base_dimensions = vec.divide(dims, quotient_1, ignore_zeros=True)
+        power_of_derived = cache_vec_mean(quotient_1, ignore_empty=True)
+        base_dimensions = cache_vec_divide(dims, quotient_1, ignore_zeros=True)
         return ((power_of_derived or 1), base_dimensions)
     elif quotient_2 is not None:
-        power_of_basis = vec.mean(quotient_2, ignore_empty=True)
-        base_dimensions = vec.divide(dims, quotient_2, ignore_zeros=True)
+        power_of_basis = cache_vec_mean(quotient_2, ignore_empty=True)
+        base_dimensions = cache_vec_divide(dims, quotient_2, ignore_zeros=True)
         return ((power_of_basis or 1), base_dimensions)
     else:
         return (1, dims)
@@ -308,8 +307,8 @@ def _dims_quotient(dimensions: Dimensions, units_env: dict) -> Optional[Dimensio
     quotient_result = None
     for dimension_key in all_units.keys():
         if _check_dims_parallel(dimension_key, dimensions):
-            quotient = vec.divide(dimensions, dimension_key, ignore_zeros=True)
-            mean = vec.mean(quotient, ignore_empty=True)
+            quotient = cache_vec_divide(dimensions, dimension_key, ignore_zeros=True)
+            mean = cache_vec_mean(quotient, ignore_empty=True)
             if mean == -1: 
                 potential_inv = quotient
             elif -1 < mean < 1:
@@ -318,6 +317,21 @@ def _dims_quotient(dimensions: Dimensions, units_env: dict) -> Optional[Dimensio
                 quotient_result = quotient
     return quotient_result or potential_inv # Inversion ok, if only option
 
+
+@functools.lru_cache(maxsize=None)
+def cache_vec_divide(tuple_a, tuple_b, ignore_zeros):
+    """
+    Wraps vec.divide with an lru_cache
+    """
+    return vec.divide(tuple_a, tuple_b, ignore_zeros)
+
+
+@functools.lru_cache(maxsize=None)
+def cache_vec_mean(tuple_a, ignore_empty):
+    """
+    Wraps vec.mean with an lru_cache
+    """
+    return vec.mean(tuple_a, ignore_empty)  
 
 
 @functools.lru_cache(maxsize=None)
