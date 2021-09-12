@@ -279,16 +279,15 @@ class Physical(object):
 
     def __float__(self):
         value = self.value
-        dims = self.dimensions
         factor = self.factor
+        if factor != 1:
+            return value * factor
+        dims = self.dimensions
         prefixed = self.prefixed
         env_dims = environment.units_by_dimension or dict()
         power, _ = phf._powers_of_derived(dims, env_dims)
-        if factor != 1:
-            float_value = value * factor
-        else:
-            float_value = phf._auto_prefix_value(value, power, prefixed)
-        return float(float_value)
+        float_value = phf._auto_prefix_value(value, power, prefixed)
+        return float_value
 
     def __int__(self):
         return int(float(self))

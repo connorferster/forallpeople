@@ -371,7 +371,8 @@ def _auto_prefix(value: float, power: Union[int, float], kg: bool = False) -> st
     if kg:
         kg_factor = 1000
     prefixes = _prefixes
-    if abs(value) >= 1:
+    abs_val = abs(value)
+    if abs_val >= 1:
         for prefix, power_of_ten in prefixes.items():
             if abs(value) >= (power_of_ten / kg_factor) ** abs(power):
                 return prefix
@@ -380,7 +381,7 @@ def _auto_prefix(value: float, power: Union[int, float], kg: bool = False) -> st
         # Get the smallest prefix to start...
         previous_prefix = reverse_prefixes[0][0]
         for prefix, power_of_ten in reversed(list(prefixes.items())):
-            if abs(value) < (power_of_ten / kg_factor) ** abs(power):
+            if abs_val < (power_of_ten / kg_factor) ** abs(power):
                 return previous_prefix
             else:
                 previous_prefix = prefix
@@ -415,6 +416,7 @@ def _auto_prefix_value(
     Converts the value to a prefixed value if the instance has a symbol defined in
     the environment (i.e. is in the defined units dict)
     """
+    abs_val = abs(value)
     if prefixed == "unity": return value
     kg_factor = 1
     if kg:
@@ -423,16 +425,16 @@ def _auto_prefix_value(
     else: prefixes = _prefixes
     if prefixed:
         return value / ((prefixes[prefixed] / kg_factor) ** power)
-    if abs(value) >= 1:
+    if abs_val >= 1:
         for prefix, power_of_ten in prefixes.items():
-            if abs(value) >= (power_of_ten / kg_factor) ** abs(power):
+            if abs_val >= (power_of_ten / kg_factor) ** abs(power):
                 return value / ((power_of_ten / kg_factor) ** power)
     else:
         reverse_prefixes = sorted(prefixes.items(), key=lambda pre_fact: pre_fact[1])
         # Get the smallest factor to start...
         previous_power_of_ten = reverse_prefixes[0][1]
         for prefix, power_of_ten in reversed(list(prefixes.items())):
-            if abs(value) < (power_of_ten / kg_factor) ** abs(power):
+            if abs_val < (power_of_ten / kg_factor) ** abs(power):
                 return value / ((previous_power_of_ten / kg_factor) ** abs(power))
             else:
                 previous_power_of_ten = power_of_ten
