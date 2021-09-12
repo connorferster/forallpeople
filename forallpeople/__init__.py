@@ -201,6 +201,7 @@ class Physical(object):
         prefix = ""
         prefixed = self.prefixed
         eps = self._eps
+        kg_bool = False
 
         # Access external environment
         env_fact = environment.units_by_factor or dict()
@@ -222,9 +223,10 @@ class Physical(object):
         elif prefix_bool and prefixed:
             prefix = prefixed
         elif prefix_bool and dims_orig == Dimensions(1, 0, 0, 0, 0, 0, 0):
-            prefix = phf._auto_prefix(val, power, kg=True)
+            kg_bool = True
+            prefix = phf._auto_prefix(val, power, kg=kg_bool)
         elif prefix_bool:
-            prefix = phf._auto_prefix(val, power, kg=False)
+            prefix = phf._auto_prefix(val, power, kg=kg_bool)
 
         # Format the exponent (may not be used, though)
         exponent = phf._format_exponent(power, repr_format=template, eps=eps)
@@ -250,10 +252,7 @@ class Physical(object):
         if prefix_bool:
             # If the quantity has a "pre-fixed" prefix, it will override
             # the value generated in _auto_prefix_value
-            if dims_orig == Dimensions(1, 0, 0, 0, 0, 0, 0):
-                value = phf._auto_prefix_value(val, power, prefixed, kg=True)
-            else:
-                value = phf._auto_prefix_value(val, power, prefixed)
+            value = phf._auto_prefix_value(val, power, prefix, kg_bool)
 
         pre_super = ""
         post_super = ""
@@ -282,11 +281,18 @@ class Physical(object):
         factor = self.factor
         if factor != 1:
             return value * factor
+        kg_bool = False
         dims = self.dimensions
-        prefixed = self.prefixed
         env_dims = environment.units_by_dimension or dict()
         power, _ = phf._powers_of_derived(dims, env_dims)
-        float_value = phf._auto_prefix_value(value, power, prefixed)
+        dim_components = phf._get_unit_components_from_dims(dims)
+        if len(dim_components) == 1 and dim_components[0][0] == "kg":
+            kg_bool = True
+        if self.prefixed:
+            prefix = self.prefixed
+        else:
+            prefix = phf._auto_prefix(value, power, kg_bool)
+        float_value = phf._auto_prefix_value(value, power, prefix, kg_bool)
         return float_value
 
     def __int__(self):

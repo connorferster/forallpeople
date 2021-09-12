@@ -293,14 +293,14 @@ def test__auto_prefix_kg():
 
 def test__auto_prefix_value():
     func = phf._auto_prefix_value
-    assert func(1500, 1) == 1.5
-    assert func(1500, 2) == 1500
-    assert func(52500, 1) == 52.5
-    assert func(1.5e6, 2) == 1.5
-    assert func(1.5e6, 1) == 1.5
-    assert func(1.5e-6, 2) == 1.5
-    assert func(1.5e-5, 1) == pytest.approx(15)
-    assert func(1.5e-5, 2) == pytest.approx(15)
+    assert func(1500, 1, "k") == 1.5
+    assert func(1500, 2, "") == 1500
+    assert func(52500, 1, "k") == 52.5
+    assert func(1.5e6, 2, "k") == 1.5
+    assert func(1.5e6, 1, "M") == 1.5
+    assert func(1.5e-6, 2, "m") == 1.5
+    assert func(1.5e-5, 1, "μ") == pytest.approx(15)
+    assert func(1.5e-5, 2, "m") == pytest.approx(15)
 
 
 def test___eq__():

@@ -15,6 +15,7 @@
 from __future__ import annotations
 from collections import ChainMap
 import functools
+import math
 from typing import Any, Union, Optional, List, Callable
 from forallpeople.dimensions import Dimensions
 import forallpeople.tuplevector as vec
@@ -39,6 +40,26 @@ _prefixes = { # Do not add custom prefixes between Y and y, e.g. "c": 1e-2
     "a": 1e-18,
     "z": 1e-21,
     "y": 1e-24,
+}
+
+_prefix_lookups = { # Do not add custom prefixes between Y and y, e.g. "c": 1e-2
+    24:"Y", 
+    21:"Z", 
+    18:"E", 
+    15:"P", 
+    12:"T", 
+    9:"G", 
+    6:"M", 
+    3:"k", 
+    0: "",
+    -3: "m", 
+    -6: "μ", 
+    -9: "n",
+    -12: "p",
+    -15: "f",
+    -18: "a",
+    -21: "z",
+    -24: "y",
 }
 
 _additional_prefixes = {
@@ -367,24 +388,18 @@ def _auto_prefix(value: float, power: Union[int, float], kg: bool = False) -> st
     Returns a string "prefix" of an appropriate value if self.value should be prefixed
     i.e. it is a big enough number (e.g. 5342 >= 1000; returns "k" for "kilo")
     """
-    kg_factor = 1
+    kg_factor = 0
     if kg:
-        kg_factor = 1000
+        kg_factor = 3
     prefixes = _prefixes
     abs_val = abs(value)
-    if abs_val >= 1:
-        for prefix, power_of_ten in prefixes.items():
-            if abs(value) >= (power_of_ten / kg_factor) ** abs(power):
-                return prefix
-    else:
-        reverse_prefixes = sorted(prefixes.items(), key=lambda prefix: prefix[0])
-        # Get the smallest prefix to start...
-        previous_prefix = reverse_prefixes[0][0]
-        for prefix, power_of_ten in reversed(list(prefixes.items())):
-            if abs_val < (power_of_ten / kg_factor) ** abs(power):
-                return previous_prefix
-            else:
-                previous_prefix = prefix
+    value_power_of_ten = math.log10(abs_val)
+    value_power_of_1000 = value_power_of_ten // (3 * power)
+    prefix_power_of_1000 = value_power_of_1000 * 3 + kg_factor
+    try: 
+        return _prefix_lookups[prefix_power_of_1000]
+    except KeyError:
+        return None
 
 
 def _auto_prefix_kg(value: float, power: Union[int, float]) -> str:
@@ -410,34 +425,56 @@ def _auto_prefix_kg(value: float, power: Union[int, float]) -> str:
 
 
 def _auto_prefix_value(
-    value: float, power: Union[int, float], prefixed: str = "", kg: bool = False,
+    value: float, power: Union[int, float], prefix: str, kg_bool = False,
 ) -> float:
     """
     Converts the value to a prefixed value if the instance has a symbol defined in
     the environment (i.e. is in the defined units dict)
     """
-    abs_val = abs(value)
-    if prefixed == "unity": return value
     kg_factor = 1
-    if kg:
+    if kg_bool:
         kg_factor = 1000
-    if prefixed in _additional_prefixes: prefixes = _additional_prefixes
-    else: prefixes = _prefixes
-    if prefixed:
-        return value / ((prefixes[prefixed] / kg_factor) ** power)
-    if abs_val >= 1:
-        for prefix, power_of_ten in prefixes.items():
-            if abs_val >= (power_of_ten / kg_factor) ** abs(power):
-                return value / ((power_of_ten / kg_factor) ** power)
-    else:
-        reverse_prefixes = sorted(prefixes.items(), key=lambda pre_fact: pre_fact[1])
-        # Get the smallest factor to start...
-        previous_power_of_ten = reverse_prefixes[0][1]
-        for prefix, power_of_ten in reversed(list(prefixes.items())):
-            if abs_val < (power_of_ten / kg_factor) ** abs(power):
-                return value / ((previous_power_of_ten / kg_factor) ** abs(power))
-            else:
-                previous_power_of_ten = power_of_ten
+    if prefix in _additional_prefixes:
+        return value / ((_additional_prefixes[prefix] / kg_factor) ** power)
+    if 0 < value < 1:
+        return value / ((_prefixes[prefix] / kg_factor ) ** abs(power))
+    return value / ((_prefixes[prefix] / kg_factor) ** power)
+
+
+
+
+# def _auto_prefix_value(
+#     value: float, power: Union[int, float], prefixed: str = "", kg: bool = False,
+# ) -> float:
+#     """
+#     Converts the value to a prefixed value if the instance has a symbol defined in
+#     the environment (i.e. is in the defined units dict)
+#     """
+#     abs_val = abs(value)
+#     if prefixed == "unity": return value
+#     kg_factor = 1
+#     if kg:
+#         kg_factor = 1000
+#     if prefixed in _additional_prefixes: prefixes = _additional_prefixes
+#     else: prefixes = _prefixes
+#     if prefixed:
+#         return value / ((prefixes[prefixed] / kg_factor) ** power)
+
+
+#     if abs_val >= 1:
+        
+#         for prefix, power_of_ten in prefixes.items():
+#             if abs_val >= (power_of_ten / kg_factor) ** abs(power):
+#                 return value / ((power_of_ten / kg_factor) ** power)
+#     else:
+#         reverse_prefixes = sorted(prefixes.items(), key=lambda pre_fact: pre_fact[1])
+#         # Get the smallest factor to start...
+#         previous_power_of_ten = reverse_prefixes[0][1]
+#         for prefix, power_of_ten in reversed(list(prefixes.items())):
+#             if abs_val < (power_of_ten / kg_factor) ** abs(power):
+#                 return value / ((previous_power_of_ten / kg_factor) ** abs(power))
+#             else:
+#                 previous_power_of_ten = power_of_ten
 
 
 def swap_scientific_notation_float(value: float, precision: int) -> str:
