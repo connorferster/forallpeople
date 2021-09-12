@@ -100,9 +100,9 @@ def _evaluate_dims_and_factor(
         symbol = ""
     return (symbol, prefix_bool)
 
-
+@functools.lru_cache(maxsize=None)
 def _get_units_by_factor(
-    factor: float, dims: Dimensions, units_env: dict, power: Union[int, float]
+    factor: float, dims: Dimensions, units_env: Callable, power: Union[int, float]
 ) -> dict:
     """
     Returns a units_dict from the environment instance if the numerical
@@ -112,7 +112,6 @@ def _get_units_by_factor(
     """
     new_factor = factor ** (1 / power)
     units_match = units_env().get(round(new_factor, _total_precision), dict())
-
     try:
         units_name = tuple(units_match.keys())[0]
     except IndexError:
@@ -291,7 +290,7 @@ def _powers_of_derived(dims: Dimensions, units_env: Callable) -> Union[int, floa
     else:
         return (1, dims)
 
-# @functools.lru_cache(maxsize=None)
+@functools.lru_cache(maxsize=None)
 def _dims_quotient(dimensions: Dimensions, units_env: Callable) -> Optional[Dimensions]:
     """
     Returns a Dimensions object representing the element-wise quotient between
