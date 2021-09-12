@@ -15,7 +15,7 @@
 from __future__ import annotations
 from collections import ChainMap
 import functools
-from typing import Any, Union, Optional, List
+from typing import Any, Union, Optional, List, Callable
 from forallpeople.dimensions import Dimensions
 import forallpeople.tuplevector as vec
 
@@ -62,13 +62,13 @@ _superscripts = {
 _eps = 1e-7
 _total_precision = 6
 
-
+@functools.lru_cache(maxsize=None)
 def _evaluate_dims_and_factor(
     dims_orig: Dimensions,
     factor: Union[int, float],
     power: Union[int, float],
-    env_fact: dict,
-    env_dims: dict,
+    env_fact: Callable,
+    env_dims: Callable,
 ) -> tuple:
     """Part of the __str__ and __repr__ process.
     Returns a tuple containing the
@@ -111,7 +111,7 @@ def _get_units_by_factor(
     equal to 'dims'. Returns an empty dict, otherwise.
     """
     new_factor = factor ** (1 / power)
-    units_match = units_env.get(round(new_factor, _total_precision), dict())
+    units_match = units_env().get(round(new_factor, _total_precision), dict())
 
     try:
         units_name = tuple(units_match.keys())[0]
@@ -130,7 +130,7 @@ def _get_derived_unit(dims: Dimensions, units_env: dict) -> dict:
     then its original dimensions are checked instead of the altered ones.
     Returns {} if no unit definition matches 'dimensions'.
     """
-    derived_units = units_env.get("derived")
+    derived_units = units_env().get("derived")
     return derived_units.get(dims, dict())
 
 
@@ -252,8 +252,8 @@ def _get_superscript_string(exponent: str) -> str:
 
 ### Mathematical helper functions ###
 
-
-def _powers_of_derived(dims: Dimensions, units_env: dict) -> Union[int, float]:
+@functools.lru_cache(maxsize=None)
+def _powers_of_derived(dims: Dimensions, units_env: Callable) -> Union[int, float]:
     """
     Returns an integer value that represents the exponent of a unit if the
     dimensions
@@ -291,16 +291,16 @@ def _powers_of_derived(dims: Dimensions, units_env: dict) -> Union[int, float]:
     else:
         return (1, dims)
 
-#@functools.lru_cache(maxsize=None) Cannot use cache with dict input
-def _dims_quotient(dimensions: Dimensions, units_env: dict) -> Optional[Dimensions]:
+# @functools.lru_cache(maxsize=None)
+def _dims_quotient(dimensions: Dimensions, units_env: Callable) -> Optional[Dimensions]:
     """
     Returns a Dimensions object representing the element-wise quotient between
     'dimensions' and a defined unit if 'dimensions' is a scalar multiple
     of a defined unit in the global environment variable.
     Returns None otherwise.
     """
-    derived = units_env["derived"]
-    defined = units_env["defined"]
+    derived = units_env()["derived"]
+    defined = units_env()["defined"]
     all_units = ChainMap(defined, derived)
     potential_inv = None # A flag to catch a -1 value (an inversion)
     quotient = None

@@ -40,7 +40,7 @@ from typing import Union, Optional
 from forallpeople.dimensions import Dimensions
 import forallpeople.physical_helper_functions as phf
 import forallpeople.tuplevector as vec
-from forallpeople.si_environment import Environment
+from forallpeople.environment import Environment
 import builtins
 import sys
 import warnings
@@ -147,8 +147,8 @@ class Physical(object):
         """
         dims = self.dimensions
         env_dims = environment.units_by_dimension
-        derived = env_dims["derived"]
-        defined = env_dims["defined"]
+        derived = env_dims()["derived"]
+        defined = env_dims()["defined"]
         power, dims_orig = phf._powers_of_derived(dims, env_dims)
         if not unit_name:
             print("Available units: ")
@@ -205,6 +205,8 @@ class Physical(object):
         # Access external environment
         env_fact = environment.units_by_factor or dict()
         env_dims = environment.units_by_dimension or dict()
+
+
 
         # Do the expensive vector math method (call once, only)
         power, dims_orig = phf._powers_of_derived(dims, env_dims)
