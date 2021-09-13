@@ -153,7 +153,6 @@ def _get_derived_unit(dims: Dimensions, units_env: dict) -> dict:
     derived_units = units_env().get("derived")
     return derived_units.get(dims, dict())
 
-
 def _get_unit_string(unit_components: list, repr_format: str) -> str:
     """
     Part of the __str__ and __repr__ process. Returns a string representing
@@ -198,6 +197,7 @@ def _get_unit_string(unit_components: list, repr_format: str) -> str:
     return dot_operator.join(str_components)
 
 
+@functools.lru_cache(maxsize=None)
 def _get_unit_components_from_dims(dims: Dimensions):
     """
     Returns a list of tuples to represent the current units based
@@ -213,6 +213,7 @@ def _get_unit_components_from_dims(dims: Dimensions):
     return unit_components
 
 
+@functools.lru_cache(maxsize=None)
 def _format_symbol(prefix: str, symbol: str, repr_format: str = "") -> str:
     """
     Returns 'symbol' formatted appropriately for the 'repr_format' output.
