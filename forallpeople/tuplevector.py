@@ -3,13 +3,14 @@ tuplevector: Treat tuples of any kind (e.g. namedtuple, NamedTuple)
 like one dimensional vectors!
 by Connor Ferster 03/2019
 """
-
+print("This one")
 # TODO: Explore idea of removing all checks entirely and using a decorator
 # function to wrap all vector functions (with try/excepts) to capture errors 
 # such as tuples of different lengths, elements that do not do math, or 
 # other type errors. Could vastly speed performance.
 
 from math import pi, acos, sqrt
+from numbers import Number
 from typing import Union, Any, Optional
 
 def same_shape(t1: tuple, t2: tuple) -> bool:
@@ -27,9 +28,11 @@ def valid_for_arithmetic(other: Any) -> bool:
     Returns False otherwise.
     """
     try:
-        sum(other) # This not a strong check but efficient
+        sum(other) # This not a strong check but efficient for collections
         return True
     except TypeError:
+        if isinstance(other, Number):
+            return True
         return False
 
 def tuple_check(t1: tuple, other: Any = None) -> Optional[bool]:
@@ -79,7 +82,11 @@ def cross(t1: tuple, t2: tuple) -> tuple:
         i = t1[1]*t2[2] - t2[1]*t1[2]
         j = -(t1[0]*t2[2] - t2[0]*t1[2])
         k = t1[0]*t2[1] - t2[0]*t1[1]
-        return type(t1)(*(i,j,k))
+        result = (i, j, k)
+        try:
+            return type(t1)(*result)
+        except TypeError:
+            return type(t1)(result)
     else:
         raise TypeError("Input tuples must be 3-dimensional. Got: {t1}, {t2}".format(t1=t1, t2=t2))
         
@@ -89,9 +96,20 @@ def add(t1: tuple, other: Union[tuple, int, float]) -> tuple:
     """
     _, other_tup = tuple_check(t1, other)
     if other_tup:
-        return type(t1)([elem + other[idx] for idx, elem in enumerate(t1)])
-    else: 
-        return type(t1)([elem + other for elem in t1])
+        result = tuple(elem + other[idx] for idx, elem in enumerate(t1))
+        try: 
+            return type(t1)(*result)
+        except TypeError:
+            return type(t1)(result)
+    else:
+        result = (elem + other for elem in t1)
+        try:
+            print("3")
+            return type(t1)(*result)
+        except TypeError:
+            print("4")
+            return type(t1)(result)
+
 
 def subtract(t1: tuple, other: Union[tuple, int, float]) -> tuple:
     """
@@ -99,9 +117,17 @@ def subtract(t1: tuple, other: Union[tuple, int, float]) -> tuple:
     """
     _, other_tup = tuple_check(t1, other)
     if other_tup:
-        return type(t1)([elem - other[idx] for idx, elem in enumerate(t1)])
-    else: 
-        return type(t1)([elem - other for elem in t1])
+        result = tuple(elem - other[idx] for idx, elem in enumerate(t1))
+        try: 
+            return type(t1)(*result)
+        except TypeError:
+            return type(t1)(result)
+    else:
+        result = (elem - other for elem in t1)
+        try:
+            return type(t1)(*result)
+        except TypeError:
+            return type(t1)(result)
         
 def multiply(t1: tuple, other: Union[tuple, int, float]) -> tuple:
     """
@@ -109,9 +135,17 @@ def multiply(t1: tuple, other: Union[tuple, int, float]) -> tuple:
     """
     _, other_tup = tuple_check(t1, other)
     if other_tup:
-        return type(t1)([elem * other[idx] for idx, elem in enumerate(t1)])
-    else: 
-        return type(t1)([elem * other for elem in t1])
+        result = tuple(elem * other[idx] for idx, elem in enumerate(t1))
+        try: 
+            return type(t1)(*result)
+        except TypeError:
+            return type(t1)(result)
+    else:
+        result = (elem * other for elem in t1)
+        try:
+            return type(t1)(*result)
+        except TypeError:
+            return type(t1)(result)
     
 def divide(t1: tuple, other: Union[tuple, int, float], 
            ignore_zeros:bool = False) -> tuple:    
@@ -123,19 +157,44 @@ def divide(t1: tuple, other: Union[tuple, int, float],
     """
     t1_tup, other_tup = tuple_check(t1, other)
     if other_tup:
-        return type(t1)([
-            elem / other[idx] 
-            if (other[idx] != 0 or ignore_zeros) 
-            else float('nan') 
-            for idx, elem in enumerate(t1)
-            ])
-    else: 
-        return type(t1)([
-            elem / other[idx] 
-            if (other != 0 or ignore_zeros) 
-            else float('nan') 
-            for idx, elem in enumerate(t1)
-            ])
+        if ignore_zeros:
+            result = tuple(
+                elem / other[idx]
+                if other[idx] != 0
+                else 0 
+                for idx, elem in enumerate(t1)
+                )
+        else:
+            result = tuple(
+                elem / other[idx]
+                if other[idx] != 0
+                else float('nan') 
+                for idx, elem in enumerate(t1)
+                )
+        try:
+            return type(t1)(*result)
+        except TypeError:
+            return type(t1)(result)
+    else:
+        if ignore_zeros:
+            result = tuple(
+                elem / other
+                if other != 0
+                else 0 
+                for idx, elem in enumerate(t1)
+            )
+        else:
+            result = tuple(
+                elem / other
+                if other != 0 
+                else 0 
+                for idx, elem in enumerate(t1)
+            )
+        try:
+            return type(t1)(*result)
+        except TypeError:
+            return type(t1)(result)
+
 
     # acc = {}
     # if valid_for_arithmetic(other) and not isinstance(other, tuple):
@@ -167,7 +226,11 @@ def vround(t: tuple, precision: int = 0) -> tuple:
     """
     t_tup = tuple_check(t)
     if t_tup:
-        return type(t)([round(t, precision) for elem in t])
+        result = tuple(round(elem, precision) for elem in t)
+        try:
+            return type(t)(*result)
+        except TypeError:
+            return type(t)(result)
 
 
 def mean(t: tuple, ignore_empty: bool = False) -> float:
