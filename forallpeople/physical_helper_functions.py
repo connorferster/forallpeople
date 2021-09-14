@@ -15,7 +15,8 @@
 from __future__ import annotations
 from collections import ChainMap
 import functools
-from typing import Any, Union, Optional
+import math
+from typing import Any, Union, Optional, List, Callable
 from forallpeople.dimensions import Dimensions
 import forallpeople.tuplevector as vec
 
@@ -41,6 +42,26 @@ _prefixes = { # Do not add custom prefixes between Y and y, e.g. "c": 1e-2
     "y": 1e-24,
 }
 
+_prefix_lookups = { # Do not add custom prefixes between Y and y, e.g. "c": 1e-2
+    24:"Y", 
+    21:"Z", 
+    18:"E", 
+    15:"P", 
+    12:"T", 
+    9:"G", 
+    6:"M", 
+    3:"k", 
+    0: "",
+    -3: "m", 
+    -6: "μ", 
+    -9: "n",
+    -12: "p",
+    -15: "f",
+    -18: "a",
+    -21: "z",
+    -24: "y",
+}
+
 _additional_prefixes = {
     "c": 1e-2,
 }
@@ -62,13 +83,13 @@ _superscripts = {
 _eps = 1e-7
 _total_precision = 6
 
-
+@functools.lru_cache(maxsize=None)
 def _evaluate_dims_and_factor(
     dims_orig: Dimensions,
     factor: Union[int, float],
     power: Union[int, float],
-    env_fact: dict,
-    env_dims: dict,
+    env_fact: Callable,
+    env_dims: Callable,
 ) -> tuple:
     """Part of the __str__ and __repr__ process.
     Returns a tuple containing the
@@ -100,10 +121,9 @@ def _evaluate_dims_and_factor(
         symbol = ""
     return (symbol, prefix_bool)
 
-
-#@functools.lru_cache(maxsize=None) #Not possible to use LRU cache here?
+@functools.lru_cache(maxsize=None)
 def _get_units_by_factor(
-    factor: float, dims: Dimensions, units_env: dict, power: Union[int, float]
+    factor: float, dims: Dimensions, units_env: Callable, power: Union[int, float]
 ) -> dict:
     """
     Returns a units_dict from the environment instance if the numerical
@@ -112,8 +132,7 @@ def _get_units_by_factor(
     equal to 'dims'. Returns an empty dict, otherwise.
     """
     new_factor = factor ** (1 / power)
-    units_match = units_env.get(round(new_factor, _total_precision), dict())
-
+    units_match = units_env().get(round(new_factor, _total_precision), dict())
     try:
         units_name = tuple(units_match.keys())[0]
     except IndexError:
@@ -131,9 +150,8 @@ def _get_derived_unit(dims: Dimensions, units_env: dict) -> dict:
     then its original dimensions are checked instead of the altered ones.
     Returns {} if no unit definition matches 'dimensions'.
     """
-    derived_units = units_env.get("derived")
+    derived_units = units_env().get("derived")
     return derived_units.get(dims, dict())
-
 
 def _get_unit_string(unit_components: list, repr_format: str) -> str:
     """
@@ -179,6 +197,7 @@ def _get_unit_string(unit_components: list, repr_format: str) -> str:
     return dot_operator.join(str_components)
 
 
+@functools.lru_cache(maxsize=None)
 def _get_unit_components_from_dims(dims: Dimensions):
     """
     Returns a list of tuples to represent the current units based
@@ -194,6 +213,7 @@ def _get_unit_components_from_dims(dims: Dimensions):
     return unit_components
 
 
+@functools.lru_cache(maxsize=None)
 def _format_symbol(prefix: str, symbol: str, repr_format: str = "") -> str:
     """
     Returns 'symbol' formatted appropriately for the 'repr_format' output.
@@ -253,8 +273,8 @@ def _get_superscript_string(exponent: str) -> str:
 
 ### Mathematical helper functions ###
 
-
-def _powers_of_derived(dims: Dimensions, units_env: dict) -> Union[int, float]:
+@functools.lru_cache(maxsize=None)
+def _powers_of_derived(dims: Dimensions, units_env: Callable) -> Union[int, float]:
     """
     Returns an integer value that represents the exponent of a unit if the
     dimensions
@@ -271,45 +291,45 @@ def _powers_of_derived(dims: Dimensions, units_env: dict) -> Union[int, float]:
     quotient_2 = _dims_basis_multiple(dims)
     quotient_1_mean = None
     if quotient_1 is not None:
-        quotient_1_mean = vec.mean(quotient_1, ignore_empty=True)
+        quotient_1_mean = cache_vec_mean(quotient_1, ignore_empty=True)
         
     if quotient_1 is not None and quotient_1_mean != -1:
-        power_of_derived = vec.mean(quotient_1, ignore_empty=True)
-        base_dimensions = vec.divide(dims, quotient_1, ignore_zeros=True)
+        power_of_derived = cache_vec_mean(quotient_1, ignore_empty=True)
+        base_dimensions = cache_vec_divide(dims, quotient_1, ignore_zeros=True)
         return ((power_of_derived or 1), base_dimensions)
     elif quotient_1_mean == -1 and quotient_2 is not None: # Situations like Hz and s
-        power_of_basis = vec.mean(quotient_2, ignore_empty=True)
-        base_dimensions = vec.divide(dims, quotient_2, ignore_zeros=True)
+        power_of_basis = cache_vec_mean(quotient_2, ignore_empty=True)
+        base_dimensions = cache_vec_divide(dims, quotient_2, ignore_zeros=True)
         return ((power_of_basis or 1), base_dimensions)
     elif quotient_1_mean == -1: # Now we can proceed with an inverse  unit
-        power_of_derived = vec.mean(quotient_1, ignore_empty=True)
-        base_dimensions = vec.divide(dims, quotient_1, ignore_zeros=True)
+        power_of_derived = cache_vec_mean(quotient_1, ignore_empty=True)
+        base_dimensions = cache_vec_divide(dims, quotient_1, ignore_zeros=True)
         return ((power_of_derived or 1), base_dimensions)
     elif quotient_2 is not None:
-        power_of_basis = vec.mean(quotient_2, ignore_empty=True)
-        base_dimensions = vec.divide(dims, quotient_2, ignore_zeros=True)
+        power_of_basis = cache_vec_mean(quotient_2, ignore_empty=True)
+        base_dimensions = cache_vec_divide(dims, quotient_2, ignore_zeros=True)
         return ((power_of_basis or 1), base_dimensions)
     else:
         return (1, dims)
 
-#@functools.lru_cache(maxsize=None) Cannot use cache with dict input
-def _dims_quotient(dimensions: Dimensions, units_env: dict) -> Optional[Dimensions]:
+@functools.lru_cache(maxsize=None)
+def _dims_quotient(dimensions: Dimensions, units_env: Callable) -> Optional[Dimensions]:
     """
     Returns a Dimensions object representing the element-wise quotient between
     'dimensions' and a defined unit if 'dimensions' is a scalar multiple
     of a defined unit in the global environment variable.
     Returns None otherwise.
     """
-    derived = units_env["derived"]
-    defined = units_env["defined"]
+    derived = units_env()["derived"]
+    defined = units_env()["defined"]
     all_units = ChainMap(defined, derived)
     potential_inv = None # A flag to catch a -1 value (an inversion)
     quotient = None
     quotient_result = None
     for dimension_key in all_units.keys():
         if _check_dims_parallel(dimension_key, dimensions):
-            quotient = vec.divide(dimensions, dimension_key, ignore_zeros=True)
-            mean = vec.mean(quotient, ignore_empty=True)
+            quotient = cache_vec_divide(dimensions, dimension_key, ignore_zeros=True)
+            mean = cache_vec_mean(quotient, ignore_empty=True)
             if mean == -1: 
                 potential_inv = quotient
             elif -1 < mean < 1:
@@ -318,6 +338,21 @@ def _dims_quotient(dimensions: Dimensions, units_env: dict) -> Optional[Dimensio
                 quotient_result = quotient
     return quotient_result or potential_inv # Inversion ok, if only option
 
+
+@functools.lru_cache(maxsize=None)
+def cache_vec_divide(tuple_a, tuple_b, ignore_zeros):
+    """
+    Wraps vec.divide with an lru_cache
+    """
+    return vec.divide(tuple_a, tuple_b, ignore_zeros)
+
+
+@functools.lru_cache(maxsize=None)
+def cache_vec_mean(tuple_a, ignore_empty):
+    """
+    Wraps vec.mean with an lru_cache
+    """
+    return vec.mean(tuple_a, ignore_empty)  
 
 
 @functools.lru_cache(maxsize=None)
@@ -354,23 +389,18 @@ def _auto_prefix(value: float, power: Union[int, float], kg: bool = False) -> st
     Returns a string "prefix" of an appropriate value if self.value should be prefixed
     i.e. it is a big enough number (e.g. 5342 >= 1000; returns "k" for "kilo")
     """
-    kg_factor = 1
+    kg_factor = 0
     if kg:
-        kg_factor = 1000
+        kg_factor = 3
     prefixes = _prefixes
-    if abs(value) >= 1:
-        for prefix, power_of_ten in prefixes.items():
-            if abs(value) >= (power_of_ten / kg_factor) ** abs(power):
-                return prefix
-    else:
-        reverse_prefixes = sorted(prefixes.items(), key=lambda prefix: prefix[0])
-        # Get the smallest prefix to start...
-        previous_prefix = reverse_prefixes[0][0]
-        for prefix, power_of_ten in reversed(list(prefixes.items())):
-            if abs(value) < (power_of_ten / kg_factor) ** abs(power):
-                return previous_prefix
-            else:
-                previous_prefix = prefix
+    abs_val = abs(value)
+    value_power_of_ten = math.log10(abs_val)
+    value_power_of_1000 = value_power_of_ten // (3 * power)
+    prefix_power_of_1000 = value_power_of_1000 * 3 + kg_factor
+    try: 
+        return _prefix_lookups[prefix_power_of_1000]
+    except KeyError:
+        return None
 
 
 def _auto_prefix_kg(value: float, power: Union[int, float]) -> str:
@@ -396,33 +426,56 @@ def _auto_prefix_kg(value: float, power: Union[int, float]) -> str:
 
 
 def _auto_prefix_value(
-    value: float, power: Union[int, float], prefixed: str = "", kg: bool = False,
+    value: float, power: Union[int, float], prefix: str, kg_bool = False,
 ) -> float:
     """
     Converts the value to a prefixed value if the instance has a symbol defined in
     the environment (i.e. is in the defined units dict)
     """
-    if prefixed == "unity": return value
     kg_factor = 1
-    if kg:
+    if kg_bool:
         kg_factor = 1000
-    if prefixed in _additional_prefixes: prefixes = _additional_prefixes
-    else: prefixes = _prefixes
-    if prefixed:
-        return value / ((prefixes[prefixed] / kg_factor) ** power)
-    if abs(value) >= 1:
-        for prefix, power_of_ten in prefixes.items():
-            if abs(value) >= (power_of_ten / kg_factor) ** abs(power):
-                return value / ((power_of_ten / kg_factor) ** power)
-    else:
-        reverse_prefixes = sorted(prefixes.items(), key=lambda pre_fact: pre_fact[1])
-        # Get the smallest factor to start...
-        previous_power_of_ten = reverse_prefixes[0][1]
-        for prefix, power_of_ten in reversed(list(prefixes.items())):
-            if abs(value) < (power_of_ten / kg_factor) ** abs(power):
-                return value / ((previous_power_of_ten / kg_factor) ** abs(power))
-            else:
-                previous_power_of_ten = power_of_ten
+    if prefix in _additional_prefixes:
+        return value / ((_additional_prefixes[prefix] / kg_factor) ** power)
+    if 0 < value < 1:
+        return value / ((_prefixes[prefix] / kg_factor ) ** abs(power))
+    return value / ((_prefixes[prefix] / kg_factor) ** power)
+
+
+
+
+# def _auto_prefix_value(
+#     value: float, power: Union[int, float], prefixed: str = "", kg: bool = False,
+# ) -> float:
+#     """
+#     Converts the value to a prefixed value if the instance has a symbol defined in
+#     the environment (i.e. is in the defined units dict)
+#     """
+#     abs_val = abs(value)
+#     if prefixed == "unity": return value
+#     kg_factor = 1
+#     if kg:
+#         kg_factor = 1000
+#     if prefixed in _additional_prefixes: prefixes = _additional_prefixes
+#     else: prefixes = _prefixes
+#     if prefixed:
+#         return value / ((prefixes[prefixed] / kg_factor) ** power)
+
+
+#     if abs_val >= 1:
+        
+#         for prefix, power_of_ten in prefixes.items():
+#             if abs_val >= (power_of_ten / kg_factor) ** abs(power):
+#                 return value / ((power_of_ten / kg_factor) ** power)
+#     else:
+#         reverse_prefixes = sorted(prefixes.items(), key=lambda pre_fact: pre_fact[1])
+#         # Get the smallest factor to start...
+#         previous_power_of_ten = reverse_prefixes[0][1]
+#         for prefix, power_of_ten in reversed(list(prefixes.items())):
+#             if abs_val < (power_of_ten / kg_factor) ** abs(power):
+#                 return value / ((previous_power_of_ten / kg_factor) ** abs(power))
+#             else:
+#                 previous_power_of_ten = power_of_ten
 
 
 def swap_scientific_notation_float(value: float, precision: int) -> str:

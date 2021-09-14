@@ -3,81 +3,73 @@ tuplevector: Treat tuples of any kind (e.g. namedtuple, NamedTuple)
 like one dimensional vectors!
 by Connor Ferster 03/2019
 """
-
+print("This one")
 # TODO: Explore idea of removing all checks entirely and using a decorator
 # function to wrap all vector functions (with try/excepts) to capture errors 
 # such as tuples of different lengths, elements that do not do math, or 
 # other type errors. Could vastly speed performance.
 
 from math import pi, acos, sqrt
-from typing import Union, Any
-
-def collapse_to_tuple(d: dict, tuple_type: type) -> tuple:
-    """Returns a tuple (or namedtuple type) for the values
-    stored in the dict, 'd' as a 'tuple_type'."""
-    if tuple_type is not tuple:
-        t = tuple_type(*d.values())
-    else:
-        t = tuple(d.values())
-    return t
+from numbers import Number
+from typing import Union, Any, Optional
 
 def same_shape(t1: tuple, t2: tuple) -> bool:
     """
     Returns True if t1 and t2 are the same shape. 
     False, otherwise."""
-    if t1 and t2:
+    try:
         return len(t1) == len(t2)
-    return False
+    except:
+        return False
 
 def valid_for_arithmetic(other: Any) -> bool:
     """
     Returns True if object 'other' is valid for arithmetic operations. 
     Returns False otherwise.
     """
-    # Faster check
-    if isinstance(other, (int, float)):
+    try:
+        sum(other) # This not a strong check but efficient for collections
         return True
-    # Slower check that captures any object with implemented math operations
-    else:
-        math_ops = set(("__add__", "__sub__", "__mul__", "__truediv__", "__pow__"))
-        obj_methods = set(dir(other))
-        return math_ops <= obj_methods # 'math_ops' *is a subset of* 'obj_methods'
+    except TypeError:
+        if isinstance(other, Number):
+            return True
+        return False
 
-def tuple_valid_for_arithmetic(t: tuple) -> bool:
-    """
-    Returns True if all the items in, 't' are valid for arithmetic
-    operations. Returns False otherwise.
-    """
-    if not isinstance(t, tuple): return False
-    for item in t:
-        if not valid_for_arithmetic(item): return False
-    return True
-
-def tuple_check(t1: tuple, other: Any = None) -> None:
+def tuple_check(t1: tuple, other: Any = None) -> Optional[bool]:
     """
     Returns None. Raises error if any of the tuple validation tests fail.
     """
-    if not isinstance(t1, tuple): 
+    is_t1_tuple = isinstance(t1, tuple)
+    is_other_tuple = isinstance(other, tuple)
+    is_t1_valid = valid_for_arithmetic(t1)
+    is_other_valid = valid_for_arithmetic(other)
+    if (is_t1_tuple and is_t1_valid and other is None):
+        return True
+    if (is_t1_tuple and is_t1_valid and is_other_valid and is_other_tuple):
+        return (True, True)
+    elif (is_t1_tuple and is_t1_valid and is_other_valid and not is_other_tuple):
+        return (True, False)
+    elif not is_t1_tuple: 
         raise ValueError(f"Input object, {t1}, is not a valid tuple: first arg must be tuple.")
-    if not tuple_valid_for_arithmetic(t1):
+    elif not is_t1_valid:
         raise ValueError(f"Input tuple {t1} is not valid for arithmetic operations.")
-    if not other is None:
-        if isinstance(other, tuple) and not same_shape(t1, other):
+    elif other is not None:
+        if is_other_tuple and not same_shape(t1, other):
             raise ValueError(f"Input tuples must be same shape, not {len(t1)} and {len(other)}.")
-        if isinstance(other, tuple) and not tuple_valid_for_arithmetic(other):
+        if is_other_tuple and not is_other_valid:
             raise ValueError(f"Input tuple, {other}, is not valid for arithmetic operations.")
-        if not isinstance(other, tuple) and not valid_for_arithmetic(other):
+        if not is_other_tuple and not valid_for_arithmetic(other):
             raise ValueError(f"Input object, {other}, is not valid for arithmetic operations.")
 
 def dot(t1: tuple, t2: tuple) -> float:
     """
     Returns the dot product of the tuples, 't1' and 't2'.
     """
-    tuple_check(t1, t2)
-    dot = 0
-    for idx, val in enumerate(t1):
-        dot += val * t2[idx]
-    return dot
+    _, t2_tup = tuple_check(t1, t2)
+    if t2_tup:
+        return sum([elem * t2[idx] for idx, elem in enumerate(t1)])
+    else: 
+        raise ValueError(f"Input tuples must be the same length. Got: {t1}, {t2}")
     
 def cross(t1: tuple, t2: tuple) -> tuple:
     """
@@ -85,15 +77,16 @@ def cross(t1: tuple, t2: tuple) -> tuple:
     (Raises error if tuples are not 3-dimensional). Maintains the tuple type
     't1' (e.g. if it is a namedtuple).
     """
-    tuple_check(t1, t2)
+    t1_tup, other_tup = tuple_check(t1, t2)
     if len(t1) == len(t2) == 3:
         i = t1[1]*t2[2] - t2[1]*t1[2]
         j = -(t1[0]*t2[2] - t2[0]*t1[2])
         k = t1[0]*t2[1] - t2[0]*t1[1]
-        if type(t1) is tuple:
-            return (i,j,k)
-        else:
-            return type(t1)(*(i,j,k))
+        result = (i, j, k)
+        try:
+            return type(t1)(*result)
+        except TypeError:
+            return type(t1)(result)
     else:
         raise TypeError("Input tuples must be 3-dimensional. Got: {t1}, {t2}".format(t1=t1, t2=t2))
         
@@ -101,37 +94,58 @@ def add(t1: tuple, other: Union[tuple, int, float]) -> tuple:
     """
     Returns a tuple of element-wise multiplication of 't1' and 'other'
     """
-    if valid_for_arithmetic(other) and not isinstance(other, tuple):
-        tuple_check(t1)
-        acc = {idx: val+other for idx, val in enumerate(t1)}
-    else: 
-        tuple_check(t1, other)
-        acc = {idx: val+other[idx] for idx, val in enumerate(t1)}
-    return collapse_to_tuple(acc, type(t1))
+    _, other_tup = tuple_check(t1, other)
+    if other_tup:
+        result = tuple(elem + other[idx] for idx, elem in enumerate(t1))
+        try: 
+            return type(t1)(*result)
+        except TypeError:
+            return type(t1)(result)
+    else:
+        result = (elem + other for elem in t1)
+        try:
+            print("3")
+            return type(t1)(*result)
+        except TypeError:
+            print("4")
+            return type(t1)(result)
+
 
 def subtract(t1: tuple, other: Union[tuple, int, float]) -> tuple:
     """
     Returns a tuple of element-wise multiplication of 't1' and other
     """
-    if valid_for_arithmetic(other) and not isinstance(other, tuple):
-        tuple_check(t1)
-        acc = {idx: val-other for idx, val in enumerate(t1)}
-    else: 
-        tuple_check(t1, other)
-        acc = {idx: val-other[idx] for idx, val in enumerate(t1)}
-    return collapse_to_tuple(acc, type(t1))
+    _, other_tup = tuple_check(t1, other)
+    if other_tup:
+        result = tuple(elem - other[idx] for idx, elem in enumerate(t1))
+        try: 
+            return type(t1)(*result)
+        except TypeError:
+            return type(t1)(result)
+    else:
+        result = (elem - other for elem in t1)
+        try:
+            return type(t1)(*result)
+        except TypeError:
+            return type(t1)(result)
         
 def multiply(t1: tuple, other: Union[tuple, int, float]) -> tuple:
     """
     Returns a tuple of element-wise multiplication of 't1' and other
     """
-    if valid_for_arithmetic(other) and not isinstance(other, tuple):
-        tuple_check(t1)
-        acc = {idx: val*other for idx, val in enumerate(t1)}
-    else: 
-        tuple_check(t1, other)
-        acc = {idx: val*other[idx] for idx, val in enumerate(t1)}
-    return collapse_to_tuple(acc, type(t1))
+    _, other_tup = tuple_check(t1, other)
+    if other_tup:
+        result = tuple(elem * other[idx] for idx, elem in enumerate(t1))
+        try: 
+            return type(t1)(*result)
+        except TypeError:
+            return type(t1)(result)
+    else:
+        result = (elem * other for elem in t1)
+        try:
+            return type(t1)(*result)
+        except TypeError:
+            return type(t1)(result)
     
 def divide(t1: tuple, other: Union[tuple, int, float], 
            ignore_zeros:bool = False) -> tuple:    
@@ -141,37 +155,83 @@ def divide(t1: tuple, other: Union[tuple, int, float],
     ignore elements of 0/0 and will return zero for those
     elements instead.
     """
-    acc = {}
-    if valid_for_arithmetic(other) and not isinstance(other, tuple):
-        tuple_check(t1)
-        for idx, val in enumerate(t1):
-            if val == 0 and other == 0:
-                acc.update({idx: float("nan")})
-            elif other == 0:
-                acc.update({idx: float("inf")})
-            else:
-                acc.update({idx: val/other})
-    else: 
-        tuple_check(t1, other)
-        for idx, val in enumerate(t1):
-            if val == 0 and other[idx] == 0:
-                if ignore_zeros:
-                    acc.update({idx: 0})
-                else:
-                    acc.update({idx: float("nan")})
-            elif other[idx] == 0:
-                acc.update({idx: float("inf")})
-            else:
-                acc.update({idx: val/other[idx]})
-    return collapse_to_tuple(acc, type(t1))
+    t1_tup, other_tup = tuple_check(t1, other)
+    if other_tup:
+        if ignore_zeros:
+            result = tuple(
+                elem / other[idx]
+                if other[idx] != 0
+                else 0 
+                for idx, elem in enumerate(t1)
+                )
+        else:
+            result = tuple(
+                elem / other[idx]
+                if other[idx] != 0
+                else float('nan') 
+                for idx, elem in enumerate(t1)
+                )
+        try:
+            return type(t1)(*result)
+        except TypeError:
+            return type(t1)(result)
+    else:
+        if ignore_zeros:
+            result = tuple(
+                elem / other
+                if other != 0
+                else 0 
+                for idx, elem in enumerate(t1)
+            )
+        else:
+            result = tuple(
+                elem / other
+                if other != 0 
+                else 0 
+                for idx, elem in enumerate(t1)
+            )
+        try:
+            return type(t1)(*result)
+        except TypeError:
+            return type(t1)(result)
+
+
+    # acc = {}
+    # if valid_for_arithmetic(other) and not isinstance(other, tuple):
+    #     tuple_check(t1)
+    #     for idx, val in enumerate(t1):
+    #         if val == 0 and other == 0:
+    #             acc.update({idx: float("nan")})
+    #         elif other == 0:
+    #             acc.update({idx: float("inf")})
+    #         else:
+    #             acc.update({idx: val/other})
+    # else: 
+    #     tuple_check(t1, other)
+    #     for idx, val in enumerate(t1):
+    #         if val == 0 and other[idx] == 0:
+    #             if ignore_zeros:
+    #                 acc.update({idx: 0})
+    #             else:
+    #                 acc.update({idx: float("nan")})
+    #         elif other[idx] == 0:
+    #             acc.update({idx: float("inf")})
+    #         else:
+    #             acc.update({idx: val/other[idx]})
+    # return collapse_to_tuple(acc, type(t1))
 
 def vround(t: tuple, precision: int = 0) -> tuple:
     """
     Returns a tuple with elements rounded to 'precision'.
     """
-    tuple_check(t)
-    out_dict = {idx: round(val, precision) for idx, val in enumerate(t)}
-    return collapse_to_tuple(out_dict, type(t))
+    t_tup = tuple_check(t)
+    if t_tup:
+        result = tuple(round(elem, precision) for elem in t)
+        try:
+            return type(t)(*result)
+        except TypeError:
+            return type(t)(result)
+
 
 def mean(t: tuple, ignore_empty: bool = False) -> float:
     """
@@ -210,7 +270,6 @@ def normalize(t: tuple) -> tuple:
     """
     Returns the normalized unit vector of the vector tuple, 't'.
     """
-    tuple_check(t)
     return divide(t, magnitude(t))
 
 def _clip(n: float) -> float:
