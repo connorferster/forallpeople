@@ -3,7 +3,7 @@ tuplevector: Treat tuples of any kind (e.g. namedtuple, NamedTuple)
 like one dimensional vectors!
 by Connor Ferster 03/2019
 """
-print("This one")
+
 # TODO: Explore idea of removing all checks entirely and using a decorator
 # function to wrap all vector functions (with try/excepts) to capture errors 
 # such as tuples of different lengths, elements that do not do math, or 
