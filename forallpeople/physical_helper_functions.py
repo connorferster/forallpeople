@@ -389,6 +389,7 @@ def _auto_prefix(value: float, power: Union[int, float], kg: bool = False) -> st
     Returns a string "prefix" of an appropriate value if self.value should be prefixed
     i.e. it is a big enough number (e.g. 5342 >= 1000; returns "k" for "kilo")
     """
+    if value == 0: return ""
     kg_factor = 0
     if kg:
         kg_factor = 3
