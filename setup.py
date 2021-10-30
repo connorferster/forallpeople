@@ -18,7 +18,7 @@ URL = 'https://github.com/connorferster/forallpeople'
 EMAIL = 'connorferster@gmail.com'
 AUTHOR = 'Connor Ferster'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '2.2.2'
+VERSION = '2.3.0'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
@@ -114,13 +114,13 @@ setup(
     # },
     install_requires=REQUIRED,
     extras_require=EXTRAS,
-    license='MIT',
+    license='Apache',
     classifiers=[
         # Trove classifiers
         # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
         "Topic :: Scientific/Engineering :: Physics",
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
     # $ setup.py publish support.
