@@ -12,8 +12,6 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-
-from collections import ChainMap
 import pathlib
 import json
 import re
@@ -117,8 +115,10 @@ class Environment:
     def _load_environment(self, env_name: str):
         """
         Returns a dict that describes a set of unit definitions as contained in the
-        JSON file titled "'env_name'.json" after the 'Dimension' definition is converted to
-        an Dimensions object and any factors are checked for safety then evaluated.
+        JSON file titled "'env_name'.json". Alternatively, 'env_name' can
+        also be a path to a JSON file outside forallpeople.
+        After the 'Dimension' definition is converted to an Dimensions
+        object and any factors are checked for safety then evaluated.
         Raises error if file not found.
         """
         dim_array_not_defn = (
@@ -130,10 +130,13 @@ class Environment:
             "must be an arithmetic expr (as a str), a float,"
             "or an int: not '{factor}'."
         )
+        if pathlib.Path(env_name).exists():
+            file_path = pathlib.Path(env_name)
+        else:
+            path = pathlib.Path(__file__).parent
+            filename = env_name + ".json"
+            file_path = path / filename
 
-        path = pathlib.Path(__file__).parent
-        filename = env_name + ".json"
-        file_path = path / filename
         with open(file_path, "r", encoding="utf-8") as json_unit_definitions:
             units_environment = json.load(json_unit_definitions)
 
