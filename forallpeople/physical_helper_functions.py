@@ -22,7 +22,7 @@ import forallpeople.tuplevector as vec
 
 ### Helper methods for repr methods ###
 
-_prefixes = { # Do not add custom prefixes between Y and y, e.g. "c": 1e-2
+_prefixes = {  # Do not add custom prefixes between Y and y, e.g. "c": 1e-2
     "Y": 1e24,
     "Z": 1e21,
     "E": 1e18,
@@ -42,18 +42,18 @@ _prefixes = { # Do not add custom prefixes between Y and y, e.g. "c": 1e-2
     "y": 1e-24,
 }
 
-_prefix_lookups = { # Do not add custom prefixes between Y and y, e.g. "c": 1e-2
-    24:"Y", 
-    21:"Z", 
-    18:"E", 
-    15:"P", 
-    12:"T", 
-    9:"G", 
-    6:"M", 
-    3:"k", 
+_prefix_lookups = {  # Do not add custom prefixes between Y and y, e.g. "c": 1e-2
+    24: "Y",
+    21: "Z",
+    18: "E",
+    15: "P",
+    12: "T",
+    9: "G",
+    6: "M",
+    3: "k",
     0: "",
-    -3: "m", 
-    -6: "μ", 
+    -3: "m",
+    -6: "μ",
     -9: "n",
     -12: "p",
     -15: "f",
@@ -82,6 +82,7 @@ _superscripts = {
 }
 _eps = 1e-7
 _total_precision = 6
+
 
 @functools.lru_cache(maxsize=None)
 def _evaluate_dims_and_factor(
@@ -121,6 +122,7 @@ def _evaluate_dims_and_factor(
         symbol = ""
     return (symbol, prefix_bool)
 
+
 @functools.lru_cache(maxsize=None)
 def _get_units_by_factor(
     factor: float, dims: Dimensions, units_env: Callable, power: Union[int, float]
@@ -152,6 +154,7 @@ def _get_derived_unit(dims: Dimensions, units_env: dict) -> dict:
     """
     derived_units = units_env().get("derived")
     return derived_units.get(dims, dict())
+
 
 def _get_unit_string(unit_components: list, repr_format: str) -> str:
     """
@@ -273,6 +276,7 @@ def _get_superscript_string(exponent: str) -> str:
 
 ### Mathematical helper functions ###
 
+
 @functools.lru_cache(maxsize=None)
 def _powers_of_derived(dims: Dimensions, units_env: Callable) -> Union[int, float]:
     """
@@ -292,16 +296,16 @@ def _powers_of_derived(dims: Dimensions, units_env: Callable) -> Union[int, floa
     quotient_1_mean = None
     if quotient_1 is not None:
         quotient_1_mean = cache_vec_mean(quotient_1, ignore_empty=True)
-        
+
     if quotient_1 is not None and quotient_1_mean != -1:
         power_of_derived = cache_vec_mean(quotient_1, ignore_empty=True)
         base_dimensions = cache_vec_divide(dims, quotient_1, ignore_zeros=True)
         return ((power_of_derived or 1), base_dimensions)
-    elif quotient_1_mean == -1 and quotient_2 is not None: # Situations like Hz and s
+    elif quotient_1_mean == -1 and quotient_2 is not None:  # Situations like Hz and s
         power_of_basis = cache_vec_mean(quotient_2, ignore_empty=True)
         base_dimensions = cache_vec_divide(dims, quotient_2, ignore_zeros=True)
         return ((power_of_basis or 1), base_dimensions)
-    elif quotient_1_mean == -1: # Now we can proceed with an inverse  unit
+    elif quotient_1_mean == -1:  # Now we can proceed with an inverse  unit
         power_of_derived = cache_vec_mean(quotient_1, ignore_empty=True)
         base_dimensions = cache_vec_divide(dims, quotient_1, ignore_zeros=True)
         return ((power_of_derived or 1), base_dimensions)
@@ -311,6 +315,7 @@ def _powers_of_derived(dims: Dimensions, units_env: Callable) -> Union[int, floa
         return ((power_of_basis or 1), base_dimensions)
     else:
         return (1, dims)
+
 
 @functools.lru_cache(maxsize=None)
 def _dims_quotient(dimensions: Dimensions, units_env: Callable) -> Optional[Dimensions]:
@@ -323,20 +328,22 @@ def _dims_quotient(dimensions: Dimensions, units_env: Callable) -> Optional[Dime
     derived = units_env()["derived"]
     defined = units_env()["defined"]
     all_units = ChainMap(defined, derived)
-    potential_inv = None # A flag to catch a -1 value (an inversion)
+    potential_inv = None  # A flag to catch a -1 value (an inversion)
     quotient = None
     quotient_result = None
     for dimension_key in all_units.keys():
         if _check_dims_parallel(dimension_key, dimensions):
             quotient = cache_vec_divide(dimensions, dimension_key, ignore_zeros=True)
             mean = cache_vec_mean(quotient, ignore_empty=True)
-            if mean == -1: 
+            if mean == -1:
                 potential_inv = quotient
             elif -1 < mean < 1:
-                return None # Ignore parallel dimensions if they are fractional dimensions
+                return (
+                    None  # Ignore parallel dimensions if they are fractional dimensions
+                )
             else:
                 quotient_result = quotient
-    return quotient_result or potential_inv # Inversion ok, if only option
+    return quotient_result or potential_inv  # Inversion ok, if only option
 
 
 @functools.lru_cache(maxsize=None)
@@ -352,7 +359,7 @@ def cache_vec_mean(tuple_a, ignore_empty):
     """
     Wraps vec.mean with an lru_cache
     """
-    return vec.mean(tuple_a, ignore_empty)  
+    return vec.mean(tuple_a, ignore_empty)
 
 
 @functools.lru_cache(maxsize=None)
@@ -389,7 +396,8 @@ def _auto_prefix(value: float, power: Union[int, float], kg: bool = False) -> st
     Returns a string "prefix" of an appropriate value if self.value should be prefixed
     i.e. it is a big enough number (e.g. 5342 >= 1000; returns "k" for "kilo")
     """
-    if value == 0: return ""
+    if value == 0:
+        return ""
     kg_factor = 0
     if kg:
         kg_factor = 3
@@ -398,7 +406,7 @@ def _auto_prefix(value: float, power: Union[int, float], kg: bool = False) -> st
     value_power_of_ten = math.log10(abs_val)
     value_power_of_1000 = value_power_of_ten // (3 * power)
     prefix_power_of_1000 = value_power_of_1000 * 3 + kg_factor
-    try: 
+    try:
         return _prefix_lookups[prefix_power_of_1000]
     except KeyError:
         return None
@@ -427,7 +435,7 @@ def _auto_prefix_kg(value: float, power: Union[int, float]) -> str:
 
 
 def _auto_prefix_value(
-    value: float, power: Union[int, float], prefix: str, kg_bool = False,
+    value: float, power: Union[int, float], prefix: str, kg_bool=False,
 ) -> float:
     """
     Converts the value to a prefixed value if the instance has a symbol defined in
@@ -439,10 +447,8 @@ def _auto_prefix_value(
     if prefix in _additional_prefixes:
         return value / ((_additional_prefixes[prefix] / kg_factor) ** power)
     if 0 < value < 1:
-        return value / ((_prefixes[prefix] / kg_factor ) ** abs(power))
+        return value / ((_prefixes[prefix] / kg_factor) ** abs(power))
     return value / ((_prefixes[prefix] / kg_factor) ** power)
-
-
 
 
 # def _auto_prefix_value(
@@ -464,7 +470,7 @@ def _auto_prefix_value(
 
 
 #     if abs_val >= 1:
-        
+
 #         for prefix, power_of_ten in prefixes.items():
 #             if abs_val >= (power_of_ten / kg_factor) ** abs(power):
 #                 return value / ((power_of_ten / kg_factor) ** power)
@@ -497,10 +503,10 @@ def swap_scientific_notation_float(value: float, precision: int) -> str:
     """
     if test_for_small_float(value, precision):
         new_value = (
-                "{:.{precision}e}".format(value, precision=precision)
-                .replace("e-0", "e-")
-                .replace("e+0", "e+")
-            )
+            "{:.{precision}e}".format(value, precision=precision)
+            .replace("e-0", "e-")
+            .replace("e+0", "e+")
+        )
         return new_value
     return
 
@@ -546,6 +552,7 @@ def swap_scientific_notation_str(value_as_str: str) -> str:
         return new_value_as_str
     return value_as_str
 
+
 def test_for_scientific_notation_str(value_as_str: str) -> bool:
     """
     Returns True if 'elem' represents a python float in scientific
@@ -564,6 +571,7 @@ def test_for_scientific_notation_str(value_as_str: str) -> bool:
         return True
     return False
 
+
 def is_nan(value: Any) -> bool:
     """
     Returns True if 'value' is some form of NaN, whether float('nan')
@@ -574,4 +582,3 @@ def is_nan(value: Any) -> bool:
         return True
     else:
         return False
-    

@@ -32,7 +32,7 @@ A module to model the seven SI base units:
   ...and other derived and non-SI units for practical calculations.
 """
 
-__version__ = "2.3.0"
+__version__ = "2.4.0"
 
 from typing import Union, Optional
 
@@ -44,6 +44,7 @@ from forallpeople.environment import Environment
 import builtins
 import sys
 import warnings
+
 NUMBER = (int, float)
 
 
@@ -72,8 +73,6 @@ class Physical(object):
         super(Physical, self).__setattr__("factor", factor)
         super(Physical, self).__setattr__("precision", precision)
         super(Physical, self).__setattr__("prefixed", prefixed)
-    def __setattr__(self, _, __):
-        raise AttributeError("Cannot set attribute.")
 
     ### API Methods ###
     @property
@@ -91,7 +90,9 @@ class Physical(object):
         unprefixed state.
         """
         if self.factor != 1:
-            raise AttributeError("Cannot set a prefix on a Physical if it has a factor.")
+            raise AttributeError(
+                "Cannot set a prefix on a Physical if it has a factor."
+            )
         # check if elligible for prefixing; do not rely on __repr__ to ignore it
         return Physical(
             self.value, self.dimensions, self.factor, self.precision, prefixed
@@ -161,7 +162,8 @@ class Physical(object):
             defined_match = defined.get(dims_orig, {}).get(unit_name, {})
             derived_match = derived.get(dims_orig, {}).get(unit_name, {})
             unit_match = defined_match or derived_match
-            if not unit_match: warnings.warn(f"No unit defined for '{unit_name}' on {self}.")
+            if not unit_match:
+                warnings.warn(f"No unit defined for '{unit_name}' on {self}.")
             new_factor = unit_match.get("Factor", 1) ** power
             return Physical(self.value, self.dimensions, new_factor, self.precision)
 
@@ -206,8 +208,6 @@ class Physical(object):
         # Access external environment
         env_fact = environment.units_by_factor or dict()
         env_dims = environment.units_by_dimension or dict()
-
-
 
         # Do the expensive vector math method (call once, only)
         power, dims_orig = phf._powers_of_derived(dims, env_dims)
@@ -271,7 +271,7 @@ class Physical(object):
             post_super = ""
 
         # if not prefix_bool:
-        #    return f"{value:.{precision}f}{space}{units}{pre_super}{exponent}{post_super}" 
+        #    return f"{value:.{precision}f}{space}{units}{pre_super}{exponent}{post_super}"
         return f"{value:{format_spec}}{space}{units}{pre_super}{exponent}{post_super}"
 
     ### "Magic" Methods ###
@@ -309,7 +309,7 @@ class Physical(object):
     def __bool__(self):
         return True
 
-    def __format__(self, format_spec = ''):
+    def __format__(self, format_spec=""):
         return self._repr_template_(template="", format_spec=format_spec)
 
     def __hash__(self):
@@ -650,4 +650,3 @@ _the_si_base_units = {
 
 environment = Environment(Physical, builtins, _the_si_base_units)
 environment.push_vars(_the_si_base_units, sys.modules[__name__])
-

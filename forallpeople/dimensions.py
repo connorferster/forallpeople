@@ -14,6 +14,7 @@
 
 from typing import NamedTuple
 
+
 class Dimensions(NamedTuple):
     kg: float
     m: float

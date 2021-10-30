@@ -17,7 +17,7 @@ import pytest
 import forallpeople as si
 import forallpeople.physical_helper_functions as phf
 
-si.environment("test_definitions", top_level = True)
+si.environment("test_definitions", top_level=True)
 
 
 ### TODO: add Ohms to definitions for testing
@@ -123,9 +123,10 @@ def test__get_unit_components_from_dims():
 # def test__format_exponent():
 #     assert False
 
+
 def test_nan_pass_through():
-    assert math.isnan(5*kg*float('nan'))
-    assert math.isnan(float('nan')*ft)
+    assert math.isnan(5 * kg * float("nan"))
+    assert math.isnan(float("nan") * ft)
 
 
 def test__get_unit_string():
@@ -175,7 +176,7 @@ def test_html():
 
 
 def test_prefixed():
-    assert (25*m**2).prefix("c").html == "250000.000 cm<sup>2</sup>"
+    assert (25 * m ** 2).prefix("c").html == "250000.000 cm<sup>2</sup>"
 
 
 def test_round():

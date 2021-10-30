@@ -46,22 +46,25 @@ class Environment:
     def units_by_dimension(self):
         def return_dict():
             return self._units_by_dimension
+
         return return_dict
 
     @property
     def units_by_factor(self):
         def return_dict():
             return self._units_by_factor
+
         return return_dict
 
     def __call__(self, env_name: str = "", top_level: bool = False):
         if not env_name:
             try:
                 print(
-                        self._generate_units_dict(
-                            self.environment, self._physical_class
-                        ), "\n", self._si_base_units),
-                    
+                    self._generate_units_dict(self.environment, self._physical_class),
+                    "\n",
+                    self._si_base_units,
+                ),
+
             except TypeError:
                 print(self.environment)
             return
@@ -94,17 +97,16 @@ class Environment:
             dimension = definition.get("Dimension")
             value = definition.get("Value", 1)
             if factor == 1 and value == 1:
-                self._units_by_dimension["derived"].setdefault(dimension, dict()).update(
-                    {name: definition}
-                )
+                self._units_by_dimension["derived"].setdefault(
+                    dimension, dict()
+                ).update({name: definition})
             elif factor != 1:
-                self._units_by_dimension["defined"].setdefault(dimension, dict()).update(
-                    {name: definition}
-                )
+                self._units_by_dimension["defined"].setdefault(
+                    dimension, dict()
+                ).update({name: definition})
                 self._units_by_factor.update({factor: {name: definition}})
         self.push_module = push_module  # Update previous push_module; could be either module or top-level
 
-    
     def push_vars(self, units_dict: dict, module: ModuleType) -> None:
         module.__dict__.update(units_dict)
 
@@ -179,5 +181,3 @@ class Environment:
             else:
                 units_dict.update({unit: physical_class(value, dimensions, factor)})
         return units_dict
-
-

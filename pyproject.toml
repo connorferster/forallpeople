@@ -9,7 +9,6 @@ author-email = "connorferster@gmail.com"
 home-page = "https://github.com/connorferster/forallpeople"
 classifiers = [ "License :: OSI Approved :: Apache Software License",]
 description-file = "README.md"
-version = "2.3.0"
 
 [tool.flit.metadata.requires-extra]
 
