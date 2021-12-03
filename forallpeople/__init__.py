@@ -226,7 +226,6 @@ class Physical(object):
         elif prefix_bool and prefixed:
             prefix = prefixed
         elif prefix_bool and dims_orig == Dimensions(1, 0, 0, 0, 0, 0, 0):
-            print("here")
             kg_bool = True
             prefix = phf._auto_prefix(val, power, kg=kg_bool)
         elif prefix_bool:
@@ -256,7 +255,6 @@ class Physical(object):
         if prefix_bool:
             # If the quantity has a "pre-fixed" prefix, it will override
             # the value generated in _auto_prefix_value
-            print(kg_bool)
             value = phf._auto_prefix_value(val, power, prefix, kg_bool)
 
         pre_super = ""
