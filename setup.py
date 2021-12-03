@@ -18,7 +18,7 @@ URL = "https://github.com/connorferster/forallpeople"
 EMAIL = "connorferster@gmail.com"
 AUTHOR = "Connor Ferster"
 REQUIRES_PYTHON = ">=3.6.0"
-VERSION = "2.4.1"
+VERSION = "2.4.2"
 
 # What packages are required for this module to be executed?
 REQUIRED = [
