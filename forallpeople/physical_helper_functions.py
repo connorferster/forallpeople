@@ -443,7 +443,9 @@ def _auto_prefix_value(
     """
     kg_factor = 1
     if kg_bool:
-        kg_factor = 1000
+        kg_factor = 1000.0
+    if prefix == 'unity':
+        return value * kg_factor
     if prefix in _additional_prefixes:
         return value / ((_additional_prefixes[prefix] / kg_factor) ** power)
     if 0 < value < 1:
