@@ -1,7 +1,7 @@
 handcalcs.egg-info/
 handcalcs/.ipynb_checkpoints/
 handcalcs/__pycache__
-*.ipynb
+test_notebook.ipynb
 *.lock
 .idea
 # Byte-compiled / optimized / DLL files
