@@ -20,6 +20,7 @@ doc = [
     "sphinx",
     "nbsphinx",
     "myst-parser",
+    "pydata-sphinx-theme"
 ]
 
 test = [
