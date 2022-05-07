@@ -115,7 +115,10 @@ class Physical(object):
         Returns a new Physical with a new precision, 'n'. Precision controls
         the number of decimal places displayed in repr and str.
         """
-        return Physical(self.value, self.dimensions, self.factor, n, self.prefixed)
+        raise warnings.WarningMessage(
+            "Using .round() is deprecated. " 
+            "Use Python's built-in round() function instead."
+        )
 
     def split(self, base_value: bool = True) -> tuple:
         """
@@ -134,7 +137,7 @@ class Physical(object):
             )
         return (float(self), Physical(1, self.dimensions, self.factor, self.precision))
 
-    def sqrt(self, n: float = 2.0):
+    def sqrt(self, n: Union[int, float] = 2):
         """
         Returns a Physical instance that represents the square root of `self`.
         `n` can be set to an alternate number to compute an alternate root (e.g. 3.0 for cube root)
@@ -321,7 +324,7 @@ class Physical(object):
         )
 
     def __round__(self, n=0):
-        return self.round(n)
+        return Physical(self.value, self.dimensions, self.factor, n, self.prefixed)
 
     def __contains__(self, other):
         return False
