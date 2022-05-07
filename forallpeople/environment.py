@@ -135,7 +135,7 @@ class Environment:
         if pathlib.Path(env_name).exists():
             file_path = pathlib.Path(env_name)
         else:
-            path = pathlib.Path(__file__).parent
+            path = pathlib.Path(__file__).parent / "environments"
             filename = env_name + ".json"
             file_path = path / filename
 

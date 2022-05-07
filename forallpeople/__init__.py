@@ -142,9 +142,9 @@ class Physical(object):
         """
         return self ** (1 / n)
 
-    def to(self, unit_name=""):
+    def to(self, unit_name="") -> Optional[Physical]:
         """
-        Returns None and alters the instance into one of the elligible
+        Returns None and alters the instance into one of the eligible
         alternative units for its dimension, if it exists in the alternative_units dict;
         """
         dims = self.dimensions
