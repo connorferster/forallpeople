@@ -11,7 +11,7 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-
+from __future__ import annotations
 """
 The SI Units: "For all people, for all time"
 
@@ -35,8 +35,6 @@ A module to model the seven SI base units:
 __version__ = "2.4.2"
 
 from typing import Union, Optional
-
-
 from forallpeople.dimensions import Dimensions
 import forallpeople.physical_helper_functions as phf
 import forallpeople.tuplevector as vec
@@ -83,7 +81,7 @@ class Physical(object):
     def html(self) -> str:
         return self._repr_html_()
 
-    def prefix(self, prefixed: str = ""):
+    def prefix(self, prefixed: str = "") -> Physical:
         """
         Return a Physical instance with 'prefixed' property set to 'prefix'
         if 'prefixed' is set to "unity" then the unit will be forced into its
