@@ -11,7 +11,7 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-
+from decimal import Decimal
 import math
 import pytest
 import forallpeople as si
@@ -21,7 +21,6 @@ si.environment("test_definitions", top_level=True)
 
 
 ### TODO: add Ohms to definitions for testing
-# add energy modelling units to definitions for testing
 
 ### Testing parameters ###
 env_dims = si.environment.units_by_dimension
@@ -47,7 +46,7 @@ def test__evaluate_dims_and_factor():
     func = phf._evaluate_dims_and_factor
     assert func(
         si.Dimensions(1, 1, -2, 0, 0, 0, 0),
-        1 / 0.45359237 / 9.80665,
+        1 / Decimal("0.45359237") / Decimal("9.80665"),
         1,
         env_fact,
         env_dims,
@@ -60,7 +59,7 @@ def test__evaluate_dims_and_factor():
         "N",
         True,
     )
-    assert func(si.Dimensions(0, 1, 0, 0, 0, 0, 0), 1 / 0.3048, 1, env_fact, env_dims)
+    assert func(si.Dimensions(0, 1, 0, 0, 0, 0, 0), Decimal(1) / Decimal("0.3048"), 1, env_fact, env_dims)
     assert func(si.Dimensions(1, 0, 0, 0, 0, 0, 0), 1, 3, env_fact, env_dims) == (
         "",
         True,
@@ -79,21 +78,21 @@ def test__get_units_by_factor():
         "ft": {
             "Dimension": si.Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0),
             "Symbol": "ft",
-            "Factor": 3.280839895013123,
+            "Factor": Decimal(1)/Decimal("0.3048"),
         }
     }
     assert func(ft2.factor, ft.dimensions, env_fact, 2) == {
         "ft": {
             "Dimension": si.Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0),
             "Symbol": "ft",
-            "Factor": 3.280839895013123,
+            "Factor": Decimal(1) / Decimal("0.3048"),
         }
     }
     assert func(ftlb.factor, ftlb.dimensions, env_fact, 1) == {
         "lbft": {
             "Dimension": si.Dimensions(kg=1, m=2, s=-2, A=0, cd=0, K=0, mol=0),
             "Symbol": "lb·ft",
-            "Factor": 0.7375621492772653,
+            "Factor": Decimal(eval("1/0.45359237/9.80665/0.3048")),
         }
     }
     assert func((ftlb * ft).factor, (ftlb * ft).dimensions, env_fact, 1) == dict()

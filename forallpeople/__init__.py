@@ -34,11 +34,13 @@ A module to model the seven SI base units:
 
 __version__ = "2.4.2"
 
+from decimal import Decimal
 from typing import Union, Optional
 from forallpeople.dimensions import Dimensions
 import forallpeople.physical_helper_functions as phf
 import forallpeople.tuplevector as vec
 from forallpeople.environment import Environment
+import math
 import builtins
 import sys
 import warnings
@@ -51,9 +53,6 @@ class Physical(object):
     A class that defines any physical quantity that can be described
     within the BIPM SI unit system.
     """
-
-    _eps = 1e-7
-    _total_precision = 6
 
     __slots__ = ("value", "dimensions", "factor", "precision", "prefixed")
 
@@ -102,7 +101,7 @@ class Physical(object):
         Returns a repr that can be used to create another Physical instance.
         """
         repr_str = (
-            "Physical(value={}, dimensions={}, factor={}, precision={}, _prefixed={})"
+            "Physical(value={}, dimensions={}, factor={:.15f}, precision={}, _prefixed={})"
         )
         return repr_str.format(
             self.value, self.dimensions, self.factor, self.precision, self.prefixed
@@ -130,8 +129,8 @@ class Physical(object):
         """
         if base_value:
             return (
-                self.value * self.factor,
-                Physical(1 / self.factor, self.dimensions, self.factor, self.precision),
+                self.value * float(self.factor),
+                Physical(1 / float(self.factor), self.dimensions, self.factor, self.precision),
             )
         return (float(self), Physical(1, self.dimensions, self.factor, self.precision))
 
@@ -165,7 +164,7 @@ class Physical(object):
             unit_match = defined_match or derived_match
             if not unit_match:
                 warnings.warn(f"No unit defined for '{unit_name}' on {self}.")
-            new_factor = unit_match.get("Factor", 1) ** power
+            new_factor = unit_match.get("Factor", 1) ** Decimal(power)
             return Physical(self.value, self.dimensions, new_factor, self.precision)
 
     def si(self):
@@ -200,10 +199,10 @@ class Physical(object):
             format_spec = f".{self.precision}f"
         dims = self.dimensions
         factor = self.factor
+        float_factor = float(factor)
         val = self.value
         prefix = ""
         prefixed = self.prefixed
-        eps = self._eps
         kg_bool = False
 
         # Access external environment
@@ -233,7 +232,7 @@ class Physical(object):
             prefix = phf._auto_prefix(val, power, kg=kg_bool)
 
         # Format the exponent (may not be used, though)
-        exponent = phf._format_exponent(power, repr_format=template, eps=eps)
+        exponent = phf._format_exponent(power, repr_format=template)
 
         # Format the units
         if not symbol and phf._dims_basis_multiple(dims):
@@ -251,7 +250,7 @@ class Physical(object):
             units = phf._format_symbol(prefix, symbol, repr_format=template)
 
         # Determine the appropriate display value
-        value = val * factor
+        value = val * float_factor
 
         if prefix_bool:
             # If the quantity has a "pre-fixed" prefix, it will override
@@ -282,7 +281,7 @@ class Physical(object):
 
     def __float__(self):
         value = self.value
-        factor = self.factor
+        factor = float(self.factor)
         if factor != 1:
             return value * factor
         kg_bool = False
@@ -329,13 +328,11 @@ class Physical(object):
 
     def __eq__(self, other):
         if isinstance(other, NUMBER):
-            return round(self.value, phf._total_precision) == other
+            return math.isclose(self.value, other)
         elif type(other) == str:
             return False
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
-            return round(self.value, phf._total_precision) == round(
-                other.value, phf._total_precision
-            )
+            return math.isclose(self.value, other.value)
         else:
             raise ValueError(
                 "Can only compare between Physical instances of equal dimension."
@@ -343,11 +340,9 @@ class Physical(object):
 
     def __gt__(self, other):
         if isinstance(other, NUMBER):
-            return round(self.value, phf._total_precision) > other
+            return self.value > other
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
-            return round(self.value, phf._total_precision) > round(
-                other.value, phf._total_precision
-            )
+            return self.value > other.value
         else:
             raise ValueError(
                 "Can only compare between Physical instances of equal dimension."
@@ -355,11 +350,9 @@ class Physical(object):
 
     def __ge__(self, other):
         if isinstance(other, NUMBER):
-            return round(self.value, phf._total_precision) >= other
+            self.value >= other
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
-            return round(self.value, phf._total_precision) >= round(
-                other.value, phf._total_precision
-            )
+            self.value >= other.value
         else:
             raise ValueError(
                 "Can only compare between Physical instances of equal dimension."
@@ -367,11 +360,9 @@ class Physical(object):
 
     def __lt__(self, other):
         if isinstance(other, NUMBER):
-            return round(self.value, phf._total_precision) < other
+            return self.value < other
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
-            return round(self.value, phf._total_precision) < round(
-                other.value, phf._total_precision
-            )
+            return self.value < other.value
         else:
             raise ValueError(
                 "Can only compare between Physical instances of equal dimension."
@@ -379,11 +370,9 @@ class Physical(object):
 
     def __le__(self, other):
         if isinstance(other, NUMBER):
-            return round(self.value, phf._total_precision) <= other
+            return self.value <= other
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
-            return round(self.value, phf._total_precision) <= round(
-                other.value, phf._total_precision
-            )
+            return self.value <= other.value
         else:
             raise ValueError(
                 "Can only compare between Physical instances of equal dimension."
@@ -412,7 +401,7 @@ class Physical(object):
                 )
         else:
             try:
-                other = other / self.factor
+                other = other / float(self.factor)
                 return Physical(
                     self.value + other,
                     self.dimensions,
@@ -455,7 +444,7 @@ class Physical(object):
                 )
         else:
             try:
-                other = other / self.factor
+                other = other / float(self.factor)
                 return Physical(
                     self.value - other,
                     self.dimensions,
@@ -474,7 +463,7 @@ class Physical(object):
             return self.__sub__(other)
         else:
             try:
-                other = other / self.factor
+                other = other / float(self.factor)
                 return Physical(
                     other - self.value,
                     self.dimensions,
@@ -653,4 +642,4 @@ _the_si_base_units = {
 }
 
 environment = Environment(Physical, builtins, _the_si_base_units)
-environment.push_vars(_the_si_base_units, sys.modules[__name__])
+environment._push_vars(_the_si_base_units, sys.modules[__name__])

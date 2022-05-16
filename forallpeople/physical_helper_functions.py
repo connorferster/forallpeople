@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 from collections import ChainMap
+from decimal import Decimal
 import functools
 import math
 from typing import Any, Union, Optional, List, Callable
@@ -80,14 +81,11 @@ _superscripts = {
     "-": "⁻",
     ".": "'",
 }
-_eps = 1e-7
-_total_precision = 6
-
 
 @functools.lru_cache(maxsize=None)
 def _evaluate_dims_and_factor(
     dims_orig: Dimensions,
-    factor: Union[int, float],
+    factor: Union[int, Decimal],
     power: Union[int, float],
     env_fact: Callable,
     env_dims: Callable,
@@ -133,8 +131,8 @@ def _get_units_by_factor(
     environment instance and the dimensions stored in the units_dict are
     equal to 'dims'. Returns an empty dict, otherwise.
     """
-    new_factor = factor ** (1 / power)
-    units_match = units_env().get(round(new_factor, _total_precision), dict())
+    new_factor = factor ** (1 / Decimal(power))
+    units_match = units_env().get(new_factor, dict())
     try:
         units_name = tuple(units_match.keys())[0]
     except IndexError:
@@ -248,7 +246,7 @@ def _format_symbol(prefix: str, symbol: str, repr_format: str = "") -> str:
 
 
 def _format_exponent(
-    power: Union[int, float], repr_format: str = "", eps: float = 1e-7
+    power: Union[int, float], repr_format: str = "", eps=1e-7
 ) -> str:
     """
     Returns the number in 'power' as a formatted exponent for text display.
