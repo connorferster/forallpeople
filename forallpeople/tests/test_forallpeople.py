@@ -11,11 +11,12 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-from decimal import Decimal
+from decimal import Decimal, getcontext
 import math
 import pytest
 import forallpeople as si
 import forallpeople.physical_helper_functions as phf
+getcontext().prec = 22
 
 si.environment("test_definitions", top_level=True)
 
@@ -92,7 +93,7 @@ def test__get_units_by_factor():
         "lbft": {
             "Dimension": si.Dimensions(kg=1, m=2, s=-2, A=0, cd=0, K=0, mol=0),
             "Symbol": "lb·ft",
-            "Factor": Decimal(eval("1/0.45359237/9.80665/0.3048")),
+            "Factor": Decimal(1)/Decimal("0.45359237")/Decimal("9.80665")/Decimal("0.3048"),
         }
     }
     assert func((ftlb * ft).factor, (ftlb * ft).dimensions, env_fact, 1) == dict()

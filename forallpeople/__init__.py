@@ -34,7 +34,7 @@ A module to model the seven SI base units:
 
 __version__ = "2.4.2"
 
-from decimal import Decimal
+from decimal import Decimal, getcontext
 from typing import Union, Optional
 from forallpeople.dimensions import Dimensions
 import forallpeople.physical_helper_functions as phf
@@ -44,6 +44,7 @@ import math
 import builtins
 import sys
 import warnings
+getcontext().prec = 22
 
 NUMBER = (int, float)
 

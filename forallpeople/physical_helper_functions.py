@@ -14,12 +14,13 @@
 
 from __future__ import annotations
 from collections import ChainMap
-from decimal import Decimal
+from decimal import Decimal, getcontext
 import functools
 import math
 from typing import Any, Union, Optional, List, Callable
 from forallpeople.dimensions import Dimensions
 import forallpeople.tuplevector as vec
+getcontext().prec = 22
 
 ### Helper methods for repr methods ###
 

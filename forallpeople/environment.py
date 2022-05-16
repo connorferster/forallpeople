@@ -11,7 +11,7 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-from decimal import Decimal
+from decimal import Decimal, getcontext
 from operator import add, sub, mul, truediv, pow
 import pathlib
 import json
@@ -20,6 +20,7 @@ import sys
 from typing import Union
 from types import ModuleType
 from forallpeople.dimensions import Dimensions, DimensionError
+getcontext().prec = 22
 
 
 class Environment:
