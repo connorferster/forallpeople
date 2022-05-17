@@ -11,7 +11,8 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-from decimal import Decimal, getcontext
+
+from fractions import Fraction
 from operator import add, sub, mul, truediv, pow
 import pathlib
 import json
@@ -20,7 +21,6 @@ import sys
 from typing import Union
 from types import ModuleType
 from forallpeople.dimensions import Dimensions, DimensionError
-getcontext().prec = 22
 
 
 class Environment:
@@ -184,19 +184,19 @@ class Environment:
         return units_dict
 
 
-def evaluate_factor_expression(factor_expression: str) -> Union[int, Decimal]:
+def evaluate_factor_expression(factor_expression: str) -> Union[int, Fraction]:
     """
     Returns the evaluated result of 'factor_expression' which is a str representing
     an arithmetic expression .
     """
     ops = {"+": add, "-": sub, "*": mul, "/": truediv, "**": pow}
     expr_elements = re.findall('[0-9.]+|(?:\*\*|\*|/|\+|\-)', factor_expression)
-    factor = Decimal("1")
-    dec_elem = Decimal("1")
+    factor = Fraction("1")
+    dec_elem = Fraction("1")
     op = mul
     for elem in expr_elements:
         try:
-            dec_elem = Decimal(elem)
+            dec_elem = Fraction(elem)
         except:
             op = ops[elem]
             continue

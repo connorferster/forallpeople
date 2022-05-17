@@ -34,7 +34,7 @@ A module to model the seven SI base units:
 
 __version__ = "2.4.2"
 
-from decimal import Decimal, getcontext
+from fractions import Fraction
 from typing import Union, Optional
 from forallpeople.dimensions import Dimensions
 import forallpeople.physical_helper_functions as phf
@@ -44,7 +44,6 @@ import math
 import builtins
 import sys
 import warnings
-getcontext().prec = 22
 
 NUMBER = (int, float)
 
@@ -165,7 +164,7 @@ class Physical(object):
             unit_match = defined_match or derived_match
             if not unit_match:
                 warnings.warn(f"No unit defined for '{unit_name}' on {self}.")
-            new_factor = unit_match.get("Factor", 1) ** Decimal(power)
+            new_factor = unit_match.get("Factor", 1) ** Fraction(power)
             return Physical(self.value, self.dimensions, new_factor, self.precision)
 
     def si(self):
@@ -505,8 +504,9 @@ class Physical(object):
             test_factor = phf._get_units_by_factor(
                 new_factor, new_dims_orig, environment.units_by_factor, new_power
             )
-            if not test_factor:
-                new_factor = 1
+            # if not test_factor:
+            #     print(new_factor)
+            #     new_factor = 1
             try:
                 new_value = self.value * other.value
             except:
@@ -555,10 +555,10 @@ class Physical(object):
                 new_dims, environment.units_by_dimension
             )
             new_factor = self.factor / other.factor
-            if not phf._get_units_by_factor(
-                new_factor, new_dims_orig, environment.units_by_factor, new_power
-            ):
-                new_factor = 1
+            # if not phf._get_units_by_factor(
+            #     new_factor, new_dims_orig, environment.units_by_factor, new_power
+            # ):
+            #     new_factor = 1
             try:
                 new_value = self.value / other.value
             except:
@@ -620,7 +620,7 @@ class Physical(object):
                 return float(self) ** other
             new_value = self.value ** other
             new_dimensions = vec.multiply(self.dimensions, other)
-            new_factor = self.factor ** other
+            new_factor = self.factor ** Fraction(str(other))
             return Physical(new_value, new_dimensions, new_factor, self.precision)
         else:
             raise ValueError(
@@ -633,13 +633,13 @@ class Physical(object):
 
 # The seven SI base units...
 _the_si_base_units = {
-    "kg": Physical(1, Dimensions(1, 0, 0, 0, 0, 0, 0), 1.0),
-    "m": Physical(1, Dimensions(0, 1, 0, 0, 0, 0, 0), 1.0),
-    "s": Physical(1, Dimensions(0, 0, 1, 0, 0, 0, 0), 1.0),
-    "A": Physical(1, Dimensions(0, 0, 0, 1, 0, 0, 0), 1.0),
-    "cd": Physical(1, Dimensions(0, 0, 0, 0, 1, 0, 0), 1.0),
-    "K": Physical(1, Dimensions(0, 0, 0, 0, 0, 1, 0), 1.0),
-    "mol": Physical(1, Dimensions(0, 0, 0, 0, 0, 0, 1), 1.0),
+    "kg": Physical(1, Dimensions(1, 0, 0, 0, 0, 0, 0), 1),
+    "m": Physical(1, Dimensions(0, 1, 0, 0, 0, 0, 0), 1),
+    "s": Physical(1, Dimensions(0, 0, 1, 0, 0, 0, 0), 1),
+    "A": Physical(1, Dimensions(0, 0, 0, 1, 0, 0, 0), 1),
+    "cd": Physical(1, Dimensions(0, 0, 0, 0, 1, 0, 0), 1),
+    "K": Physical(1, Dimensions(0, 0, 0, 0, 0, 1, 0), 1),
+    "mol": Physical(1, Dimensions(0, 0, 0, 0, 0, 0, 1), 1),
 }
 
 environment = Environment(Physical, builtins, _the_si_base_units)

@@ -14,13 +14,13 @@
 
 from __future__ import annotations
 from collections import ChainMap
-from decimal import Decimal, getcontext
+from fractions import Fraction
 import functools
 import math
 from typing import Any, Union, Optional, List, Callable
 from forallpeople.dimensions import Dimensions
 import forallpeople.tuplevector as vec
-getcontext().prec = 22
+
 
 ### Helper methods for repr methods ###
 
@@ -86,7 +86,7 @@ _superscripts = {
 @functools.lru_cache(maxsize=None)
 def _evaluate_dims_and_factor(
     dims_orig: Dimensions,
-    factor: Union[int, Decimal],
+    factor: Union[int, Fraction],
     power: Union[int, float],
     env_fact: Callable,
     env_dims: Callable,
@@ -132,7 +132,8 @@ def _get_units_by_factor(
     environment instance and the dimensions stored in the units_dict are
     equal to 'dims'. Returns an empty dict, otherwise.
     """
-    new_factor = factor ** (1 / Decimal(power))
+    new_factor = factor ** (1 / Fraction(power))
+    print("Get Units By Factor: ", new_factor)
     units_match = units_env().get(new_factor, dict())
     try:
         units_name = tuple(units_match.keys())[0]
