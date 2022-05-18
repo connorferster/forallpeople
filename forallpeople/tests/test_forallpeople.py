@@ -164,7 +164,7 @@ def test_repr():
         ft.repr
         == "Physical(value=0.3048, dimensions="
         + "Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0), "
-        + "factor=3.280839895013123, precision=3, _prefixed=)"
+        + "factor=3.2808, precision=3, _prefixed=)"
     )
 
 
@@ -178,7 +178,9 @@ def test_prefixed():
 
 
 def test_round():
-    assert repr((25.2398783 * N).round(4)) == "25.2399 N"
+    with pytest.raises(PendingDeprecationWarning):
+        assert repr((25.2398783 * N).round(4)) == "25.2399 N"
+    assert repr(round((25.2398783 * N), 4)) == "25.2399 N"
 
 
 def test_split():
@@ -494,7 +496,7 @@ def test_defined_unit_persistence():
     assert repr(b) == "25.000 kip⁻²"
     assert (
         b.repr
-        == "Physical(value=1.2634765224402213e-06, dimensions=Dimensions(kg=-2, m=-2, s=4, A=0, cd=0, K=0, mol=0), factor=19786675.538470731686470, precision=3, _prefixed=)"
+        == "Physical(value=1.2634765224402213e-06, dimensions=Dimensions(kg=-2, m=-2, s=4, A=0, cd=0, K=0, mol=0), factor=1.9787e+07, precision=3, _prefixed=)"
     )
     assert repr(c) == "0.072 ksf"
     assert repr(g) == "1653.380 lb"

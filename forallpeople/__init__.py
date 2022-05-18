@@ -43,7 +43,6 @@ from forallpeople.environment import Environment
 import math
 import builtins
 import sys
-import warnings
 
 NUMBER = (int, float)
 
@@ -101,10 +100,16 @@ class Physical(object):
         Returns a repr that can be used to create another Physical instance.
         """
         repr_str = (
-            "Physical(value={}, dimensions={}, factor={:.15f}, precision={}, _prefixed={})"
+            "Physical(value={}, dimensions={}, factor={:.5}, precision={}, _prefixed={})"
         )
+        factor = float(self.factor)
+        if self.factor == 1:
+            repr_str = (
+                "Physical(value={}, dimensions={}, factor={}, precision={}, _prefixed={})"
+            )
+            factor = 1
         return repr_str.format(
-            self.value, self.dimensions, self.factor, self.precision, self.prefixed
+            self.value, self.dimensions, factor, self.precision, self.prefixed
         )  # check
 
     def round(self, n: int):
@@ -112,8 +117,8 @@ class Physical(object):
         Returns a new Physical with a new precision, 'n'. Precision controls
         the number of decimal places displayed in repr and str.
         """
-        raise warnings.WarningMessage(
-            "Using .round() is deprecated. " 
+        raise PendingDeprecationWarning(
+            "Using .round() is going to be deprecated. " 
             "Use Python's built-in round() function instead."
         )
 
@@ -350,9 +355,9 @@ class Physical(object):
 
     def __ge__(self, other):
         if isinstance(other, NUMBER):
-            self.value >= other
+            return self.value >= other
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
-            self.value >= other.value
+            return self.value >= other.value
         else:
             raise ValueError(
                 "Can only compare between Physical instances of equal dimension."
@@ -620,7 +625,7 @@ class Physical(object):
                 return float(self) ** other
             new_value = self.value ** other
             new_dimensions = vec.multiply(self.dimensions, other)
-            new_factor = self.factor ** Fraction(str(other))
+            new_factor = phf.fraction_pow(self.factor, other)
             return Physical(new_value, new_dimensions, new_factor, self.precision)
         else:
             raise ValueError(

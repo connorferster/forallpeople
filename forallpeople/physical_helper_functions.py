@@ -15,6 +15,7 @@
 from __future__ import annotations
 from collections import ChainMap
 from fractions import Fraction
+from decimal import Decimal
 import functools
 import math
 from typing import Any, Union, Optional, List, Callable
@@ -132,8 +133,8 @@ def _get_units_by_factor(
     environment instance and the dimensions stored in the units_dict are
     equal to 'dims'. Returns an empty dict, otherwise.
     """
-    new_factor = factor ** (1 / Fraction(power))
-    print("Get Units By Factor: ", new_factor)
+    ## TODO Write a pow() to handle fractions and rationals
+    new_factor = fraction_pow(factor, -Fraction(1/power))
     units_match = units_env().get(new_factor, dict())
     try:
         units_name = tuple(units_match.keys())[0]
@@ -584,3 +585,21 @@ def is_nan(value: Any) -> bool:
         return True
     else:
         return False
+
+
+def fraction_pow(a: Fraction, b: Fraction) -> Union[Fraction, float]:
+    """
+    Raises 'a' to the power of 'b' with the intention of returning a Fraction
+    if the result can be expressed as a Fraction. Returns a float otherwise.
+    """
+    if isinstance(b, int):
+        return a ** b
+    else:
+        c = a ** b
+        if isinstance(c, Fraction):
+            return 1 / c
+        x, y = c.as_integer_ratio()
+        d = Decimal(str(x / y))
+        m, n = d.as_integer_ratio()
+        return Fraction(n, m)
+    
