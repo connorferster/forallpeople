@@ -14,11 +14,14 @@
 
 from __future__ import annotations
 from collections import ChainMap
+from fractions import Fraction
+from decimal import Decimal
 import functools
 import math
 from typing import Any, Union, Optional, List, Callable
 from forallpeople.dimensions import Dimensions
 import forallpeople.tuplevector as vec
+
 
 ### Helper methods for repr methods ###
 
@@ -80,14 +83,11 @@ _superscripts = {
     "-": "⁻",
     ".": "'",
 }
-_eps = 1e-7
-_total_precision = 6
-
 
 @functools.lru_cache(maxsize=None)
 def _evaluate_dims_and_factor(
     dims_orig: Dimensions,
-    factor: Union[int, float],
+    factor: Union[int, Fraction],
     power: Union[int, float],
     env_fact: Callable,
     env_dims: Callable,
@@ -133,8 +133,9 @@ def _get_units_by_factor(
     environment instance and the dimensions stored in the units_dict are
     equal to 'dims'. Returns an empty dict, otherwise.
     """
-    new_factor = factor ** (1 / power)
-    units_match = units_env().get(round(new_factor, _total_precision), dict())
+    ## TODO Write a pow() to handle fractions and rationals
+    new_factor = fraction_pow(factor, -Fraction(1/power))
+    units_match = units_env().get(new_factor, dict())
     try:
         units_name = tuple(units_match.keys())[0]
     except IndexError:
@@ -248,7 +249,7 @@ def _format_symbol(prefix: str, symbol: str, repr_format: str = "") -> str:
 
 
 def _format_exponent(
-    power: Union[int, float], repr_format: str = "", eps: float = 1e-7
+    power: Union[int, float], repr_format: str = "", eps=1e-7
 ) -> str:
     """
     Returns the number in 'power' as a formatted exponent for text display.
@@ -584,3 +585,21 @@ def is_nan(value: Any) -> bool:
         return True
     else:
         return False
+
+
+def fraction_pow(a: Fraction, b: Fraction) -> Union[Fraction, float]:
+    """
+    Raises 'a' to the power of 'b' with the intention of returning a Fraction
+    if the result can be expressed as a Fraction. Returns a float otherwise.
+    """
+    if isinstance(b, int):
+        return a ** b
+    else:
+        c = a ** b
+        if isinstance(c, Fraction):
+            return 1 / c
+        x, y = c.as_integer_ratio()
+        d = Decimal(str(x / y))
+        m, n = d.as_integer_ratio()
+        return Fraction(n, m)
+    

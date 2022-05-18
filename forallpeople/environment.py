@@ -12,12 +12,15 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+from fractions import Fraction
+from operator import add, sub, mul, truediv, pow
 import pathlib
 import json
 import re
 import sys
+from typing import Union
 from types import ModuleType
-from forallpeople.dimensions import Dimensions
+from forallpeople.dimensions import Dimensions, DimensionError
 
 
 class Environment:
@@ -84,16 +87,14 @@ class Environment:
         new_units_dict = self._generate_units_dict(
             self.environment, self._physical_class
         )
-        self.push_vars(new_units_dict, push_module)
-        self.push_vars(self._si_base_units, push_module)
+        self._push_vars(new_units_dict, push_module)
+        self._push_vars(self._si_base_units, push_module)
 
         # Update internal class dictionaries: self.units_by_dimension, self.units_by_factor
         self._units_by_dimension = {"derived": dict(), "defined": dict()}
         self._units_by_factor = dict()
         for name, definition in self.environment.items():
-            factor = round(
-                definition.get("Factor", 1), self._physical_class._total_precision
-            )
+            factor = definition.get("Factor", 1)
             dimension = definition.get("Dimension")
             value = definition.get("Value", 1)
             if factor == 1 and value == 1:
@@ -107,7 +108,7 @@ class Environment:
                 self._units_by_factor.update({factor: {name: definition}})
         self.push_module = push_module  # Update previous push_module; could be either module or top-level
 
-    def push_vars(self, units_dict: dict, module: ModuleType) -> None:
+    def _push_vars(self, units_dict: dict, module: ModuleType) -> None:
         module.__dict__.update(units_dict)
 
     def del_vars(self, units_dict: dict, module: ModuleType) -> None:
@@ -135,7 +136,7 @@ class Environment:
         if pathlib.Path(env_name).exists():
             file_path = pathlib.Path(env_name)
         else:
-            path = pathlib.Path(__file__).parent
+            path = pathlib.Path(__file__).parent / "environments"
             filename = env_name + ".json"
             file_path = path / filename
 
@@ -146,18 +147,18 @@ class Environment:
         arithmetic_expr = re.compile(r"[0-9.*/+-]")
         for unit, definitions in units_environment.items():
             dimensions = definitions.get("Dimension", ())
-            factor = definitions.get("Factor", "1")
+            factor_expr = definitions.get("Factor", "1")
             symbol = definitions.get("Symbol", "")
             if not dimensions:
                 raise DimensionError(dim_array_not_defn.format(env_name, unit))
             else:
                 units_environment[unit]["Dimension"] = Dimensions(*dimensions)
 
-            if type(factor) is str and not arithmetic_expr.match(factor):
-                raise ValueError(unit_factor_not_eval.format(unit, env_name, factor))
+            if type(factor_expr) is str and not arithmetic_expr.match(factor_expr):
+                raise ValueError(unit_factor_not_eval.format(unit, env_name, factor_expr))
             else:
-                factor = str(factor)
-                units_environment[unit]["Factor"] = eval(factor)
+                # factor_expr = str(factor_expr)
+                units_environment[unit]["Factor"] = evaluate_factor_expression(factor_expr)
         return units_environment
 
     @staticmethod
@@ -176,8 +177,30 @@ class Environment:
             value = definitions.get("Value", 1)
             if symbol:
                 units_dict.update(
-                    {unit: physical_class(1 / factor, dimensions, factor)}
+                    {unit: physical_class(1 / float(factor), dimensions, factor)}
                 )
             else:
                 units_dict.update({unit: physical_class(value, dimensions, factor)})
         return units_dict
+
+
+def evaluate_factor_expression(factor_expression: str) -> Union[int, Fraction]:
+    """
+    Returns the evaluated result of 'factor_expression' which is a str representing
+    an arithmetic expression .
+    """
+    ops = {"+": add, "-": sub, "*": mul, "/": truediv, "**": pow}
+    expr_elements = re.findall('[0-9.]+|(?:\*\*|\*|/|\+|\-)', factor_expression)
+    factor = Fraction("1")
+    dec_elem = Fraction("1")
+    op = mul
+    for elem in expr_elements:
+        try:
+            dec_elem = Fraction(elem)
+        except:
+            op = ops[elem]
+            continue
+        factor = op(factor, dec_elem)
+    return factor
+        
+

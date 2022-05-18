@@ -11,7 +11,7 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-
+from fractions import Fraction
 import math
 import pytest
 import forallpeople as si
@@ -21,7 +21,6 @@ si.environment("test_definitions", top_level=True)
 
 
 ### TODO: add Ohms to definitions for testing
-# add energy modelling units to definitions for testing
 
 ### Testing parameters ###
 env_dims = si.environment.units_by_dimension
@@ -33,7 +32,6 @@ units = {
     "D": 1e6 * N,
     "E": 0.2 * kip,
     "F": 5 * N * 1e3 * kip,
-    "Matt": 0.22 * kip,  ## 20200417Matt added for dummy merge test
 }
 parameters = [
     (value, phf._powers_of_derived(value.dimensions, env_dims))
@@ -47,7 +45,7 @@ def test__evaluate_dims_and_factor():
     func = phf._evaluate_dims_and_factor
     assert func(
         si.Dimensions(1, 1, -2, 0, 0, 0, 0),
-        1 / 0.45359237 / 9.80665,
+        1 / Fraction("0.45359237") / Fraction("9.80665"),
         1,
         env_fact,
         env_dims,
@@ -60,7 +58,7 @@ def test__evaluate_dims_and_factor():
         "N",
         True,
     )
-    assert func(si.Dimensions(0, 1, 0, 0, 0, 0, 0), 1 / 0.3048, 1, env_fact, env_dims)
+    assert func(si.Dimensions(0, 1, 0, 0, 0, 0, 0), Fraction(1) / Fraction("0.3048"), 1, env_fact, env_dims)
     assert func(si.Dimensions(1, 0, 0, 0, 0, 0, 0), 1, 3, env_fact, env_dims) == (
         "",
         True,
@@ -79,21 +77,21 @@ def test__get_units_by_factor():
         "ft": {
             "Dimension": si.Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0),
             "Symbol": "ft",
-            "Factor": 3.280839895013123,
+            "Factor": Fraction(1)/Fraction("0.3048"),
         }
     }
     assert func(ft2.factor, ft.dimensions, env_fact, 2) == {
         "ft": {
             "Dimension": si.Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0),
             "Symbol": "ft",
-            "Factor": 3.280839895013123,
+            "Factor": Fraction(1) / Fraction("0.3048"),
         }
     }
     assert func(ftlb.factor, ftlb.dimensions, env_fact, 1) == {
         "lbft": {
             "Dimension": si.Dimensions(kg=1, m=2, s=-2, A=0, cd=0, K=0, mol=0),
             "Symbol": "lb·ft",
-            "Factor": 0.7375621492772653,
+            "Factor": Fraction(1)/Fraction("0.45359237")/Fraction("9.80665")/Fraction("0.3048"),
         }
     }
     assert func((ftlb * ft).factor, (ftlb * ft).dimensions, env_fact, 1) == dict()
@@ -166,7 +164,7 @@ def test_repr():
         ft.repr
         == "Physical(value=0.3048, dimensions="
         + "Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0), "
-        + "factor=3.280839895013123, precision=3, _prefixed=)"
+        + "factor=3.2808, precision=3, _prefixed=)"
     )
 
 
@@ -180,7 +178,9 @@ def test_prefixed():
 
 
 def test_round():
-    assert repr((25.2398783 * N).round(4)) == "25.2399 N"
+    with pytest.raises(PendingDeprecationWarning):
+        assert repr((25.2398783 * N).round(4)) == "25.2399 N"
+    assert repr(round((25.2398783 * N), 4)) == "25.2399 N"
 
 
 def test_split():
@@ -194,7 +194,7 @@ def test_sqrt():
 
 def test_in_units():
     # assert ft.to('m').factor == 1
-    assert m.to("ft").factor == 1 / 0.3048
+    assert m.to("ft").factor == 1 / Fraction("0.3048")
     assert kip.to("lb").factor == (1000 * lb).factor
     assert ((10 * lb) ** 2).to("kip").factor == (0.1 * kip * kip).factor
 
@@ -496,7 +496,7 @@ def test_defined_unit_persistence():
     assert repr(b) == "25.000 kip⁻²"
     assert (
         b.repr
-        == "Physical(value=1.2634765224402213e-06, dimensions=Dimensions(kg=-2, m=-2, s=4, A=0, cd=0, K=0, mol=0), factor=19786675.538470734, precision=3, _prefixed=)"
+        == "Physical(value=1.2634765224402213e-06, dimensions=Dimensions(kg=-2, m=-2, s=4, A=0, cd=0, K=0, mol=0), factor=1.9787e+07, precision=3, _prefixed=)"
     )
     assert repr(c) == "0.072 ksf"
     assert repr(g) == "1653.380 lb"
