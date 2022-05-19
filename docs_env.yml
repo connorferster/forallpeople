@@ -1,0 +1,15 @@
+name: docs
+
+channels:
+
+  - conda-forge
+  - defaults
+
+dependencies:
+
+  # Write here all dependencies to compile the sphinx documentation.
+  - python=3.9
+  - flit
+  - sphinx
+  - nbsphinx
+  - pydata-sphinx-theme
