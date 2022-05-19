@@ -155,10 +155,14 @@ class Environment:
                 units_environment[unit]["Dimension"] = Dimensions(*dimensions)
 
             if type(factor_expr) is str and not arithmetic_expr.match(factor_expr):
-                raise ValueError(unit_factor_not_eval.format(unit, env_name, factor_expr))
+                raise ValueError(
+                    unit_factor_not_eval.format(unit, env_name, factor_expr)
+                )
             else:
                 # factor_expr = str(factor_expr)
-                units_environment[unit]["Factor"] = evaluate_factor_expression(factor_expr)
+                units_environment[unit]["Factor"] = evaluate_factor_expression(
+                    factor_expr
+                )
         return units_environment
 
     @staticmethod
@@ -190,7 +194,7 @@ def evaluate_factor_expression(factor_expression: str) -> Union[int, Fraction]:
     an arithmetic expression .
     """
     ops = {"+": add, "-": sub, "*": mul, "/": truediv, "**": pow}
-    expr_elements = re.findall('[0-9.]+|(?:\*\*|\*|/|\+|\-)', factor_expression)
+    expr_elements = re.findall("[0-9.]+|(?:\*\*|\*|/|\+|\-)", factor_expression)
     factor = Fraction("1")
     dec_elem = Fraction("1")
     op = mul
@@ -202,5 +206,3 @@ def evaluate_factor_expression(factor_expression: str) -> Union[int, Fraction]:
             continue
         factor = op(factor, dec_elem)
     return factor
-        
-

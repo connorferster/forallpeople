@@ -58,7 +58,13 @@ def test__evaluate_dims_and_factor():
         "N",
         True,
     )
-    assert func(si.Dimensions(0, 1, 0, 0, 0, 0, 0), Fraction(1) / Fraction("0.3048"), 1, env_fact, env_dims)
+    assert func(
+        si.Dimensions(0, 1, 0, 0, 0, 0, 0),
+        Fraction(1) / Fraction("0.3048"),
+        1,
+        env_fact,
+        env_dims,
+    )
     assert func(si.Dimensions(1, 0, 0, 0, 0, 0, 0), 1, 3, env_fact, env_dims) == (
         "",
         True,
@@ -71,13 +77,13 @@ def test__evaluate_dims_and_factor():
 
 def test__get_units_by_factor():
     ftlb = lb * ft
-    ft2 = ft ** 2
+    ft2 = ft**2
     func = phf._get_units_by_factor
     assert func(ft.factor, ft.dimensions, env_fact, 1) == {
         "ft": {
             "Dimension": si.Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0),
             "Symbol": "ft",
-            "Factor": Fraction(1)/Fraction("0.3048"),
+            "Factor": Fraction(1) / Fraction("0.3048"),
         }
     }
     assert func(ft2.factor, ft.dimensions, env_fact, 2) == {
@@ -91,7 +97,10 @@ def test__get_units_by_factor():
         "lbft": {
             "Dimension": si.Dimensions(kg=1, m=2, s=-2, A=0, cd=0, K=0, mol=0),
             "Symbol": "lb·ft",
-            "Factor": Fraction(1)/Fraction("0.45359237")/Fraction("9.80665")/Fraction("0.3048"),
+            "Factor": Fraction(1)
+            / Fraction("0.45359237")
+            / Fraction("9.80665")
+            / Fraction("0.3048"),
         }
     }
     assert func((ftlb * ft).factor, (ftlb * ft).dimensions, env_fact, 1) == dict()
@@ -150,7 +159,7 @@ def test__get_superscript_string():
 
 def test_latex():
     assert MPa.latex == "1.000\\ \\text{MPa}"
-    assert (2.5 * kg * m ** 2.5).latex == "2.500\\ \\text{kg} \\cdot \\text{m}^{2.5}"
+    assert (2.5 * kg * m**2.5).latex == "2.500\\ \\text{kg} \\cdot \\text{m}^{2.5}"
 
 
 def test_repr():
@@ -169,12 +178,12 @@ def test_repr():
 
 
 def test_html():
-    assert (25 * m ** 2).html == "25.000 m<sup>2</sup>"
+    assert (25 * m**2).html == "25.000 m<sup>2</sup>"
     assert (units["A"]).html == "50.000 g"
 
 
 def test_prefixed():
-    assert (25 * m ** 2).prefix("c").html == "250000.000 cm<sup>2</sup>"
+    assert (25 * m**2).prefix("c").html == "250000.000 cm<sup>2</sup>"
 
 
 def test_round():
@@ -189,7 +198,7 @@ def test_split():
 
 
 def test_sqrt():
-    assert (25 * m / s).sqrt() == 5 * (m ** 0.5 / (s ** 0.5))
+    assert (25 * m / s).sqrt() == 5 * (m**0.5 / (s**0.5))
 
 
 def test_in_units():
@@ -444,15 +453,15 @@ def test___rtruediv__():
 
 
 def test___pow__():
-    assert N ** 2 == si.Physical(1, si.Dimensions(2, 2, -4, 0, 0, 0, 0), 1)
-    assert ft ** 3 == si.Physical(
-        0.3048 ** 3, si.Dimensions(0, 3, 0, 0, 0, 0, 0), (1 / 0.3048) ** 3
+    assert N**2 == si.Physical(1, si.Dimensions(2, 2, -4, 0, 0, 0, 0), 1)
+    assert ft**3 == si.Physical(
+        0.3048**3, si.Dimensions(0, 3, 0, 0, 0, 0, 0), (1 / 0.3048) ** 3
     )
 
 
 def test___abs__():
     assert abs(-1 * m) == m
-    assert abs(-10 * ft ** 2) == 10 * ft ** 2
+    assert abs(-10 * ft**2) == 10 * ft**2
     assert abs(1 * kip) == 1 * kip
 
 
@@ -475,22 +484,22 @@ def test___float__():
 
 
 def test_sqrt():
-    assert (9 * kPa).sqrt() == 3 * kPa ** 0.5
-    assert (9 * MPa).sqrt() == 3 * MPa ** 0.5
+    assert (9 * kPa).sqrt() == 3 * kPa**0.5
+    assert (9 * MPa).sqrt() == 3 * MPa**0.5
 
 
 ## Integration tests
 def test_defined_unit_persistence():
     a = units["E"]
     x = units["D"]
-    b = 1 / a ** 2
+    b = 1 / a**2
 
     area = 2.3 * ft * 1.2 * ft
     c = a / area
 
     d = a.to("lb")
     e = 2.8 * lb
-    f = 1 / d ** 2 * e * 10
+    f = 1 / d**2 * e * 10
     g = 1 / f + x / 1e3
 
     assert repr(b) == "25.000 kip⁻²"

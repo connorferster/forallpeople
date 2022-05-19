@@ -84,6 +84,7 @@ _superscripts = {
     ".": "'",
 }
 
+
 @functools.lru_cache(maxsize=None)
 def _evaluate_dims_and_factor(
     dims_orig: Dimensions,
@@ -134,7 +135,7 @@ def _get_units_by_factor(
     equal to 'dims'. Returns an empty dict, otherwise.
     """
     ## TODO Write a pow() to handle fractions and rationals
-    new_factor = fraction_pow(factor, -Fraction(1/power))
+    new_factor = fraction_pow(factor, -Fraction(1 / power))
     units_match = units_env().get(new_factor, dict())
     try:
         units_name = tuple(units_match.keys())[0]
@@ -248,9 +249,7 @@ def _format_symbol(prefix: str, symbol: str, repr_format: str = "") -> str:
     return formatted_symbol
 
 
-def _format_exponent(
-    power: Union[int, float], repr_format: str = "", eps=1e-7
-) -> str:
+def _format_exponent(power: Union[int, float], repr_format: str = "", eps=1e-7) -> str:
     """
     Returns the number in 'power' as a formatted exponent for text display.
     """
@@ -436,7 +435,10 @@ def _auto_prefix_kg(value: float, power: Union[int, float]) -> str:
 
 
 def _auto_prefix_value(
-    value: float, power: Union[int, float], prefix: str, kg_bool=False,
+    value: float,
+    power: Union[int, float],
+    prefix: str,
+    kg_bool=False,
 ) -> float:
     """
     Converts the value to a prefixed value if the instance has a symbol defined in
@@ -445,7 +447,7 @@ def _auto_prefix_value(
     kg_factor = 1
     if kg_bool:
         kg_factor = 1000.0
-    if prefix == 'unity':
+    if prefix == "unity":
         return value * kg_factor
     if prefix in _additional_prefixes:
         return value / ((_additional_prefixes[prefix] / kg_factor) ** power)
@@ -491,14 +493,14 @@ def _auto_prefix_value(
 def swap_scientific_notation_float(value: float, precision: int) -> str:
     """
     Returns a deque representing 'pycode_as_deque' with any python floats that
-    will get "cut-off" by the 'precision' arg when they are rounded as being 
+    will get "cut-off" by the 'precision' arg when they are rounded as being
     rendered as strings in python's "e format" scientific notation.
 
     A float is "cut-off" by 'precision' when it's number of significant digits will
-    be less than those required by precision. 
+    be less than those required by precision.
 
     e.g. elem = 0.001353 with precision=3 will round to 0.001, with only one
-    significant digit (1 < 3). Therefore this float is "cut off" and will be 
+    significant digit (1 < 3). Therefore this float is "cut off" and will be
     formatted instead as "1.353e-3"
 
     elem = 0.1353 with precision=3 will round to 0.135 with three significant digits
@@ -517,7 +519,7 @@ def swap_scientific_notation_float(value: float, precision: int) -> str:
 def test_for_small_float(value: float, precision: int) -> bool:
     """
     Returns True if 'value' is a float whose rounded str representation
-    has fewer significant figures than the number in 'precision'. 
+    has fewer significant figures than the number in 'precision'.
     Return False otherwise.
     """
     if not isinstance(value, (float)):
@@ -544,9 +546,9 @@ def test_for_small_float(value: float, precision: int) -> bool:
 
 def swap_scientific_notation_str(value_as_str: str) -> str:
     """
-    Returns a deque representing 'line' with any python 
+    Returns a deque representing 'line' with any python
     float elements in the deque
-    that are in scientific notation "e" format converted into a Latex 
+    that are in scientific notation "e" format converted into a Latex
     scientific notation.
     """
     b = "}"
@@ -593,13 +595,12 @@ def fraction_pow(a: Fraction, b: Fraction) -> Union[Fraction, float]:
     if the result can be expressed as a Fraction. Returns a float otherwise.
     """
     if isinstance(b, int):
-        return a ** b
+        return a**b
     else:
-        c = a ** b
+        c = a**b
         if isinstance(c, Fraction):
             return 1 / c
         x, y = c.as_integer_ratio()
         d = Decimal(str(x / y))
         m, n = d.as_integer_ratio()
         return Fraction(n, m)
-    

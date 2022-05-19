@@ -99,14 +99,10 @@ class Physical(object):
         """
         Returns a repr that can be used to create another Physical instance.
         """
-        repr_str = (
-            "Physical(value={}, dimensions={}, factor={:.5}, precision={}, _prefixed={})"
-        )
+        repr_str = "Physical(value={}, dimensions={}, factor={:.5}, precision={}, _prefixed={})"
         factor = float(self.factor)
         if self.factor == 1:
-            repr_str = (
-                "Physical(value={}, dimensions={}, factor={}, precision={}, _prefixed={})"
-            )
+            repr_str = "Physical(value={}, dimensions={}, factor={}, precision={}, _prefixed={})"
             factor = 1
         return repr_str.format(
             self.value, self.dimensions, factor, self.precision, self.prefixed
@@ -118,7 +114,7 @@ class Physical(object):
         the number of decimal places displayed in repr and str.
         """
         raise PendingDeprecationWarning(
-            "Using .round() is going to be deprecated. " 
+            "Using .round() is going to be deprecated. "
             "Use Python's built-in round() function instead."
         )
 
@@ -135,7 +131,9 @@ class Physical(object):
         if base_value:
             return (
                 self.value * float(self.factor),
-                Physical(1 / float(self.factor), self.dimensions, self.factor, self.precision),
+                Physical(
+                    1 / float(self.factor), self.dimensions, self.factor, self.precision
+                ),
             )
         return (float(self), Physical(1, self.dimensions, self.factor, self.precision))
 
@@ -592,7 +590,7 @@ class Physical(object):
         if isinstance(other, NUMBER):
             new_value = other / self.value
             new_dimensions = vec.multiply(self.dimensions, -1)
-            new_factor = self.factor ** -1  # added new_factor
+            new_factor = self.factor**-1  # added new_factor
             return Physical(
                 new_value,
                 new_dimensions,
@@ -604,7 +602,7 @@ class Physical(object):
                 return Physical(
                     other / self.value,
                     vec.multiply(self.dimensions, -1),
-                    self.factor ** -1,  # updated to ** -1
+                    self.factor**-1,  # updated to ** -1
                     self.precision,
                 )
             except:
@@ -623,7 +621,7 @@ class Physical(object):
         if isinstance(other, NUMBER):
             if self.prefixed:
                 return float(self) ** other
-            new_value = self.value ** other
+            new_value = self.value**other
             new_dimensions = vec.multiply(self.dimensions, other)
             new_factor = phf.fraction_pow(self.factor, other)
             return Physical(new_value, new_dimensions, new_factor, self.precision)

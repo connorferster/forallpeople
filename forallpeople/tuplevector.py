@@ -16,7 +16,7 @@ from typing import Union, Any, Optional
 
 def same_shape(t1: tuple, t2: tuple) -> bool:
     """
-    Returns True if t1 and t2 are the same shape. 
+    Returns True if t1 and t2 are the same shape.
     False, otherwise."""
     try:
         return len(t1) == len(t2)
@@ -26,7 +26,7 @@ def same_shape(t1: tuple, t2: tuple) -> bool:
 
 def valid_for_arithmetic(other: Any) -> bool:
     """
-    Returns True if object 'other' is valid for arithmetic operations. 
+    Returns True if object 'other' is valid for arithmetic operations.
     Returns False otherwise.
     """
     try:
@@ -244,9 +244,9 @@ def vround(t: tuple, precision: int = 0) -> tuple:
 
 def mean(t: tuple, ignore_empty: bool = False) -> float:
     """
-    Returns the average of the values in the tuple, 't'. If 'ignore_empty' 
+    Returns the average of the values in the tuple, 't'. If 'ignore_empty'
     is True, then only the values that are not either 0 or None are averaged.
-    If 'ignore_empty' is False, all values are used and None is taken as 0. 
+    If 'ignore_empty' is False, all values are used and None is taken as 0.
     """
     tuple_check(t)
     count = 0
@@ -267,13 +267,13 @@ def mean(t: tuple, ignore_empty: bool = False) -> float:
 
 def magnitude(t: tuple) -> float:
     """
-    Returns the vector magnitude of the tuple, 't' using the 
+    Returns the vector magnitude of the tuple, 't' using the
     Pythagorean method.
     """
     tuple_check(t)
     mag_sqr = 0
     for val in t:
-        mag_sqr += val ** 2
+        mag_sqr += val**2
     return sqrt(mag_sqr)
 
 
@@ -287,7 +287,7 @@ def normalize(t: tuple) -> tuple:
 def _clip(n: float) -> float:
     """
     Helper function to emulate numpy.clip for the specific
-    use case of preventing math domain errors on the 
+    use case of preventing math domain errors on the
     acos function by "clipping" values that are > abs(1).
     e.g. _clip(1.001) == 1
          _clip(-1.5) == -1
