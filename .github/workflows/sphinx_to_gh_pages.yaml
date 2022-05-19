@@ -31,5 +31,5 @@ jobs:
         uses: uibcdf/action-sphinx-docs-to-gh-pages@v1.0-beta.2
         with:
           branch: main
-          dir_docs: docs
+          dir_docs: docs/source
           sphinxopts: ''
