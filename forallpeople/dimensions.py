@@ -23,3 +23,7 @@ class Dimensions(NamedTuple):
     cd: float
     K: float
     mol: float
+
+
+class DimensionError(Exception):
+    pass
