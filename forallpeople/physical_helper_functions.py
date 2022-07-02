@@ -172,12 +172,12 @@ def _get_unit_string(unit_components: list, repr_format: str) -> str:
     pre_symbol = ""
     post_symbol = ""
     if repr_format == "html":
-        dot_operator = "&#8901;"  # &#183;
+        dot_operator = "&#8901;"
         pre_super = "<sup>"
         post_super = "</sup>"
     elif repr_format == "latex":
-        dot_operator = r" \cdot "
-        pre_symbol = "\\text{"
+        dot_operator = " \\cdot "
+        pre_symbol = "\\mathrm{"
         post_symbol = "}"
         pre_super = "^{"
         post_super = "}"
@@ -274,7 +274,7 @@ def _get_superscript_string(exponent: str) -> str:
     return exponent_string
 
 
-### Mathematical helper functions ###
+### Math helper functions ###
 
 
 @functools.lru_cache(maxsize=None)
@@ -490,91 +490,107 @@ def _auto_prefix_value(
 #                 previous_power_of_ten = power_of_ten
 
 
-def swap_scientific_notation_float(value: float, precision: int) -> str:
-    """
-    Returns a deque representing 'pycode_as_deque' with any python floats that
-    will get "cut-off" by the 'precision' arg when they are rounded as being
-    rendered as strings in python's "e format" scientific notation.
+# def swap_scientific_notation_float(value: float, precision: int) -> str:
+#     """
+#     Returns a deque representing 'pycode_as_deque' with any python floats that
+#     will get "cut-off" by the 'precision' arg when they are rounded as being
+#     rendered as strings in python's "e format" scientific notation.
 
-    A float is "cut-off" by 'precision' when it's number of significant digits will
-    be less than those required by precision.
+#     A float is "cut-off" by 'precision' when it's number of significant digits will
+#     be less than those required by precision.
 
-    e.g. elem = 0.001353 with precision=3 will round to 0.001, with only one
-    significant digit (1 < 3). Therefore this float is "cut off" and will be
-    formatted instead as "1.353e-3"
+#     e.g. elem = 0.001353 with precision=3 will round to 0.001, with only one
+#     significant digit (1 < 3). Therefore this float is "cut off" and will be
+#     formatted instead as "1.353e-3"
 
-    elem = 0.1353 with precision=3 will round to 0.135 with three significant digits
-    (3 == 3). Therefore this float will not be formatted.
-    """
-    if test_for_small_float(value, precision):
-        new_value = (
-            "{:.{precision}e}".format(value, precision=precision)
-            .replace("e-0", "e-")
-            .replace("e+0", "e+")
-        )
-        return new_value
-    return
-
-
-def test_for_small_float(value: float, precision: int) -> bool:
-    """
-    Returns True if 'value' is a float whose rounded str representation
-    has fewer significant figures than the number in 'precision'.
-    Return False otherwise.
-    """
-    if not isinstance(value, (float)):
-        return False
-    if value == 0:
-        return False
-    value_as_str = str(round(abs(value), precision))
-    if "e" in str(value):
-        return True
-    if "." in value_as_str:
-        left, *_right = value_as_str.split(".")
-        if left != "0":
-            return False
-    if (
-        round(value, precision) != round(value, precision + 1)
-        or str(abs(round(value, precision))).replace("0", "").replace(".", "")
-        == str(abs(round(value, precision + 1))).replace("0", "").replace(".", "")
-        == ""
-    ):
-        return True
-    else:
-        return False
+#     elem = 0.1353 with precision=3 will round to 0.135 with three significant digits
+#     (3 == 3). Therefore this float will not be formatted.
+#     """
+#     if test_for_small_float(value, precision):
+#         new_value = (
+#             "{:.{precision}e}".format(value, precision=precision)
+#             .replace("e-0", "e-")
+#             .replace("e+0", "e+")
+#         )
+#         return new_value
+#     return
 
 
-def swap_scientific_notation_str(value_as_str: str) -> str:
+# def test_for_small_float(value: float, precision: int) -> bool:
+#     """
+#     Returns True if 'value' is a float whose rounded str representation
+#     has fewer significant figures than the number in 'precision'.
+#     Return False otherwise.
+#     """
+#     if not isinstance(value, (float)):
+#         return False
+#     if value == 0:
+#         return False
+#     value_as_str = str(round(abs(value), precision))
+#     if "e" in str(value):
+#         return True
+#     if "." in value_as_str:
+#         left, *_right = value_as_str.split(".")
+#         if left != "0":
+#             return False
+#     if (
+#         round(value, precision) != round(value, precision + 1)
+#         or str(abs(round(value, precision))).replace("0", "").replace(".", "")
+#         == str(abs(round(value, precision + 1))).replace("0", "").replace(".", "")
+#         == ""
+#     ):
+#         return True
+#     else:
+#         return False
+
+
+def format_scientific_notation(value_as_str: str, template="") -> str:
     """
     Returns a deque representing 'line' with any python
     float elements in the deque
     that are in scientific notation "e" format converted into a Latex
     scientific notation.
     """
-    b = "}"
-    if test_for_scientific_notation_str(value_as_str):
-        new_value_as_str = value_as_str.replace("e", " \\times 10 ^ {") + b
-        return new_value_as_str
-    return value_as_str
+    if template == "html":
+        times = "&times;"
+        pre_sup = "<sup>"
+        post_sup = "</sup>"
+    elif template == "latex":
+        times = "\\times"
+        pre_sup = "^ {"
+        post_sup = "}"
+
+    exponent_str = value_as_str.split("e")[1]
+    exponent = exponent_str.replace("-0", "").replace("+0", "").replace("-", "").replace("+", "")
+
+    value_as_str = (
+        value_as_str.lower()
+        .replace("e-0", "e-")
+        .replace("e+0", "e+")
+        .replace(f"-{exponent}", "")
+        .replace(f"+{exponent}", "")
+    )
+    formatted_value = value_as_str.replace("e", f" {times} 10{pre_sup}{exponent}{post_sup}")
+    return formatted_value
 
 
-def test_for_scientific_notation_str(value_as_str: str) -> bool:
-    """
-    Returns True if 'elem' represents a python float in scientific
-    "e notation".
-    e.g. 1.23e-3, 0.09e5
-    Returns False otherwise
-    """
-    test_for_float = False
-    try:
-        float(value_as_str)
-        test_for_float = True
-    except:
-        pass
+# def test_for_scientific_notation_str(value_as_str: str) -> bool:
+#     """
+#     Returns True if 'elem' represents a python float in scientific
+#     "e notation".
+#     e.g. 1.23e-3, 0.09e5
+#     Returns False otherwise
+#     """
+#     test_for_float = False
+#     try:
+#         float(value_as_str)
+#         test_for_float = True
+#     except:
+#         pass
 
-    if "e" in str(value_as_str).lower() and test_for_float:
-        return True
-    return False
+#     if "e" in str(value_as_str).lower() and test_for_float:
+#         return True
+#     return False
 
 
 def is_nan(value: Any) -> bool:
