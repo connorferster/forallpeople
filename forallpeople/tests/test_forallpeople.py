@@ -471,6 +471,14 @@ def test___float__():
     assert float(34 * kg * A * m) == pytest.approx(34)
 
 
+def test__format__():
+    value = 432.92393
+    assert "{:.3f}".format(value * MPa) == "432.924 MPa"
+    assert "{:.2e}".format(value * MPa) == "4.33e+02 MPa"
+    assert "{:.2eH}".format(value * MPa) == "4.33 &times; 10<sup>2</sup> MPa"
+    assert "{:.2eL}".format(value * MPa) == "$4.33 \\times 10^ {2}\\ \\mathrm{MPa}$"
+
+
 ## Test of Environment Class ##
 
 # def test_load_environment():
