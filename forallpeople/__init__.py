@@ -32,7 +32,7 @@ A module to model the seven SI base units:
 #    limitations under the License.
 from __future__ import annotations
 
-__version__ = "2.5.0"
+__version__ = "2.6.0"
 
 from fractions import Fraction
 from typing import Union, Optional
