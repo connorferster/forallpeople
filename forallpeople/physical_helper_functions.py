@@ -235,7 +235,7 @@ def _format_symbol(prefix: str, symbol: str, repr_format: str = "") -> str:
     elif repr_format == "latex":
         dot_operator = " \\cdot "
         ohm = "$\\Omega$"
-        symbol_string_open = "\\text{"
+        symbol_string_open = "\\mathrm{"
         symbol_string_close = "}"
 
     symbol = (
@@ -244,7 +244,7 @@ def _format_symbol(prefix: str, symbol: str, repr_format: str = "") -> str:
         .replace("Ω", ohm)
     )
     formatted_symbol = f"{symbol_string_open}{prefix}{symbol}{symbol_string_close}"
-    if symbol.startswith("\\text{"):  # special case for 'single dimension' Physicals...
+    if symbol.startswith("\\mathrm{"):  # special case for 'single dimension' Physicals...
         formatted_symbol = f"{symbol[0:6]}{prefix}{symbol[6:]}"
     return formatted_symbol
 
@@ -551,6 +551,9 @@ def format_scientific_notation(value_as_str: str, template="") -> str:
     that are in scientific notation "e" format converted into a Latex
     scientific notation.
     """
+    times = ""
+    pre_sup = ""
+    post_sup = ""
     if template == "html":
         times = "&times;"
         pre_sup = "<sup>"
@@ -560,18 +563,20 @@ def format_scientific_notation(value_as_str: str, template="") -> str:
         pre_sup = "^ {"
         post_sup = "}"
 
-    exponent_str = value_as_str.split("e")[1]
-    exponent = exponent_str.replace("-0", "").replace("+0", "").replace("-", "").replace("+", "")
+    if template == "html" or template == "latex":
+        exponent_str = value_as_str.lower().split("e")[1]
+        exponent = exponent_str.replace("-0", "").replace("+0", "").replace("-", "").replace("+", "")
 
-    value_as_str = (
-        value_as_str.lower()
-        .replace("e-0", "e-")
-        .replace("e+0", "e+")
-        .replace(f"-{exponent}", "")
-        .replace(f"+{exponent}", "")
-    )
-    formatted_value = value_as_str.replace("e", f" {times} 10{pre_sup}{exponent}{post_sup}")
-    return formatted_value
+        value_as_str = (
+            value_as_str.lower()
+            .replace("e-0", "e-")
+            .replace("e+0", "e+")
+            .replace(f"-{exponent}", "")
+            .replace(f"+{exponent}", "")
+        )
+        formatted_value = value_as_str.replace("e", f" {times} 10{pre_sup}{exponent}{post_sup}")
+        return formatted_value
+    return value_as_str
 
 
 # def test_for_scientific_notation_str(value_as_str: str) -> bool:
