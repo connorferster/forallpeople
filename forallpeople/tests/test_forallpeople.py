@@ -145,7 +145,7 @@ def test__get_unit_string():
     )
     assert (
         func([("kg", 1), ("m", 1), ("s", -2)], "latex")
-        == r"\text{kg} \cdot \text{m} \cdot \text{s}^{-2}"
+        == "\\mathrm{kg} \\cdot \\mathrm{m} \\cdot \\mathrm{s}^{-2}"
     )
     assert func([("m", 2)], "html") == "m<sup>2</sup>"
 
@@ -158,8 +158,10 @@ def test__get_superscript_string():
 
 
 def test_latex():
-    assert MPa.latex == "1.000\\ \\text{MPa}"
-    assert (2.5 * kg * m**2.5).latex == "2.500\\ \\text{kg} \\cdot \\text{m}^{2.5}"
+    assert MPa.latex == "$1.000\\ \\mathrm{MPa}$"
+    assert (
+        2.5 * kg * m**2.5
+    ).latex == "$2.500\\ \\mathrm{kg} \\cdot \\mathrm{m}^{2.5}$"
 
 
 def test_repr():
@@ -469,6 +471,14 @@ def test___float__():
     assert float(6.7 * ft) == pytest.approx(6.7)
     assert float((52.5 * kN)) == pytest.approx(52.5)
     assert float(34 * kg * A * m) == pytest.approx(34)
+
+
+def test__format__():
+    value = 432.92393
+    assert "{:.3f}".format(value * MPa) == "432.924 MPa"
+    assert "{:.2e}".format(value * MPa) == "4.33e+02 MPa"
+    assert "{:.2eH}".format(value * MPa) == "4.33 &times; 10<sup>2</sup> MPa"
+    assert "{:.2eL}".format(value * MPa) == "$4.33 \\times 10^ {2}\\ \\mathrm{MPa}$"
 
 
 ## Test of Environment Class ##

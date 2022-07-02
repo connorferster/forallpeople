@@ -32,7 +32,7 @@ A module to model the seven SI base units:
 #    limitations under the License.
 from __future__ import annotations
 
-__version__ = "2.5.0"
+__version__ = "2.6.0"
 
 from fractions import Fraction
 from typing import Union, Optional
@@ -191,14 +191,14 @@ class Physical(object):
     def _repr_latex_(self):
         return self._repr_template_(template="latex")
 
-    def _repr_template_(self, template: str = "", format_spec=None) -> str:
+    def _repr_template_(self, template: str = "", format_spec="") -> str:
         """
         Returns a string that appropriately represents the Physical
         instance. The parameter,'template', allows two optional values:
         'html' and 'latex'. which will only be utilized if the Physical
         exists in the Jupyter/iPython environment.
         """
-        if format_spec is None:
+        if not format_spec:
             format_spec = f".{self.precision}f"
         dims = self.dimensions
         factor = self.factor
@@ -263,22 +263,29 @@ class Physical(object):
         pre_super = ""
         post_super = ""
         space = " "
+        pre_inline = ""
+        post_inline = ""
         if template == "latex":
             space = r"\ "
             pre_super = "^{"
             post_super = "}"
+            pre_inline = "$"
+            post_inline = "$"
         elif template == "html":
             space = " "
             pre_super = "<sup>"
             post_super = "</sup>"
-
         if not exponent:
             pre_super = ""
             post_super = ""
 
-        # if not prefix_bool:
-        #    return f"{value:.{precision}f}{space}{units}{pre_super}{exponent}{post_super}"
-        return f"{value:{format_spec}}{space}{units}{pre_super}{exponent}{post_super}"
+        formatted_value = f"{value:{format_spec}}"
+        if "e" in format_spec.lower():
+            formatted_value = phf.format_scientific_notation(
+                formatted_value, template=template
+            )
+
+        return f"{pre_inline}{formatted_value}{space}{units}{pre_super}{exponent}{post_super}{post_inline}"
 
     ### "Magic" Methods ###
 
@@ -316,7 +323,15 @@ class Physical(object):
         return True
 
     def __format__(self, format_spec=""):
-        return self._repr_template_(template="", format_spec=format_spec)
+        template = ""
+        if "L" in format_spec:
+            template = "latex"
+            format_spec = format_spec.replace("L", "")
+        elif "H" in format_spec:
+            template = "html"
+            format_spec = format_spec.replace("H", "")
+
+        return self._repr_template_(template=template, format_spec=format_spec)
 
     def __hash__(self):
         return hash(
