@@ -281,12 +281,11 @@ class Physical(object):
 
         formatted_value = f"{value:{format_spec}}"
         if "e" in format_spec.lower():
-            formatted_value = phf.format_scientific_notation(formatted_value, template=template)
+            formatted_value = phf.format_scientific_notation(
+                formatted_value, template=template
+            )
 
         return f"{pre_inline}{formatted_value}{space}{units}{pre_super}{exponent}{post_super}{post_inline}"
-    
-
-
 
     ### "Magic" Methods ###
 

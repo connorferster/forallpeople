@@ -244,7 +244,9 @@ def _format_symbol(prefix: str, symbol: str, repr_format: str = "") -> str:
         .replace("Ω", ohm)
     )
     formatted_symbol = f"{symbol_string_open}{prefix}{symbol}{symbol_string_close}"
-    if symbol.startswith("\\mathrm{"):  # special case for 'single dimension' Physicals...
+    if symbol.startswith(
+        "\\mathrm{"
+    ):  # special case for 'single dimension' Physicals...
         formatted_symbol = f"{symbol[0:6]}{prefix}{symbol[6:]}"
     return formatted_symbol
 
@@ -456,7 +458,6 @@ def _auto_prefix_value(
     return value / ((_prefixes[prefix] / kg_factor) ** power)
 
 
-
 def format_scientific_notation(value_as_str: str, template="") -> str:
     """
     Returns a deque representing 'line' with any python
@@ -478,7 +479,12 @@ def format_scientific_notation(value_as_str: str, template="") -> str:
 
     if template == "html" or template == "latex":
         exponent_str = value_as_str.lower().split("e")[1]
-        exponent = exponent_str.replace("-0", "").replace("+0", "").replace("-", "").replace("+", "")
+        exponent = (
+            exponent_str.replace("-0", "")
+            .replace("+0", "")
+            .replace("-", "")
+            .replace("+", "")
+        )
 
         value_as_str = (
             value_as_str.lower()
@@ -487,10 +493,11 @@ def format_scientific_notation(value_as_str: str, template="") -> str:
             .replace(f"-{exponent}", "")
             .replace(f"+{exponent}", "")
         )
-        formatted_value = value_as_str.replace("e", f" {times} 10{pre_sup}{exponent}{post_sup}")
+        formatted_value = value_as_str.replace(
+            "e", f" {times} 10{pre_sup}{exponent}{post_sup}"
+        )
         return formatted_value
     return value_as_str
-
 
 
 def is_nan(value: Any) -> bool:
