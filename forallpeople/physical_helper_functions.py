@@ -492,24 +492,6 @@ def format_scientific_notation(value_as_str: str, template="") -> str:
     return value_as_str
 
 
-# def test_for_scientific_notation_str(value_as_str: str) -> bool:
-#     """
-#     Returns True if 'elem' represents a python float in scientific
-#     "e notation".
-#     e.g. 1.23e-3, 0.09e5
-#     Returns False otherwise
-#     """
-#     test_for_float = False
-#     try:
-#         float(value_as_str)
-#         test_for_float = True
-#     except:
-#         pass
-
-#     if "e" in str(value_as_str).lower() and test_for_float:
-#         return True
-#     return False
-
 
 def is_nan(value: Any) -> bool:
     """
