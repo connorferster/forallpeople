@@ -247,7 +247,7 @@ def _format_symbol(prefix: str, symbol: str, repr_format: str = "") -> str:
     if symbol.startswith(
         "\\mathrm{"
     ):  # special case for 'single dimension' Physicals...
-        formatted_symbol = f"{symbol[0:6]}{prefix}{symbol[6:]}"
+        formatted_symbol = f"{symbol[0:8]}{prefix}{symbol[8:]}"
     return formatted_symbol
 
 
