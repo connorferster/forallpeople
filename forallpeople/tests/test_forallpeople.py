@@ -162,6 +162,7 @@ def test_latex():
     assert (
         2.5 * kg * m**2.5
     ).latex == "$2.500\\ \\mathrm{kg} \\cdot \\mathrm{m}^{2.5}$"
+    assert (5000 * A).latex == "$5.000\\ \\mathrm{kA}$"
 
 
 def test_repr():
