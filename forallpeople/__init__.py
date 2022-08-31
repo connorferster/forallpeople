@@ -398,7 +398,7 @@ class Physical(object):
             )
 
     def __add__(self, other):
-        if other != other: # Test for nans
+        if other != other:  # Test for nans
             return other
         if isinstance(other, Physical):
             if self.dimensions == other.dimensions:
@@ -446,7 +446,7 @@ class Physical(object):
         )
 
     def __sub__(self, other):
-        if other != other: # Test for nans
+        if other != other:  # Test for nans
             return other
         if isinstance(other, Physical):
             if self.dimensions == other.dimensions:
@@ -507,7 +507,7 @@ class Physical(object):
         )
 
     def __mul__(self, other):
-        if other != other: # Test for nans
+        if other != other:  # Test for nans
             return other
         elif isinstance(other, NUMBER):
             return Physical(
@@ -562,7 +562,7 @@ class Physical(object):
         return self.__mul__(other)
 
     def __truediv__(self, other):
-        if other != other: # Test for nans
+        if other != other:  # Test for nans
             return other
         elif isinstance(other, NUMBER):
             return Physical(
@@ -605,7 +605,7 @@ class Physical(object):
                 )
 
     def __rtruediv__(self, other):
-        if other != other: # Test for nans
+        if other != other:  # Test for nans
             return other
         if isinstance(other, NUMBER):
             new_value = other / self.value
@@ -638,7 +638,7 @@ class Physical(object):
         )
 
     def __pow__(self, other):
-        if other != other: # Test for nans
+        if other != other:  # Test for nans
             return other
         if isinstance(other, NUMBER):
             if self.prefixed:
