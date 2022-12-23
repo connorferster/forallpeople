@@ -220,7 +220,7 @@ class Physical(object):
         power, dims_orig = phf._powers_of_derived(dims, env_dims)
 
         # Determine if there is a symbol for these dimensions in the environment
-        # and if the quantity is elligible to be prefixed
+        # and if the quantity is eligible to be prefixed
         symbol, prefix_bool = phf._evaluate_dims_and_factor(
             dims_orig, factor, power, env_fact, env_dims
         )
