@@ -32,7 +32,7 @@ A module to model the seven SI base units:
 #    limitations under the License.
 from __future__ import annotations
 
-__version__ = "2.6.4"
+__version__ = "2.6.5"
 
 from fractions import Fraction
 from typing import Union, Optional
@@ -90,7 +90,7 @@ class Physical(object):
             raise AttributeError(
                 "Cannot set a prefix on a Physical if it has a factor."
             )
-        # check if elligible for prefixing; do not rely on __repr__ to ignore it
+        # check if eligible for prefixing; do not rely on __repr__ to ignore it
         return Physical(
             self.value, self.dimensions, self.factor, self.precision, prefixed
         )
@@ -98,12 +98,12 @@ class Physical(object):
     @property
     def repr(self) -> str:
         """
-        Returns a repr that can be used to create another Physical instance.
+        Returns a traditional Python string representation of the Physical instance.
         """
-        repr_str = "Physical(value={}, dimensions={}, factor={:.5}, precision={}, _prefixed={})"
+        repr_str = "Physical(value={}, dimensions={}, factor={:.5}, precision={}, prefixed={})"
         factor = float(self.factor)
         if self.factor == 1:
-            repr_str = "Physical(value={}, dimensions={}, factor={}, precision={}, _prefixed={})"
+            repr_str = "Physical(value={}, dimensions={}, factor={}, precision={}, prefixed={})"
             factor = 1
         return repr_str.format(
             self.value, self.dimensions, factor, self.precision, self.prefixed
@@ -114,10 +114,11 @@ class Physical(object):
         Returns a new Physical with a new precision, 'n'. Precision controls
         the number of decimal places displayed in repr and str.
         """
-        raise PendingDeprecationWarning(
+        warnings.warn(
             "Using .round() is going to be deprecated. "
-            "Use Python's built-in round() function instead."
+            "Use Python's built-in round() function instead.", DeprecationWarning
         )
+        return round(self, n)
 
     def split(self, base_value: bool = True) -> tuple:
         """
@@ -147,8 +148,10 @@ class Physical(object):
 
     def to(self, unit_name="") -> Optional[Physical]:
         """
-        Returns None and alters the instance into one of the eligible
-        alternative units for its dimension, if it exists in the alternative_units dict;
+        Returns a Physical instance representing self converted into one of the available
+        conversion units for its dimension.
+        If .to() is called without any arguments, then it will return None and instead
+        print a list of available conversion units.
         """
         dims = self.dimensions
         env_dims = environment.units_by_dimension

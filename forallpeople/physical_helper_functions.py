@@ -136,7 +136,7 @@ def _get_units_by_factor(
     """
     ## TODO Write a pow() to handle fractions and rationals
     new_factor = fraction_pow(factor, -Fraction(1 / power))
-    units_match = units_env().get(new_factor, dict())
+    units_match = _match_factors(new_factor, units_env())
     try:
         units_name = tuple(units_match.keys())[0]
     except IndexError:
@@ -145,6 +145,20 @@ def _get_units_by_factor(
     if dims != retrieved_dims:
         return dict()
     return units_match
+
+
+def _match_factors(new_factor: Fraction, units_env: dict, tol=Fraction(1, int(1e9))) -> Union[Fraction, dict]:
+    """
+    Returns 
+    """
+    units_match = units_env.get(new_factor, dict())
+    if units_match != dict():
+        return units_match
+    else:
+        for factor, units in units_env.items():
+            if abs(new_factor - factor) < tol:
+                return units
+        return dict()
 
 
 def _get_derived_unit(dims: Dimensions, units_env: dict) -> dict:
