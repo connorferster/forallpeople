@@ -32,7 +32,7 @@ A module to model the seven SI base units:
 #    limitations under the License.
 from __future__ import annotations
 
-__version__ = "2.6.5"
+__version__ = "2.6.6"
 
 from fractions import Fraction
 from typing import Union, Optional
@@ -58,14 +58,14 @@ class Physical(object):
 
     def __init__(
         self,
-        value: Union[int, float],
+        value: float,
         dimensions: Dimensions,
         factor: float,
         precision: int = 3,
         prefixed: str = "",
     ):
         """Constructor"""
-        super(Physical, self).__setattr__("value", value)
+        super(Physical, self).__setattr__("value", float(value))
         super(Physical, self).__setattr__("dimensions", dimensions)
         super(Physical, self).__setattr__("factor", factor)
         super(Physical, self).__setattr__("precision", precision)
