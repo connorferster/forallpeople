@@ -100,7 +100,9 @@ class Physical(object):
         """
         Returns a traditional Python string representation of the Physical instance.
         """
-        repr_str = "Physical(value={}, dimensions={}, factor={:.5}, precision={}, prefixed={})"
+        repr_str = (
+            "Physical(value={}, dimensions={}, factor={:.5}, precision={}, prefixed={})"
+        )
         factor = float(self.factor)
         if self.factor == 1:
             repr_str = "Physical(value={}, dimensions={}, factor={}, precision={}, prefixed={})"
@@ -116,7 +118,8 @@ class Physical(object):
         """
         warnings.warn(
             "Using .round() is going to be deprecated. "
-            "Use Python's built-in round() function instead.", DeprecationWarning
+            "Use Python's built-in round() function instead.",
+            DeprecationWarning,
         )
         return round(self, n)
 

@@ -147,9 +147,11 @@ def _get_units_by_factor(
     return units_match
 
 
-def _match_factors(new_factor: Fraction, units_env: dict, tol=Fraction(1, int(1e9))) -> Union[Fraction, dict]:
+def _match_factors(
+    new_factor: Fraction, units_env: dict, tol=Fraction(1, int(1e9))
+) -> Union[Fraction, dict]:
     """
-    Returns 
+    Returns
     """
     units_match = units_env.get(new_factor, dict())
     if units_match != dict():
