@@ -147,9 +147,11 @@ def _get_units_by_factor(
     return units_match
 
 
-def _match_factors(new_factor: Fraction, units_env: dict, tol=Fraction(1, int(1e9))) -> Union[Fraction, dict]:
+def _match_factors(
+    new_factor: Fraction, units_env: dict, tol=Fraction(1, int(1e9))
+) -> Union[Fraction, dict]:
     """
-    Returns 
+    Returns
     """
     units_match = units_env.get(new_factor, dict())
     if units_match != dict():
@@ -437,14 +439,14 @@ def _auto_prefix_kg(value: float, power: Union[int, float]) -> str:
     prefixes = _prefixes
     if abs(value) >= 1:
         for prefix, power_of_ten in prefixes.items():
-            if abs(value) >= (power_of_ten / 1000) ** abs(power):
+            if abs(value) >= (power_of_ten / 1000.) ** abs(power):
                 return prefix
     else:
         reverse_prefixes = sorted(prefixes.items(), key=lambda prefix: prefix[0])
         # Get the smallest prefix to start...
         previous_prefix = reverse_prefixes[0][0]
         for prefix, power_of_ten in reversed(list(prefixes.items())):
-            if abs(value) < (power_of_ten / 1000) ** abs(power):
+            if abs(value) < (power_of_ten / 1000.) ** abs(power):
                 return previous_prefix
             else:
                 previous_prefix = prefix
@@ -460,14 +462,14 @@ def _auto_prefix_value(
     Converts the value to a prefixed value if the instance has a symbol defined in
     the environment (i.e. is in the defined units dict)
     """
-    kg_factor = 1
+    kg_factor = 1.0
     if kg_bool:
         kg_factor = 1000.0
     if prefix == "unity":
         return value * kg_factor
     if prefix in _additional_prefixes:
         return value / ((_additional_prefixes[prefix] / kg_factor) ** power)
-    if 0 < value < 1:
+    if 0. < value < 1.:
         return value / ((_prefixes[prefix] / kg_factor) ** abs(power))
     return value / ((_prefixes[prefix] / kg_factor) ** power)
 

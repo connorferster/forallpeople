@@ -32,7 +32,7 @@ A module to model the seven SI base units:
 #    limitations under the License.
 from __future__ import annotations
 
-__version__ = "2.6.5"
+__version__ = "2.6.6"
 
 from fractions import Fraction
 from typing import Union, Optional
@@ -58,14 +58,14 @@ class Physical(object):
 
     def __init__(
         self,
-        value: Union[int, float],
+        value: float,
         dimensions: Dimensions,
         factor: float,
         precision: int = 3,
         prefixed: str = "",
     ):
         """Constructor"""
-        super(Physical, self).__setattr__("value", value)
+        super(Physical, self).__setattr__("value", float(value))
         super(Physical, self).__setattr__("dimensions", dimensions)
         super(Physical, self).__setattr__("factor", factor)
         super(Physical, self).__setattr__("precision", precision)
@@ -100,7 +100,9 @@ class Physical(object):
         """
         Returns a traditional Python string representation of the Physical instance.
         """
-        repr_str = "Physical(value={}, dimensions={}, factor={:.5}, precision={}, prefixed={})"
+        repr_str = (
+            "Physical(value={}, dimensions={}, factor={:.5}, precision={}, prefixed={})"
+        )
         factor = float(self.factor)
         if self.factor == 1:
             repr_str = "Physical(value={}, dimensions={}, factor={}, precision={}, prefixed={})"
@@ -116,7 +118,8 @@ class Physical(object):
         """
         warnings.warn(
             "Using .round() is going to be deprecated. "
-            "Use Python's built-in round() function instead.", DeprecationWarning
+            "Use Python's built-in round() function instead.",
+            DeprecationWarning,
         )
         return round(self, n)
 
@@ -296,7 +299,7 @@ class Physical(object):
     def __float__(self):
         value = self.value
         factor = float(self.factor)
-        if factor != 1:
+        if factor != 1.:
             return value * factor
         kg_bool = False
         dims = self.dimensions
