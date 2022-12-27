@@ -299,7 +299,7 @@ class Physical(object):
     def __float__(self):
         value = self.value
         factor = float(self.factor)
-        if factor != 1:
+        if factor != 1.:
             return value * factor
         kg_bool = False
         dims = self.dimensions
