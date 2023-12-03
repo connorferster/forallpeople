@@ -80,6 +80,7 @@ def test_add():
         kg=3.0, m=4.0, s=-6.0, A=0.0, cd=0.0, K=0.0, mol=0.0
     )
     assert vec.add(L1, L2) == tuple(range(1, 200, 2))
+    assert vec.add((1, 2), (2, 3)) == (3, 5) # This is the new test
 
 
 def test_subtract():
