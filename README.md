@@ -3,6 +3,16 @@
 <p align="center">"For all people. For all time."<br>
 <em>Nicolas de Caritat (Marquis de Condorcet), <br>in regards to the creation of the metric (SI) system.</em></p>
 
+<p align="center">
+  <a href="https://pypi.org/project/forallpeople/" target="_blank"><img alt="Github Stars" src="https://img.shields.io/pypi/pyversions/forallpeople"></a>
+  <a href="https://connorferster.github.io/forallpeople/" target="_blank"><img alt="Github Pages Documentation Link" src="https://img.shields.io/badge/Doc-Pages_link-blue"></a>
+  <a href="https://github.com/connorferster/forallpeople/issues" target="_blank">
+ <img src="https://img.shields.io/github/stars/connorferster/forallpeople">
+  <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/connorferster/forallpeople"></a>
+
+</p>
+
+
 `forallpeople` is a Python library for providing access to units-aware calculations through the SI units system, and other units defined by the SI sytem (e.g. US customary units, Imperial).
 
 While there are many other units libraries available for Python, `forallpeople` is unique in the following ways:
@@ -311,3 +321,9 @@ matrix([
 [0.6493506493506493, 0.5303030303030303],
 [0.5303030303030303, 0.6493506493506493]], dtype=object)
 ```
+
+## Documentation
+For more detailed information, visit the [documentation](https://connorferster.github.io/forallpeople/)
+
+## PyPI
+This package is available on [PyPI](https://pypi.org/project/forallpeople/)
