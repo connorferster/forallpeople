@@ -1,0 +1,361 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "3c8331af-6691-4ac8-a881-ae672b46f604",
+   "metadata": {},
+   "source": [
+    "# Basic Usage\n",
+    "\n",
+    "The library can be used either as part of a typical Python module or as part of an interactive session. \n",
+    "\n",
+    "The module-level import can be used in any context but may be less convenient in an interactive session. Using the interactive import can cause namespace conflicts when used across multiple Python modules and is primarily recommended for interactive use.\n",
+    "\n",
+    "Units are imported as variables and then the variables are to be multiplied to numbers to create a physical quantities. This is the generally accepted interpretation of a physical quantity as described in the [SI units brochure](https://www.bipm.org/en/publications/si-brochure) (section 2.1, 9th ed.)."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "f4a9b025-cf10-4747-bc64-a03de4e3ccac",
+   "metadata": {},
+   "source": [
+    "## Module-level import "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "b823be28-d63c-4d31-bfc0-7c0645647884",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import forallpeople as si"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d185ff60-3c92-4539-bdc2-169459b71954",
+   "metadata": {},
+   "source": [
+    "Upon import, the SI _base units_ (`si.kg`, `si.m`, `si.s`, `si.A`, `si.cd`, `si.K`, and `si.mol`) are instantiated and are available in the module-level namespace as variables. These can be seen by calling `si.environment()` without any arguments."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "9480e3ef-7fe7-4f05-8146-6ab71363a367",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "{'kg': 1.000 kg, 'm': 1.000 m, 's': 1.000 s, 'A': 1.000 A, 'cd': 1.000 cd, 'K': 1.000 K, 'mol': 1.000 mol}\n"
+     ]
+    }
+   ],
+   "source": [
+    "si.environment()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "883914c4-fa91-4820-b352-e385ea897336",
+   "metadata": {},
+   "source": [
+    "These units can be used as shown:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "a31f1a6f-019c-4f29-817c-29c6200f4923",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "51.503 kg·m·s⁻²\n"
+     ]
+    }
+   ],
+   "source": [
+    "mass = 5.25 * si.kg\n",
+    "g = 9.81 * si.m/si.s**2\n",
+    "print(mass*g)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e4f36457-8d63-4c24-9d05-ccaaf7fa9012",
+   "metadata": {},
+   "source": [
+    "By using the `si.environment()` function, you can create a _units environment_ which serves two purposes:\n",
+    "\n",
+    "1. The new environment _pushes_ the additional unit definitions into the module namespace as variables.\n",
+    "2. It _modifies the representation_ of the units that are to be displayed in accordance with the definitions contained within the environment."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "da59ee1d-1c13-4f1d-a9ef-1e91fa85c506",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "51.503 N\n"
+     ]
+    }
+   ],
+   "source": [
+    "si.environment('default') # Load the default.json environment\n",
+    "print(mass*g)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "152a5932-688f-41bc-8d58-e28d3943a0f4",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "{'Hz': 1.000 Hz, 'N': 1.000 N, 'Pa': 1.000 Pa, 'J': 1.000 J, 'W': 1.000 W, 'C': 1.000 C, 'V': 1.000 V, 'F': 1.000 F, 'Ohm': 1.000 Ω, 'S': 1.000 S, 'Wb': 1.000 Wb, 'T': 1.000 T, 'H': 1.000 H, 'Celsius': 1.000 °C, 'lux': 1.000 lux, 'Gy': 1.000 Gy, 'katal': 1.000 kat, 'minute': 1.000 minutes, 'hour': 1.000 hours, 'day': 1.000 days} \n",
+      " {'kg': 1.000 kg, 'm': 1.000 m, 's': 1.000 s, 'A': 1.000 A, 'cd': 1.000 cd, 'K': 1.000 °C, 'mol': 1.000 mol}\n"
+     ]
+    }
+   ],
+   "source": [
+    "# See the names of the new variables accessible in the namespace\n",
+    "si.environment()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d1f758f9-77c5-439c-99b4-ae1de667391b",
+   "metadata": {},
+   "source": [
+    "## Interactive import\n",
+    "\n",
+    "The interactive import _pushes_ the module-level variables into the top-level namespace so they are available to you without having to type a module prefix such as `si.`.\n",
+    "\n",
+    "Be careful of variable name clashes especially if you commonly use single character variable names (e.g. `m` or `s`, etc.)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "31ddd0bf-2bf7-49fc-81cd-f4fb14f71829",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import forallpeople\n",
+    "forallpeople.environment('default', top_level=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "b492f8ad-8528-45a7-8357-589f263fee6b",
+   "metadata": {},
+   "source": [
+    "Now the units are available as variables in the top-level namespace."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "af023ce3-d439-45e8-9014-d48b71201358",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "51.503 N"
+      ],
+      "text/latex": [
+       "$51.503\\ \\mathrm{N}$"
+      ],
+      "text/markdown": [
+       "51.503 N"
+      ],
+      "text/plain": [
+       "51.503 N"
+      ]
+     },
+     "execution_count": 8,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "mass = 5.25*kg\n",
+    "g = 9.81 * m/s**2\n",
+    "mass*g"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "f1d5d8de-fcc0-48fb-954f-a27baeb113fa",
+   "metadata": {},
+   "source": [
+    "## String formatting"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5fe36d54-2fa3-4c05-b6ad-1dd77d2a5025",
+   "metadata": {},
+   "source": [
+    "`Physical` instances are represented as formatted strings and can accept the standard Python string formatting specifications.\n",
+    "\n",
+    "In addition, `Physical` instances can accept the special format codes `L` and `H` for formatting strings in either LaTeX or HTML, respectively.\n",
+    "\n",
+    "Some examples:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "16d79ed6-f4cd-4a86-8fbc-bcbc45764507",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "322.657 N"
+      ],
+      "text/latex": [
+       "$322.657\\ \\mathrm{N}$"
+      ],
+      "text/markdown": [
+       "322.657 N"
+      ],
+      "text/plain": [
+       "322.657 N"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "mass = 32.902392 * kg\n",
+    "g = 9.8065 * m/s**2\n",
+    "force = mass * g\n",
+    "force # Default format is {:.3f}"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "id": "35011fe9-856c-4804-b5cf-e8bfd2d64d46",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'322.657307 N'"
+      ]
+     },
+     "execution_count": 18,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "\"{:.6f}\".format(force)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "id": "afb67391-90bb-46bb-8cc8-8dfabc5e689e",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'3.2266e+02 N'"
+      ]
+     },
+     "execution_count": 20,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "\"{:.4e}\".format(force)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "id": "90885c87-e15e-4169-b671-c6b72f27e0b7",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'3.2266 &times; 10<sup>2</sup> N'"
+      ]
+     },
+     "execution_count": 21,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "\"{:.4eH}\".format(force) # Use 'H' to render HTML"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "id": "f05678b6-8234-4cc3-9534-28394e0e1f39",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'$3.2266 \\\\times 10^ {2}\\\\ \\\\mathrm{N}$'"
+      ]
+     },
+     "execution_count": 23,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "\"{:.4eL}\".format(force) # Use 'L' to render LaTeX"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "forallpeople",
+   "language": "python",
+   "name": "forallpeople"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.12"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

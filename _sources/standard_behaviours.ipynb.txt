@@ -1,0 +1,689 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "56c86acf-abf5-4d6d-b17c-ba9ea0b0e593",
+   "metadata": {},
+   "source": [
+    "# Standard behaviours\n",
+    "\n",
+    "`forallpeople` has chosen a \"convention over configuration\" approach. While units environments are intended to be customizable for each individual person's preference, certain behaviours have been designed as \"standard\" and are described below."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "18b67e30-2e44-4414-b1b0-40c4b0733044",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import forallpeople as si\n",
+    "si.environment('default')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "24f3d555-e842-46fa-a803-40e0754a778c",
+   "metadata": {},
+   "source": [
+    "## 1. Conventional Arithmetic\n",
+    "\n",
+    "`forallpeople` defines the methods required for conventional arithmetic between `Physical` instances.\n",
+    "\n",
+    "* Addition and subtraction are possible between physical quantities of the same dimension.\n",
+    "* Multiplication and division are possible between any physical quantities and result in new dimensions.\n",
+    "* Exponentiation is possible with integers and floats\n",
+    "* Floor division and modulo are _currently_ not defined because of the ambiguity created with the other standard behaviours (see: Using Floor and Modulo, below)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "7ff23908-38d9-486a-83bf-1dc30a77fc6e",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "223.000 kg"
+      ],
+      "text/latex": [
+       "$223.000\\ \\mathrkm{g}$"
+      ],
+      "text/markdown": [
+       "223.000 kg"
+      ],
+      "text/plain": [
+       "223.000 kg"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "a = 500 * si.kg\n",
+    "b = 23 * si.kg\n",
+    "c = 300 * si.kg\n",
+    "display(a + b - c)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "04162841-557b-4920-9eb5-c00cf4e6bbe2",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "9.810 m&#8901;s<sup>-2</sup>"
+      ],
+      "text/latex": [
+       "$9.810\\ \\mathrm{m} \\cdot \\mathrm{s}^{-2}$"
+      ],
+      "text/markdown": [
+       "9.810 m&#8901;s<sup>-2</sup>"
+      ],
+      "text/plain": [
+       "9.810 m·s⁻²"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "d = 9.81 * si.m / si.s**2\n",
+    "display(d)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3cbe3b87-7df1-46ae-92d9-862ac28d280c",
+   "metadata": {},
+   "source": [
+    "## 2. Auto-scaling of base units and derived units"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "063a4b18-d8bc-4cc8-9bbb-dfd8fff51e08",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "5.000 Mg"
+      ],
+      "text/latex": [
+       "$5.000\\ \\mathrMm{g}$"
+      ],
+      "text/markdown": [
+       "5.000 Mg"
+      ],
+      "text/plain": [
+       "5.000 Mg"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "display(5000 * si.kg) # Auto-scaling to Mg"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "7e6ece95-d7d4-4f53-90ee-63595a37f7a4",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "4.000 GHz"
+      ],
+      "text/latex": [
+       "$4.000\\ \\mathrm{GHz}$"
+      ],
+      "text/markdown": [
+       "4.000 GHz"
+      ],
+      "text/plain": [
+       "4.000 GHz"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "display(4_000_000_000 / si.s) # Auto-scaling to GHz"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "6e32f117-9e07-4533-841a-041c1893a661",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "112.000 nm"
+      ],
+      "text/latex": [
+       "$112.000\\ \\mathrnm{m}$"
+      ],
+      "text/markdown": [
+       "112.000 nm"
+      ],
+      "text/plain": [
+       "112.000 nm"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "display(0.000000112 * si.m) # Auto-scaling to nm"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "82211e99-0165-465d-8224-1409f452ab6a",
+   "metadata": {},
+   "source": [
+    "<div class=\"alert alert-info\">\n",
+    "Undefined products of base units are not scaled\n",
+    "</div>"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "14201166-e5d5-413c-81d1-e8fcdeaaddb2",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "40000.000 kg&#8901;A"
+      ],
+      "text/latex": [
+       "$40000.000\\ \\mathrm{kg} \\cdot \\mathrm{A}$"
+      ],
+      "text/markdown": [
+       "40000.000 kg&#8901;A"
+      ],
+      "text/plain": [
+       "40000.000 kg·A"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "display(40000 * si.A * si.kg) # No auto-scaling because kg*A is not in the environment"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "69176ba1-6b21-4a38-aad9-55aef95822f8",
+   "metadata": {},
+   "source": [
+    "<div class=\"alert alert-info\">\n",
+    "Instances of defined units (i.e. `.factor` attribute != 1) are not scaled.\n",
+    "</div>\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "d786d3c1-81d9-4736-b4ae-87ebc52abcd6",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "40000.000 lbf"
+      ],
+      "text/latex": [
+       "$40000.000\\ \\mathrm{lbf}$"
+      ],
+      "text/markdown": [
+       "40000.000 lbf"
+      ],
+      "text/plain": [
+       "40000.000 lbf"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "si.environment('us_customary')\n",
+    "display(40000 * si.lbf)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e32ec52e-024b-49e4-baa6-3c920448fe22",
+   "metadata": {
+    "tags": []
+   },
+   "source": [
+    "## 3. Three-decimals precision\n",
+    "\n",
+    "Due to auto-scaling, `Physical` instances only show three units of precision. However, this can be changed at the instance-level by using the built-in `round()` function and at the module-level by setting the precision in the environment (see [Environments](environments.ipynb))."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "f54ac0c6-b999-47e5-af40-460dd8aba644",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "si.environment('default')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "d6c05805-c81c-4e4f-8a65-244218554d32",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "4.230 Mg"
+      ],
+      "text/latex": [
+       "$4.230\\ \\mathrMm{g}$"
+      ],
+      "text/markdown": [
+       "4.230 Mg"
+      ],
+      "text/plain": [
+       "4.230 Mg"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/html": [
+       "4.230235 Mg"
+      ],
+      "text/latex": [
+       "$4.230235\\ \\mathrMm{g}$"
+      ],
+      "text/markdown": [
+       "4.230235 Mg"
+      ],
+      "text/plain": [
+       "4.230235 Mg"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "a = 4230.2349329 * si.kg\n",
+    "display(a)\n",
+    "b = round(a, 6)\n",
+    "display(b)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "be2f7c11-ee03-477f-9ff5-283e806c7892",
+   "metadata": {
+    "jp-MarkdownHeadingCollapsed": true,
+    "tags": []
+   },
+   "source": [
+    "<div class=\"alert alert-info\">\n",
+    "If an instance is not eligible for auto-scaling (see above) then the three decimal places of precision can lead to unexpected apparent results.\n",
+    "</div>"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "9a39bda7-098a-4177-869d-b3fdbafc672b",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "0.000 kg<sup>-1</sup>&#8901;A<sup>-1</sup>"
+      ],
+      "text/latex": [
+       "$0.000\\ \\mathrm{kg}^{-1} \\cdot \\mathrm{A}^{-1}$"
+      ],
+      "text/markdown": [
+       "0.000 kg<sup>-1</sup>&#8901;A<sup>-1</sup>"
+      ],
+      "text/plain": [
+       "0.000 kg⁻¹·A⁻¹"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/html": [
+       "0.000000250 kg<sup>-1</sup>&#8901;A<sup>-1</sup>"
+      ],
+      "text/latex": [
+       "$0.000000250\\ \\mathrm{kg}^{-1} \\cdot \\mathrm{A}^{-1}$"
+      ],
+      "text/markdown": [
+       "0.000000250 kg<sup>-1</sup>&#8901;A<sup>-1</sup>"
+      ],
+      "text/plain": [
+       "0.000000250 kg⁻¹·A⁻¹"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/plain": [
+       "'2.500e-07 kg⁻¹·A⁻¹'"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "c = 1 / (4000000 * si.kg * si.A)\n",
+    "display(c) # 0.000???\n",
+    "display(round(c, 9))\n",
+    "display(\"{:.3e}\".format(c))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "551472d9-eeea-407e-901a-f6f798ffd07b",
+   "metadata": {},
+   "source": [
+    "## 4. Unit cancellation\n",
+    "\n",
+    "When an instance has its units \"cancelled\" out by multiplication or division, then the resulting value is a `float`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "95d771a8-3fe9-4873-8ba5-b20e6b51cd9c",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "16.8"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "length = 4.2 * si.m\n",
+    "spacing = 0.25 * si.m\n",
+    "num_of_spaces = length / spacing\n",
+    "display(num_of_spaces)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "25f0a334-b155-47c0-91dd-8418a7d72bcb",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "120.0"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "a = 40 * si.Hz\n",
+    "b = 3 * si.s\n",
+    "cycles = a * b\n",
+    "display(cycles)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "6adc4c19-628c-4561-ba85-8192f5fd5945",
+   "metadata": {},
+   "source": [
+    "## 5. Conversion to `float` and `int`\n",
+    "\n",
+    "Due to auto-scaling the display value is often different than the underlying `.value` attribute, which represents the instance's value in SI base units.\n",
+    "\n",
+    "Using `float()` will return the value of the instance in its _scaled value_. \n",
+    "\n",
+    "Similarily, when using an environment where US customary units are defined, using `float()` will return the _factored value_.\n",
+    "\n",
+    "In other words, the intention of the behaviour of `float()` is WYSIWYG (what you see is what you get). This enables other customized behaviours which may be desirable even if they are mathematically inconsistent (see [Dimensionsally-inconsistent Calculations](empiricals.ipynb)).\n",
+    "\n",
+    "To get the unscaled and unfactored value, use `.value` instead."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "f89baa70-161a-4447-837b-742bba67c615",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "5.523 MN"
+      ],
+      "text/latex": [
+       "$5.523\\ \\mathrm{MN}$"
+      ],
+      "text/markdown": [
+       "5.523 MN"
+      ],
+      "text/plain": [
+       "5.523 MN"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/plain": [
+       "5523400"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "a = 5523400 * si.N\n",
+    "display(a)\n",
+    "display(a.value)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "e1587dc0-db72-4e53-9a53-f3c1ac025a54",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "5.5234"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/plain": [
+       "5"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "b = float(a) # The value will retain its scaling in MN\n",
+    "display(b)\n",
+    "\n",
+    "c = int(b)\n",
+    "display(c)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "b0f2dc17-5760-4917-9d28-344c3e6a2bd2",
+   "metadata": {
+    "tags": []
+   },
+   "source": [
+    "## 6. Using `math` functions\n",
+    "\n",
+    "The functions in the built-in `math` module, generally, accept a `float` and return a `float`. When `Physical` instances are passed to the math functions, `float()` is first called on the `Physical` which, naturally, converts it to a float (see above). This obliterates any unit information about the physical instance."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "id": "0dd62df8-a276-4828-9260-cbd13d124d4b",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import math"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "id": "b1d9cb9e-f676-4a87-a822-b70764b7c032",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "2.04939015319192"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "length = 4200 * si.m # Auto-scales to 4.2 km\n",
+    "display(math.sqrt(length)) # Returns sqrt of 4.2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "b9ccb972-69e8-4a18-81d7-c6d7a9c46c70",
+   "metadata": {},
+   "source": [
+    "To add unit information back to the resulting quantity, use the `.split()` method to perform the calculation in a mathematically consistent way."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "id": "202c31d5-6ed3-4479-a593-36208a126fc4",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "64.807 m"
+      ],
+      "text/latex": [
+       "$64.807\\ \\mathrm{m}$"
+      ],
+      "text/markdown": [
+       "64.807 m"
+      ],
+      "text/plain": [
+       "64.807 m"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "value, unit = length.split()\n",
+    "display(math.sqrt(value) * unit)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8676082f-13d8-4b7d-8ce4-65639c136ce6",
+   "metadata": {},
+   "source": [
+    "See [Dimensionally-inconsistent Calculations](empiricals.ipynb) for additional information on managing similar situations."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3bd19498-c252-43dc-aca6-7a9a7c4d21bc",
+   "metadata": {},
+   "source": [
+    "## 7. Using Floor and Modulo\n",
+    "\n",
+    "Currently, `//` and `%` are not implemented on `Physical` objects because a decision has not been made on how they should behave. i.e. Should the `//` and `%` operators work on the underlying SI `.value` attribute or on the displayed and scaled unit?\n",
+    "\n",
+    "If you have an opinion on this, please voice it on a [GitHub issue](https://github.com/connorferster/forallpeople/issues)."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "forallpeople",
+   "language": "python",
+   "name": "forallpeople"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.12"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
