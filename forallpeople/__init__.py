@@ -162,7 +162,7 @@ class Physical(object):
         defined = env_dims()["defined"]
         power, dims_orig = phf._powers_of_derived(dims, env_dims)
         if not unit_name:
-            print("Available units: ")
+            print("Available units to convert to: ")
             for key in derived.get(dims_orig, {}):
                 print(key)
             for key in defined.get(dims_orig, {}):
