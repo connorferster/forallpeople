@@ -17,6 +17,7 @@ A module to model the seven SI base units:
 
   ...and other derived and non-SI units for practical calculations.
 """
+
 #    Copyright 2020 Connor Ferster
 
 #    Licensed under the Apache License, Version 2.0 (the "License");

@@ -40,6 +40,7 @@ parameters = [
 
 ### Tests of the Physical class ###
 
+
 ## Testing "._repr_" methods in order of appearance in ._repr_template_() ##
 def test__evaluate_dims_and_factor():
     func = phf._evaluate_dims_and_factor
