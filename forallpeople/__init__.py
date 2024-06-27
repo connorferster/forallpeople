@@ -646,8 +646,8 @@ class Physical(object):
             new_value = self.value**other
             new_dimensions = vec.multiply(self.dimensions, other)
             new_factor = phf.fraction_pow(self.factor, other)
-            # if new_dimensions == Dimensions(0, 0, 0, 0, 0, 0, 0):
-            #     return float(new_value * new_factor)
+            if new_dimensions == Dimensions(0, 0, 0, 0, 0, 0, 0):
+                return float(new_value * new_factor)
             return Physical(new_value, new_dimensions, new_factor, self.precision)
         else:
             raise ValueError(
