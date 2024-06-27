@@ -460,6 +460,7 @@ def test___pow__():
     assert ft**3 == si.Physical(
         0.3048**3, si.Dimensions(0, 3, 0, 0, 0, 0, 0), (1 / 0.3048) ** 3
     )
+    assert (ft**0 == 1.0 and isinstance(ft**0, float))
 
 
 def test___abs__():
