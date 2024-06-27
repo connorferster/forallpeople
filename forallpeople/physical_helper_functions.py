@@ -439,14 +439,14 @@ def _auto_prefix_kg(value: float, power: Union[int, float]) -> str:
     prefixes = _prefixes
     if abs(value) >= 1:
         for prefix, power_of_ten in prefixes.items():
-            if abs(value) >= (power_of_ten / 1000.) ** abs(power):
+            if abs(value) >= (power_of_ten / 1000.0) ** abs(power):
                 return prefix
     else:
         reverse_prefixes = sorted(prefixes.items(), key=lambda prefix: prefix[0])
         # Get the smallest prefix to start...
         previous_prefix = reverse_prefixes[0][0]
         for prefix, power_of_ten in reversed(list(prefixes.items())):
-            if abs(value) < (power_of_ten / 1000.) ** abs(power):
+            if abs(value) < (power_of_ten / 1000.0) ** abs(power):
                 return previous_prefix
             else:
                 previous_prefix = prefix
@@ -469,7 +469,7 @@ def _auto_prefix_value(
         return value * kg_factor
     if prefix in _additional_prefixes:
         return value / ((_additional_prefixes[prefix] / kg_factor) ** power)
-    if 0. < value < 1.:
+    if 0.0 < value < 1.0:
         return value / ((_prefixes[prefix] / kg_factor) ** abs(power))
     return value / ((_prefixes[prefix] / kg_factor) ** power)
 

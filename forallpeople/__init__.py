@@ -17,6 +17,7 @@ A module to model the seven SI base units:
 
   ...and other derived and non-SI units for practical calculations.
 """
+
 #    Copyright 2020 Connor Ferster
 
 #    Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +33,7 @@ A module to model the seven SI base units:
 #    limitations under the License.
 from __future__ import annotations
 
-__version__ = "2.6.7"
+__version__ = "2.6.8"
 
 from fractions import Fraction
 from typing import Union, Optional
@@ -299,7 +300,7 @@ class Physical(object):
     def __float__(self):
         value = self.value
         factor = float(self.factor)
-        if factor != 1.:
+        if factor != 1.0:
             return value * factor
         kg_bool = False
         dims = self.dimensions

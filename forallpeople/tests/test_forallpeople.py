@@ -40,6 +40,7 @@ parameters = [
 
 ### Tests of the Physical class ###
 
+
 ## Testing "._repr_" methods in order of appearance in ._repr_template_() ##
 def test__evaluate_dims_and_factor():
     func = phf._evaluate_dims_and_factor
@@ -460,8 +461,8 @@ def test___pow__():
     assert ft**3 == si.Physical(
         0.3048**3, si.Dimensions(0, 3, 0, 0, 0, 0, 0), (1 / 0.3048) ** 3
     )
-    assert (ft**0 == 1.0 and isinstance(ft**0, float))
-    assert (kN**0 == 1.0 and isinstance(kN**0, float))
+    assert ft**0 == 1.0 and isinstance(ft**0, float)
+    assert kN**0 == 1.0 and isinstance(kN**0, float)
 
 
 def test___abs__():
