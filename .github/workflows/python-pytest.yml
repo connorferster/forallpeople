@@ -31,7 +31,7 @@ jobs:
         python -m uv pip install pytest black
     - name: Test black formatted
       run: |
-        black handcalcs --check
+        black forallpeople --check
     - name: Test with pytest
       run: |
         pytest
