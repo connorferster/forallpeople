@@ -9,7 +9,6 @@ author-email = "connorferster@gmail.com"
 home-page = "https://github.com/connorferster/forallpeople"
 classifiers = [ "License :: OSI Approved :: Apache Software License",]
 description-file = "README.md"
-version = "2.6.7"
 urls = {
     "Documentation" = "https://connorferster.github.io/forallpeople/",
 }
