@@ -107,7 +107,13 @@ def _evaluate_dims_and_factor(
         dims=dims_orig, units_env=env_dims
     )  # Empty dict when no match
 
+    # HERE! You are trying to figure out how prioritize between
+    # the defined, derived, and default units
+    # Once this is done, this feature _should_ be fully implemented
+    default = _get_default_unit(dims=dims_orig, units_env=env_dims)
+
     single_dim = _dims_basis_multiple(dims_orig)
+
     if defined:
         units_match = defined
         prefix_bool = False
