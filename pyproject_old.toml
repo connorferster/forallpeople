@@ -1,0 +1,28 @@
+[build-system]
+requires = ["flit_core >=2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "forallpeople"
+author = "Connor Ferster"
+author-email = "connorferster@gmail.com"
+home-page = "https://github.com/connorferster/forallpeople"
+classifiers = [ "License :: OSI Approved :: Apache Software License",]
+description-file = "README.md"
+
+[tool.flit.metadata.requires-extra]
+
+dev = [
+    "black >= 22.3.0"
+]
+
+doc = [
+    "sphinx",
+    "nbsphinx",
+    "pydata-sphinx-theme"
+]
+
+test = [
+    "pytest-cov"
+]
+
