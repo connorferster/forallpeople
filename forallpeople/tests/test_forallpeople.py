@@ -69,13 +69,13 @@ def test__evaluate_dims_and_factor():
     assert func(si.Dimensions(1, 1, -2, 0, 0, 0, 0), 1, 2, env_fact, env_dims) == (
         "N",
         True,
-        1
+        1,
     )
     # Derived unit power of one
     assert func(si.Dimensions(1, 1, -2, 0, 0, 0, 0), 1, 1, env_fact, env_dims) == (
         "N",
         True,
-        1
+        1,
     )
     # Defined unit that is not a default unit
     assert func(
@@ -84,26 +84,21 @@ def test__evaluate_dims_and_factor():
         1,
         env_fact,
         env_dims,
-    ) == (
-        "inch",
-        False,
-        12 / Fraction("0.3048")
-    )
-    
+    ) == ("inch", False, 12 / Fraction("0.3048"))
+
     # Single dimension base unit
     assert func(si.Dimensions(1, 0, 0, 0, 0, 0, 0), 1, 3, env_fact, env_dims) == (
         "",
         True,
-        1
+        1,
     )
 
     # Not defined in environment
     assert func(si.Dimensions(1, 1, 1, 0, 0, 0, 0), 1, 1, env_fact, env_dims) == (
         "",
         False,
-        1
+        1,
     )
-
 
 
 def test__get_units_by_factor():
