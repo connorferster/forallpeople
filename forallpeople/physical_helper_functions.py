@@ -114,6 +114,12 @@ def _evaluate_dims_and_factor(
 
     single_dim = _dims_basis_multiple(dims_orig)
 
+    # The default-swap logic
+    default_attributes = list(default.values())[0]
+    if ((not defined) and default) and "Factor" in default_attributes:
+        defined = default
+        factor = default_attributes["Factor"]
+
     if defined:
         units_match = defined
         prefix_bool = False
@@ -130,7 +136,7 @@ def _evaluate_dims_and_factor(
         symbol = symbol or name
     else:
         symbol = ""
-    return (symbol, prefix_bool)
+    return (symbol, prefix_bool, factor)
 
 
 @functools.lru_cache(maxsize=None)
@@ -194,11 +200,11 @@ def _get_default_unit(dims: Dimensions, units_env: Callable) -> dict:
     derived_matches = units_env().get("derived").get(dims, dict())
 
     for ident, defined_match in defined_matches.items():
-        if "default" in defined_match and defined_match.get("default"):
+        if "Default" in defined_match and defined_match.get("Default"):
             return {ident: defined_match}
 
     for ident, derived_match in derived_matches.items():
-        if "default" in derived_match and derived_match.get("default"):
+        if "Default" in derived_match and derived_match.get("Default"):
             return {ident: derived_match}
 
     return dict()
