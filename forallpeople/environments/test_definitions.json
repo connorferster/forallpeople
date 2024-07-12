@@ -6,7 +6,7 @@
     "Dimension": [0,1,0,0,0,0,0],
     "Symbol": "ft",
     "Factor": "1/0.3048",
-    "default": true
+    "Default": true
 },
 "inch": {
     "Dimension": [0,1,0,0,0,0,0],
@@ -56,7 +56,7 @@
     "Dimension": [1,1,-2,0,0,0,0],
     "Factor": "1/0.45359237/9.80665",
     "Symbol": "lb",
-    "default": true
+    "Default": true
 },
 "lb_ft": {
     "Dimension": [1,0,-2,0,0,0,0],

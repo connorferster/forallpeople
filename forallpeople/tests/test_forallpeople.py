@@ -44,37 +44,66 @@ parameters = [
 ## Testing "._repr_" methods in order of appearance in ._repr_template_() ##
 def test__evaluate_dims_and_factor():
     func = phf._evaluate_dims_and_factor
+
+    # Defined unit with a default and the defined unit factor is a match
+    # (passes through without swap)
     assert func(
         si.Dimensions(1, 1, -2, 0, 0, 0, 0),
-        1 / Fraction("0.45359237") / Fraction("9.80665"),
+        1 / Fraction("0.45359237") / Fraction("9.80665") / 1000,
         1,
         env_fact,
         env_dims,
-    ) == ("lb", False)
+    ) == ("kip", False, 1 / Fraction("0.45359237") / Fraction("9.80665") / 1000)
+
+    # Defined unit with a default and the defined unit factor is not a match
+    # (swapped)
+    assert func(
+        si.Dimensions(1, 1, -2, 0, 0, 0, 0),
+        1 / Fraction("0.45359237") / Fraction("9.80665") / 900,
+        1,
+        env_fact,
+        env_dims,
+    ) == ("lb", False, 1 / Fraction("0.45359237") / Fraction("9.80665"))
+
+    # Derived unit to a power
     assert func(si.Dimensions(1, 1, -2, 0, 0, 0, 0), 1, 2, env_fact, env_dims) == (
         "N",
         True,
+        1
     )
+    # Derived unit power of one
     assert func(si.Dimensions(1, 1, -2, 0, 0, 0, 0), 1, 1, env_fact, env_dims) == (
         "N",
         True,
+        1
     )
+    # Defined unit that is not a default unit
     assert func(
         si.Dimensions(0, 1, 0, 0, 0, 0, 0),
-        Fraction(1) / Fraction("0.3048"),
+        12 / Fraction("0.3048"),
         1,
         env_fact,
         env_dims,
+    ) == (
+        "inch",
+        False,
+        12 / Fraction("0.3048")
     )
+    
+    # Single dimension base unit
     assert func(si.Dimensions(1, 0, 0, 0, 0, 0, 0), 1, 3, env_fact, env_dims) == (
         "",
         True,
+        1
     )
+
+    # Not defined in environment
     assert func(si.Dimensions(1, 1, 1, 0, 0, 0, 0), 1, 1, env_fact, env_dims) == (
         "",
         False,
+        1
     )
-    # Integration test here
+
 
 
 def test__get_units_by_factor():
@@ -86,7 +115,7 @@ def test__get_units_by_factor():
             "Dimension": si.Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0),
             "Factor": Fraction(1) / Fraction("0.3048"),
             "Symbol": "ft",
-            "default": True,
+            "Default": True,
         }
     }
     assert func(ft2.factor, ft.dimensions, env_fact, 2) == {
@@ -94,7 +123,7 @@ def test__get_units_by_factor():
             "Dimension": si.Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0),
             "Symbol": "ft",
             "Factor": Fraction(1) / Fraction("0.3048"),
-            "default": True,
+            "Default": True,
         }
     }
     assert func(ftlb.factor, ftlb.dimensions, env_fact, 1) == {
@@ -248,7 +277,7 @@ def test__get_default_unit():
             "Dimension": si.Dimensions(kg=0, m=1, s=0, A=0, cd=0, K=0, mol=0),
             "Factor": Fraction(1250, 381),
             "Symbol": "ft",
-            "default": True,
+            "Default": True,
         }
     }
     assert func(si.Dimensions(1, 1, -2, 0, 0, 0, 0), env_dims) == {
@@ -256,7 +285,7 @@ def test__get_default_unit():
             "Dimension": si.Dimensions(kg=1, m=1, s=-2, A=0, cd=0, K=0, mol=0),
             "Factor": Fraction(2000000000000, 8896443230521),
             "Symbol": "lb",
-            "default": True,
+            "Default": True,
         }
     }
     # assert func(si.Dimensions(1, 1, -2, 0, 0, 0, 0), env_dims) == {

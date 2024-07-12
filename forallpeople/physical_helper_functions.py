@@ -111,14 +111,18 @@ def _evaluate_dims_and_factor(
     # the defined, derived, and default units
     # Once this is done, this feature _should_ be fully implemented
     default = _get_default_unit(dims=dims_orig, units_env=env_dims)
+    print(f"{default=}")
 
     single_dim = _dims_basis_multiple(dims_orig)
 
     # The default-swap logic
-    default_attributes = list(default.values())[0]
-    if ((not defined) and default) and "Factor" in default_attributes:
-        defined = default
-        factor = default_attributes["Factor"]
+    if default and factor != 1:
+        print("First clause")
+        default_attributes = list(default.values())[0]
+        if not defined and "Factor" in default_attributes:
+            print("Second clause")
+            defined = default
+            factor = default_attributes["Factor"]
 
     if defined:
         units_match = defined
