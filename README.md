@@ -261,6 +261,8 @@ When the auto-prefixing is triggered for a unit and that unit is of a power othe
 
 ## How to define your own environments
 
+> **NOTE: See the documentation for more information**
+
 An environment is simply a JSON document stored within the package folder in the following format:
 
     "Name": {
