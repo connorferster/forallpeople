@@ -9,9 +9,9 @@ author-email = "connorferster@gmail.com"
 home-page = "https://github.com/connorferster/forallpeople"
 classifiers = [ "License :: OSI Approved :: Apache Software License",]
 description-file = "README.md"
-urls = {
-    "Documentation" = "https://connorferster.github.io/forallpeople/",
-}
+urls = [
+    {"Documentation" = "https://connorferster.github.io/forallpeople/"}
+]
 
 [tool.flit.metadata.requires-extra]
 
