@@ -120,10 +120,8 @@ def add(t1: tuple, other: Union[tuple, int, float]) -> tuple:
     else:
         result = (elem + other for elem in t1)
         try:
-            print("3")
             return type(t1)(*result)
         except TypeError:
-            print("4")
             return type(t1)(result)
 
 

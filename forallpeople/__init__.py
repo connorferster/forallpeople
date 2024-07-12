@@ -210,7 +210,6 @@ class Physical(object):
             format_spec = f".{self.precision}f"
         dims = self.dimensions
         factor = self.factor
-        float_factor = float(factor)
         val = self.value
         prefix = ""
         prefixed = self.prefixed
@@ -225,9 +224,13 @@ class Physical(object):
 
         # Determine if there is a symbol for these dimensions in the environment
         # and if the quantity is eligible to be prefixed
-        symbol, prefix_bool = phf._evaluate_dims_and_factor(
+        # mod_factor is either the original factor or the new default factor
+        # if a default look-up was triggered
+        symbol, prefix_bool, mod_factor = phf._evaluate_dims_and_factor(
             dims_orig, factor, power, env_fact, env_dims
         )
+        factor = mod_factor
+        float_factor = float(factor)
         # Get the appropriate prefix
 
         if prefix_bool and prefixed == "unity":
