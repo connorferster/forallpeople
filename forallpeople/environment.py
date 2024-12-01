@@ -133,12 +133,10 @@ class Environment:
             "must be an arithmetic expr (as a str), a float,"
             "or an int: not '{factor}'."
         )
-        if pathlib.Path(env_name).exists():
-            file_path = pathlib.Path(env_name)
-        else:
-            path = pathlib.Path(__file__).parent / "environments"
-            filename = env_name + ".json"
-            file_path = path / filename
+        file_path = pathlib.Path(__file__).parent / "environments" / f"{env_name}.json"
+
+        if not file_path.exists():
+            raise ValueError("The environment name, {env_name}, does not exist in the installed environments.")
 
         with open(file_path, "r", encoding="utf-8") as json_unit_definitions:
             units_environment = json.load(json_unit_definitions)
