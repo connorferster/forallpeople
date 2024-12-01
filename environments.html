@@ -1,0 +1,639 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Environments &#8212; forallpeople 2. documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="_static/documentation_options.js?v=e4006c55"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'environments';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Background and Approach" href="background.html" />
+    <link rel="prev" title="Dimensionally-inconsistent Calculations (Emperical formulae)" href="empiricals.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2.6.0" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">forallpeople 2. documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="basic_usage.html">
+    Basic Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="interface.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="standard_behaviours.html">
+    Standard Behaviours
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="empiricals.html">
+    Dimensionally-inconsistent Calculations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Customizing Environments
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="background.html">
+    Background and Approach
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="basic_usage.html">
+    Basic Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="interface.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="standard_behaviours.html">
+    Standard Behaviours
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="empiricals.html">
+    Dimensionally-inconsistent Calculations
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Customizing Environments
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="background.html">
+    Background and Approach
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Environments</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="Environments">
+<h1>Environments<a class="headerlink" href="#Environments" title="Link to this heading">#</a></h1>
+<section id="Definitions:">
+<h2>Definitions:<a class="headerlink" href="#Definitions:" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>“derived unit”: a unit in the SI system that is a compound of the SI base units (e.g. N, J, W, Hz)</p></li>
+<li><p>“defined unit”: a non-SI unit whose definition comes from an SI unit, e.g. an inch <a class="reference external" href="https://en.wikipedia.org/wiki/Inch">is legally defined as 25.4 mm</a> and a lb is <a class="reference external" href="https://en.wikipedia.org/wiki/Pound_(force)">approximately equal to 4.448222 N</a></p></li>
+<li><p>“environment object”: describes the singleton <code class="docutils literal notranslate"><span class="pre">Environment</span></code> class (see below)</p></li>
+<li><p>“environment” will be used to describe a Python namespace that is populated with variables of <code class="docutils literal notranslate"><span class="pre">Physical</span></code> instances</p></li>
+<li><p>“environment file” describes a .json file where the unit definitions reside</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">forallpeople</span></code> is an SI units library that allows other non-SI units to be defined and used. The definitions for the <strong>derived</strong> SI units (e.g. N, Pa, W, J, etc.) and the definitions for the <strong>defined</strong> non-SI units (e.g. lb, ft, psf) are all located in an <strong>environment file</strong>.</p>
+<p>An environment object within <code class="docutils literal notranslate"><span class="pre">forallpeople</span></code> is a singleton instance of the <code class="docutils literal notranslate"><span class="pre">forallpeople.environment.Environment</span></code> class. Its purpose is to read the definitions of the units in the environment file and to populate the module namespace with those definitions as variables that are ready to be used for computation. It is not intended to be interacted with directly but instead through the <code class="docutils literal notranslate"><span class="pre">forallpeople.environment</span></code> function.</p>
+</section>
+<section id="Loading-Environments">
+<h2>Loading Environments<a class="headerlink" href="#Loading-Environments" title="Link to this heading">#</a></h2>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">environment</span></code> function to load an environment JSON file. The JSON files are located in the package in the “environments” directory. i.e. <code class="docutils literal notranslate"><span class="pre">path/to/your/python/environment/site-packages/forallpeople/environments</span></code> when installed on your system.</p>
+<blockquote>
+<div><p>Currently, this is the only location searched for environment files. This will likely change in a future update to allow environment files to be loaded from user-defined locations.</p>
+<p>The location of your current <code class="docutils literal notranslate"><span class="pre">forallpeople</span></code> installation can generally be found by importing the module and then using the <code class="docutils literal notranslate"><span class="pre">.__file__</span></code> attribute of the imported module’s variable name.</p>
+</div></blockquote>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import forallpeople as si
+si.environment(&#39;default&#39;)
+</pre></div>
+</div>
+</div>
+<p>When the above code is run, the environment file is parsed and all of the units listed in that file are loaded in the <code class="docutils literal notranslate"><span class="pre">forallpeople</span></code> module namespace which, in this example, is under the prefix <code class="docutils literal notranslate"><span class="pre">si.</span></code></p>
+<section id="Bundled-environments">
+<h3>Bundled environments<a class="headerlink" href="#Bundled-environments" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">forallpeople</span></code> comes with the following bundled environments: * <code class="docutils literal notranslate"><span class="pre">default</span></code>: Defines the SI derived units * <code class="docutils literal notranslate"><span class="pre">us_customary</span></code>: Defines the most common units within the US Customary units system * <code class="docutils literal notranslate"><span class="pre">structural</span></code>: Defines a series of units in both SI and US Customary units systems that are commonly used in the field of structural engineering (my field of practice) in Canada. * <code class="docutils literal notranslate"><span class="pre">electrical</span></code>: My attempt at creating something useful for electrical engineers * <code class="docutils literal notranslate"><span class="pre">thermal</span></code>: My attempt at
+creating something useful for building envelope engineers * <code class="docutils literal notranslate"><span class="pre">test_definitions</span></code>: Used for the internal test suite. Not intended for daily use.</p>
+</section>
+<section id="Inspecting-environments">
+<h3>Inspecting environments<a class="headerlink" href="#Inspecting-environments" title="Link to this heading">#</a></h3>
+<p>To see what units have been loaded as variables, run the <code class="docutils literal notranslate"><span class="pre">environment</span></code> function with no arguments.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>si.environment()
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;Hz&#39;: 1.000 Hz, &#39;N&#39;: 1.000 N, &#39;Pa&#39;: 1.000 Pa, &#39;J&#39;: 1.000 J, &#39;W&#39;: 1.000 W, &#39;C&#39;: 1.000 C, &#39;V&#39;: 1.000 V, &#39;F&#39;: 1.000 F, &#39;Ohm&#39;: 1.000 Ω, &#39;S&#39;: 1.000 S, &#39;Wb&#39;: 1.000 Wb, &#39;T&#39;: 1.000 T, &#39;H&#39;: 1.000 H, &#39;Celsius&#39;: 1.000 °C, &#39;lux&#39;: 1.000 lux, &#39;Gy&#39;: 1.000 Gy, &#39;katal&#39;: 1.000 kat, &#39;minute&#39;: 1.000 minutes, &#39;hour&#39;: 1.000 hours, &#39;day&#39;: 1.000 days}
+ {&#39;kg&#39;: 1.000 kg, &#39;m&#39;: 1.000 m, &#39;s&#39;: 1.000 s, &#39;A&#39;: 1.000 A, &#39;cd&#39;: 1.000 cd, &#39;K&#39;: 1.000 °C, &#39;mol&#39;: 1.000 mol}
+</pre></div></div>
+</div>
+<p>This prints the contents of two dictionaries: 1. The dictionary of all the units that are defined in the environment file. 2. The dictionary of the SI base units which are always present when importing <code class="docutils literal notranslate"><span class="pre">forallpeople</span></code></p>
+<p>The keys of the dictionaries are the identifiers (variable names) used in namespace. So, <code class="docutils literal notranslate"><span class="pre">si.Hz</span></code> and <code class="docutils literal notranslate"><span class="pre">si.N</span></code>. The values of the dictionaries are the actual <code class="docutils literal notranslate"><span class="pre">Physical</span></code> instances.</p>
+</section>
+</section>
+<section id="Environment-files">
+<h2>Environment files<a class="headerlink" href="#Environment-files" title="Link to this heading">#</a></h2>
+<p>An environemnt file is a JSON file which typically looks like this (excerpted from the included environment, “structural.json”):</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;mm&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;Dimension&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;Value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.001</span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;ft&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;Dimension&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;Symbol&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ft&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;Factor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1/0.3048&quot;</span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;inch&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;Dimension&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;Symbol&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;inch&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;Factor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;12/0.3048&quot;</span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;N&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;Dimension&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">-2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]},</span>
+<span class="w">    </span><span class="nt">&quot;kN&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;Dimension&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">-2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;Value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000</span><span class="p">},</span>
+<span class="w">    </span><span class="nt">&quot;MN&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;Dimension&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">-2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+<span class="w">        </span><span class="nt">&quot;Value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1000000</span><span class="p">},</span>
+
+<span class="w">    </span><span class="c1">// ...additional entries here</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>A single entry consists of the following schema:</p>
+<blockquote>
+<div><p>Note, in this example <code class="docutils literal notranslate"><span class="pre">//</span></code> are used to indicate “comments” which are not valid in JSON so this example is not directly “copy-pastable” into an environment file.</p>
+</div></blockquote>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="nt">&quot;identifier&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;Dimension&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="c1">// req, an integer array of length 7</span>
+<span class="w">    </span><span class="nt">&quot;Symbol&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;str&quot;</span><span class="p">,</span><span class="w"> </span><span class="c1">// opt, if not given, the identifier is used as the symbol</span>
+<span class="w">    </span><span class="nt">&quot;Factor&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="c1">// opt, int | float | str, if not given, a default value of 1.0 is assumed</span>
+<span class="w">    </span><span class="nt">&quot;Value&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="c1">// opt, int | float, if not given, a default value of 1.0 is assumed</span>
+<span class="w">    </span><span class="nt">&quot;Default&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="c1">// opt, bool, if not given, a default value of false is assumed</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Identifier: this is must be a valid Python identifier because it will be used as the variable name to which this quantity is assigned to when the environment file is loaded into the environment. The identifier will also be the display symbol if an alternate symbol string is not provided.</p></li>
+<li><p>Dimension: describes a vector of SI base unit components <strong>in the following order</strong>: kg, m, s, A, cd, K, mol</p></li>
+<li><p>Symbol: an alternate string to use instead of the identifier</p></li>
+<li><p>Factor: a value that will be <strong>multiplied by</strong> to scale the SI base unit so to “convert” the SI base unit quantity into an equivalent amount of this new unit. The factor is commonly represented as a string representing an arithmetic expression (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;1/0.45359237/9.80665/0.3048&quot;</span></code>) but can also be an <code class="docutils literal notranslate"><span class="pre">int</span></code> or <code class="docutils literal notranslate"><span class="pre">float</span></code>. If an arithmetic string is provided, the string will be evaulated by converting each value first into a <code class="docutils literal notranslate"><span class="pre">fractions.Fraction</span></code> and then performing the operations described
+(<code class="docutils literal notranslate"><span class="pre">eval</span></code> is <em>not</em> used under-the-hood).</p></li>
+<li><p>Default: if <code class="docutils literal notranslate"><span class="pre">True</span></code> (or <code class="docutils literal notranslate"><span class="pre">true</span></code> in JSON), then this unit will be the default displayed unit for any <code class="docutils literal notranslate"><span class="pre">Physical</span></code> instance that has matching Dimension and a Factor != 1.</p></li>
+</ul>
+<blockquote>
+<div><p>Note: By design, default values (currently) ONLY apply to defined units (units that have a factor != 1). The motivation for enabling a default unit is to have a preferred fallback when a calculation using <strong>defined</strong> units results in a <code class="docutils literal notranslate"><span class="pre">.factor</span></code> attribute that does not have a match in the environment. In this case, having a representation suddenly switch to SI units is surprising.</p>
+<p>To avoid this surprise, a unit definition can be specified as the default so a calculation using lbs can be multiplied/divided by many other values and, no matter how the <code class="docutils literal notranslate"><span class="pre">.factor</span></code> attribute gets mangled, the result can be specified in lbs (as long as the dimensions are consistent with the dimensions of lbs).</p>
+</div></blockquote>
+<section id="Customizing-your-environments-(making-new-environment-files)">
+<h3>Customizing your environments (making new environment files)<a class="headerlink" href="#Customizing-your-environments-(making-new-environment-files)" title="Link to this heading">#</a></h3>
+<p>The recommended way of creating a new environment is to copy one of the existing environments, give it a new name, and begin customizing it by adding, removing, or modifying existing definitions. I recommend comparing and contrasting the “default.json” (which only defines <strong>derived</strong> units and has very few extra attributes in each definition) to the “structural.json” (which contains many <strong>defined</strong> units in the US Customary system…[because I practice engineering in Canada]).</p>
+<p>Things to keep in mind:</p>
+<ul class="simple">
+<li><p>The factor expressions used for US customary units (in “structural.json” and “us_customary.json”) are generally based off of the legal definitions of their components (meaning that these values are <em>exact</em> values). So the conversion from a kg to an international avoirdupois pound is exactly 0.45359237, which is a number you will see in the environment files that have any mass components being scaled into a US equivalent. You can find these legal definitions on Wikipedia (e.g. see above example
+in “Definitions”) but they are all based off of these two definitions: <a class="reference external" href="https://en.wikipedia.org/wiki/International_yard_and_pound">https://en.wikipedia.org/wiki/International_yard_and_pound</a></p></li>
+<li><p>Adding a “Default” attribute will only be meaningful when applied to <strong>defined</strong> units</p></li>
+<li><p>JSON does not allow you to have trailing commas (whereas Python does) - Watch out for that if you have invalid JSON as a result of copy-pasting definitions from the middle of the file to the end of the file.</p></li>
+<li><p>JSON does not allow you to use comments so do not try to put any in</p></li>
+<li><p>The attributes all have to be Title case. This was an early design decision that I would not make again but I am not willing to make a breaking change <em>just</em> for that (but I will update that if there are other breaking changes that need to be made).</p></li>
+</ul>
+</section>
+<section id="Unit-Resolution">
+<h3>Unit Resolution<a class="headerlink" href="#Unit-Resolution" title="Link to this heading">#</a></h3>
+<p>The representation of units (quantities) in a <code class="docutils literal notranslate"><span class="pre">forallpeople</span></code> environment are determined by three attributes: 1. Dimension: the vector of a quantity’s component SI base units (e.g. N has a dimension of <code class="docutils literal notranslate"><span class="pre">(1,</span> <span class="pre">1,</span> <span class="pre">-2,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0,</span> <span class="pre">0)</span></code> representing kg1 * m1 * s-2) 2. Factor: if the unit is a <strong>defined</strong> unit then it will have a <code class="docutils literal notranslate"><span class="pre">.factor</span></code> attribute != 1 3. Prefix: a prefix is only taken into consideration for SI base units and SI <strong>derived</strong> units (never for <strong>defined</strong> units)</p>
+<p>An entry into an environment file describes the quantity name, it’s associated dimension, it’s factor, and its value (prefix is auto-generated based on the value).</p>
+<p>The look-up order is as follows: 1. Dimension: are there one or more definitions with a dimension that matches the current state of an instance? 2. Factor: does one of the matching dimension definitions also have a matching <code class="docutils literal notranslate"><span class="pre">.factor</span></code> attribute?</p>
+<ul class="simple">
+<li><p>If the factor and dimension are a match, it is a <strong>defined</strong> unit and the defined unit representation will be given priority.</p></li>
+<li><p>If dimension matches but the factor does not match but the factor is != 1, then the <strong>derived</strong> definition will be used as a fallback <em>unless a default unit is indicated</em> (see below).</p></li>
+<li><p>If dimension matches and the factor == 1, then the <strong>derived</strong> representation is given priority</p></li>
+<li><p>If there is not a dimension match, the representation will fallback to a compound string of SI base units (e.g. kg1 * m1 * s-2)</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="empiricals.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Dimensionally-inconsistent Calculations (Emperical formulae)</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="background.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Background and Approach</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Definitions:">Definitions:</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Loading-Environments">Loading Environments</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Bundled-environments">Bundled environments</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Inspecting-environments">Inspecting environments</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Environment-files">Environment files</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Customizing-your-environments-(making-new-environment-files)">Customizing your environments (making new environment files)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Unit-Resolution">Unit Resolution</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="_sources/environments.ipynb.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2019, Connor Ferster.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

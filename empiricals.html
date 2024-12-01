@@ -1,0 +1,707 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Dimensionally-inconsistent Calculations (Emperical formulae) &#8212; forallpeople 2. documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="_static/documentation_options.js?v=e4006c55"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'empiricals';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Environments" href="environments.html" />
+    <link rel="prev" title="Standard behaviours" href="standard_behaviours.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="2.6.0" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">forallpeople 2. documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="basic_usage.html">
+    Basic Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="interface.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="standard_behaviours.html">
+    Standard Behaviours
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Dimensionally-inconsistent Calculations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="environments.html">
+    Customizing Environments
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" ">
+  <a class="nav-link dropdown-item nav-internal" href="background.html">
+    Background and Approach
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="basic_usage.html">
+    Basic Usage
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="interface.html">
+    API
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="standard_behaviours.html">
+    Standard Behaviours
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Dimensionally-inconsistent Calculations
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="environments.html">
+    Customizing Environments
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="background.html">
+    Background and Approach
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Dimensionally-inconsistent Calculations (Emperical formulae)</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="Dimensionally-inconsistent-Calculations-(Emperical-formulae)">
+<h1>Dimensionally-inconsistent Calculations (Emperical formulae)<a class="headerlink" href="#Dimensionally-inconsistent-Calculations-(Emperical-formulae)" title="Link to this heading">#</a></h1>
+<p>Sometimes calculations and formulae are based on curve-fitting the results of various tests. The resulting formula from the curve-fitting may assume input units with a particular scaling and produce outputs assumed to be in a different scaling.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import forallpeople as si
+si.environment(&#39;default&#39;)
+</pre></div>
+</div>
+</div>
+<section id="Dimensionally-inconsistent-radicals">
+<h2>Dimensionally-inconsistent radicals<a class="headerlink" href="#Dimensionally-inconsistent-radicals" title="Link to this heading">#</a></h2>
+<p>Observed in many concrete design codes is a value expressed as <span class="math notranslate nohighlight">\(\sqrt{f'_c}\)</span> where <span class="math notranslate nohighlight">\(f'_c\)</span> is in scaled units of stress (e.g. MPa) and <span class="math notranslate nohighlight">\(\sqrt{f'_c}\)</span> is also in units of stress (MPa in this example).</p>
+<p>The intention behind this particular expression is to compute the square-root of <code class="docutils literal notranslate"><span class="pre">35</span></code> and for that value to be in units of <code class="docutils literal notranslate"><span class="pre">MPa</span></code>.</p>
+<section id="Strategy-1---Manually-add-the-units-back-on">
+<h3>Strategy 1 - Manually add the units back on<a class="headerlink" href="#Strategy-1---Manually-add-the-units-back-on" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import math
+MPa = 1e6 * si.Pa
+f_c = 35e6 * si.Pa
+
+math.sqrt(f_c) * MPa
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+5.916 MPa</div>
+</div>
+</section>
+<section id="Strategy-2---Define-a-custom-sqrt-function">
+<h3>Strategy 2 - Define a custom <code class="docutils literal notranslate"><span class="pre">sqrt</span></code> function<a class="headerlink" href="#Strategy-2---Define-a-custom-sqrt-function" title="Link to this heading">#</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import math
+MPa = 1e6 * si.Pa
+
+def sqrt(x):
+    MPa = 1e6 * si.Pa
+    if (
+        isinstance(x, si.Physical)
+        and x.dimensions == (1, -1, -2, 0, 0, 0, 0)
+    ):
+        return math.sqrt(x) * MPa # Special case
+    else:
+        return x**(1/2) # General case
+
+f_c = 35 * MPa # Example of special case
+area = 0.0350 * si.m**2 # Example of general case
+
+display(
+    f_c,
+    sqrt(f_c)
+)
+
+display(
+    area,
+    sqrt(area)
+)
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+35.000 MPa</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+5.916 MPa</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+35000.000 mm<sup>2</sup></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+187.083 mm</div>
+</div>
+</section>
+<section id="Strategy-3">
+<h3>Strategy 3<a class="headerlink" href="#Strategy-3" title="Link to this heading">#</a></h3>
+<p>Continuing with the example above, a calculation may intend to compute the square root of <code class="docutils literal notranslate"><span class="pre">35e6</span></code> (instead of <code class="docutils literal notranslate"><span class="pre">35</span></code>) and apply the same units to that resulting value.</p>
+<p>This strategy can be combined with <strong>Strategy 2</strong> to define a custom <code class="docutils literal notranslate"><span class="pre">sqrt</span></code> function for special cases.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import math
+MPa = 1e6 * si.Pa
+f_c = 35 * MPa
+
+value, unit = f_c.split()
+math.sqrt(value) * unit
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+5.916 kPa</div>
+</div>
+</section>
+</section>
+<section id="Hidden-units">
+<h2>Hidden units<a class="headerlink" href="#Hidden-units" title="Link to this heading">#</a></h2>
+<p>Another kind of <em>seemingly</em> dimensionally-inconsistent formula may just be a case where units are assumed within a numerical value but not communicated.</p>
+<p>An example commonly used in Canadian flexural concrete design:</p>
+<div class="math notranslate nohighlight">
+\[A_s = 0.0015 (f'_c) (b) (d) - \sqrt{d^2 - \frac{3.85 M_f}{(f'_c) (b)}}\]</div>
+<p>This formula for calculating the required area of flexural tension steel should result in values of area (say, in mm2). In its current form, however, it is dimensionally-inconsistent because the value of <code class="docutils literal notranslate"><span class="pre">0.0015</span></code> contains hidden units of <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">/</span> <span class="pre">MPa</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>si.environment(&#39;default&#39;)
+MPa = 1e6 * si.Pa
+
+f_c = 35 * MPa
+b = 0.30 * si.m
+d = 0.60 * si.m
+M_f = 200e3 * si.N * si.m
+
+A_s = 0.0015 * f_c * b * (d - sqrt(d**2 - (3.85 * M_f)/(f_c * b)))
+A_s # Resulting units are in N, which are not expected
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+1.017 kN</div>
+</div>
+<p>Here, we will manually add the units into the calculation as <code class="docutils literal notranslate"><span class="pre">(0.0015</span> <span class="pre">/</span> <span class="pre">MPa)</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>A_s = (0.0015 / MPa) * f_c * b * (d - sqrt(d**2 - (3.85 * M_f)/(f_c * b)))
+A_s # These are the correct dimensions
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+1017.251 mm<sup>2</sup></div>
+</div>
+</section>
+<section id="Completely-inconsistent-formulae">
+<h2>Completely inconsistent formulae<a class="headerlink" href="#Completely-inconsistent-formulae" title="Link to this heading">#</a></h2>
+<p>Last, there are times where the formula essentially serves as a numeric transformation and the units simply need to be manually applied.</p>
+<p>An example from the Canadian wood design code:</p>
+<div class="math notranslate nohighlight">
+\[QS_i = 14t \sqrt{\frac{d_e}{1 - \frac{d_e}{d}}}\]</div>
+<p>This formula for calculating tension resistance in the parallel-to-grain direction of a bolted timber connection is based on empirically-measured fracture test results.</p>
+<p>All symbols (<code class="docutils literal notranslate"><span class="pre">t</span></code>, <code class="docutils literal notranslate"><span class="pre">d_e</span></code>, and <code class="docutils literal notranslate"><span class="pre">d</span></code>) are numbers, scaled to units of <code class="docutils literal notranslate"><span class="pre">mm</span></code>, and the resulting value of <code class="docutils literal notranslate"><span class="pre">QS_i</span></code> is a number in units of force, <code class="docutils literal notranslate"><span class="pre">N</span></code>.</p>
+<p>Because this formula is a strict numeric computation with no dimensional consistency, it is best to treat it as such by manually removing units from the inputs and adding the units to the output.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>si.environment(&#39;default&#39;)
+import math
+
+# Use .prefix to force the numerical value to scale in mm
+t = (0.354 * si.m).prefix(&#39;m&#39;)
+d = (0.620 * si.m).prefix(&#39;m&#39;)
+d_e = (0.480 * si.m).prefix(&#39;m&#39;)
+
+t = float(t)
+d = float(d)
+d_e = float(d_e)
+
+QS_i = 14 * t * math.sqrt(d_e / (1 - d_e/d)) * si.N
+QS_i
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+228.499 kN</div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="standard_behaviours.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Standard behaviours</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="environments.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Environments</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Dimensionally-inconsistent-radicals">Dimensionally-inconsistent radicals</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Strategy-1---Manually-add-the-units-back-on">Strategy 1 - Manually add the units back on</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Strategy-2---Define-a-custom-sqrt-function">Strategy 2 - Define a custom <code class="docutils literal notranslate"><span class="pre">sqrt</span></code> function</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#Strategy-3">Strategy 3</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Hidden-units">Hidden units</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#Completely-inconsistent-formulae">Completely inconsistent formulae</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="_sources/empiricals.ipynb.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2019, Connor Ferster.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
