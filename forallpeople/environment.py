@@ -136,7 +136,9 @@ class Environment:
         file_path = pathlib.Path(__file__).parent / "environments" / f"{env_name}.json"
 
         if not file_path.exists():
-            raise ValueError("The environment name, {env_name}, does not exist in the installed environments.")
+            raise ValueError(
+                "The environment name, {env_name}, does not exist in the installed environments."
+            )
 
         with open(file_path, "r", encoding="utf-8") as json_unit_definitions:
             units_environment = json.load(json_unit_definitions)
