@@ -282,25 +282,34 @@ def _format_symbol(prefix: str, symbol: str, repr_format: str = "") -> str:
     symbol_string_close = ""
     dot_operator = "·"
     ohm = "Ω"
+    mu = "μ"
+    deg = "°"
     if repr_format == "html":
         dot_operator = "&#8901;"
         ohm = "&#0937;"
+        mu = "&#0956;"
+        deg = "&#0176;"
     elif repr_format == "latex":
         dot_operator = " \\cdot "
-        ohm = "$\\Omega$"
+        ohm = "\\Omega "
+        mu = "\\mu "
+        deg = "{}^\\circ "
         symbol_string_open = "\\mathrm{"
         symbol_string_close = "}"
 
     symbol = (
         symbol.replace("·", symbol_string_close + dot_operator + symbol_string_open)
         .replace("*", symbol_string_close + dot_operator + symbol_string_open)
-        .replace("Ω", ohm)
+        .replace("Ω", symbol_string_close + ohm + symbol_string_open)
+        .replace("°", symbol_string_close + deg + symbol_string_open)
     )
+    prefix = prefix.replace("μ", symbol_string_close + mu + symbol_string_open)
     formatted_symbol = f"{symbol_string_open}{prefix}{symbol}{symbol_string_close}"
     if symbol.startswith(
         "\\mathrm{"
     ):  # special case for 'single dimension' Physicals...
         formatted_symbol = f"{symbol[0:8]}{prefix}{symbol[8:]}"
+    formatted_symbol = formatted_symbol.replace("\\mathrm{}", "")
     return formatted_symbol
 
 

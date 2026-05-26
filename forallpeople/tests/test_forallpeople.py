@@ -191,6 +191,11 @@ def test_latex():
         2.5 * kg * m**2.5
     ).latex == "$2.500\\ \\mathrm{kg} \\cdot \\mathrm{m}^{2.5}$"
     assert (5000 * A).latex == "$5.000\\ \\mathrm{kA}$"
+    assert (5000 * Ohm).latex == "$5.000\\ \\mathrm{k}\\Omega $"
+    assert (5e-6 * m).latex == "$5.000\\ \\mu \\mathrm{m}$"
+    assert (5e-6 * Ohm).latex == "$5.000\\ \\mu \\Omega $"
+    assert (5e-6 * Ohm).latex == "$5.000\\ \\mu \\Omega $"
+    assert (25 * dC).latex == "$25.000\\ {}^\\circ \\mathrm{C}$"
 
 
 def test_repr():
