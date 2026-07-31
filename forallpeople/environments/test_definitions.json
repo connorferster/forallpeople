@@ -58,6 +58,11 @@
     "Symbol": "lb",
     "Default": true
 },
+"test_collision_unit": {
+    "Dimension": [1,0,-2,0,0,0,0],
+    "Factor": "1/0.45359237/9.80665",
+    "Symbol": "tcu"
+},
 "lb_ft": {
     "Dimension": [1,0,-2,0,0,0,0],
     "Factor": "0.3048/0.45359237/9.80665",

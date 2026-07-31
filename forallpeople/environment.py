@@ -105,7 +105,14 @@ class Environment:
                 self._units_by_dimension["defined"].setdefault(
                     dimension, dict()
                 ).update({name: definition})
-                self._units_by_factor.update({factor: {name: definition}})
+                # Accumulate rather than overwrite: multiple units can share
+                # the same factor value with different dimensions (e.g. kN and
+                # mT both have factor 0.001).  Overwriting silently discards
+                # all but the last-loaded unit from the factor index.
+                if factor in self._units_by_factor:
+                    self._units_by_factor[factor][name] = definition
+                else:
+                    self._units_by_factor[factor] = {name: definition}
         self.push_module = push_module  # Update previous push_module; could be either module or top-level
 
     def _push_vars(self, units_dict: dict, module: ModuleType) -> None:

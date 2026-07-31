@@ -145,22 +145,21 @@ def _get_units_by_factor(
     factor: float, dims: Dimensions, units_env: Callable, power: Union[int, float]
 ) -> dict:
     """
-    Returns a units_dict from the environment instance if the numerical
-    value of 'factor' is a match for a derived unit defined in the
-    environment instance and the dimensions stored in the units_dict are
-    equal to 'dims'. Returns an empty dict, otherwise.
+    Returns a single-entry dict ``{name: definition}`` from the environment
+    factor index when *factor* (raised to *1/power*) matches a key in that
+    index **and** the matched entry's Dimension equals *dims*.
+    Returns an empty dict when no match exists.
+
+    A factor key may map to multiple unit definitions (e.g. kN and mT both
+    have factor 0.001).  The function iterates all candidates and returns
+    only the one whose Dimension matches the queried *dims*.
     """
-    ## TODO Write a pow() to handle fractions and rationals
     new_factor = fraction_pow(factor, -Fraction(1 / power))
     units_match = _match_factors(new_factor, units_env())
-    try:
-        units_name = tuple(units_match.keys())[0]
-    except IndexError:
-        units_name = ""
-    retrieved_dims = units_match.get(units_name, dict()).get("Dimension", dict())
-    if dims != retrieved_dims:
-        return dict()
-    return units_match
+    for name, defn in units_match.items():
+        if dims == defn.get("Dimension"):
+            return {name: defn}
+    return dict()
 
 
 def _match_factors(
