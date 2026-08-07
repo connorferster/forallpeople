@@ -217,6 +217,16 @@ def test_prefixed():
     assert (25 * m**2).prefix("c").html == "250000.000 cm<sup>2</sup>"
 
 
+def test_prefixed_kg():
+    # kg is the only SI base unit that carries a prefix of its own; an
+    # explicitly requested prefix must scale the magnitude to match the
+    # symbol that is printed with it.
+    assert (7850 * kg).prefix("k").html == "7850.000 kg"
+    assert (7850 * kg).prefix("M").html == "7.850 Mg"
+    assert (7850 * kg).prefix("unity").html == "7850000.000 g"
+    assert (5 * kg).prefix("k").html == "5.000 kg"
+
+
 def test_round():
     # with pytest.raises(DeprecationWarning):
     #     assert repr((25.2398783 * N).round(4)) == "25.2399 N"
