@@ -385,9 +385,8 @@ def test___eq__():
     assert N == 1
     assert Pa == 1
     assert kg == 1
-    with pytest.raises(ValueError):
-        kg == m
-        N == Pa
+    assert kg != m
+    assert N != Pa
 
 
 def test___gt__():

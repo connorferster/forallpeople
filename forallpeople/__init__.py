@@ -375,9 +375,7 @@ class Physical(object):
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
             return math.isclose(self.value, other.value)
         else:
-            raise ValueError(
-                "Can only compare between Physical instances of equal dimension."
-            )
+            return False
 
     def __gt__(self, other):
         if isinstance(other, NUMBER):
