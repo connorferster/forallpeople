@@ -29,9 +29,9 @@ si.environment("test_definitions", top_level=True)
 env_fact = si.environment.units_by_factor
 
 # Dimension vectors used throughout.
-FORCE_DIMS = si.Dimensions(1, 1, -2, 0, 0, 0, 0)          # lb
-SPRING_DIMS = si.Dimensions(1, 0, -2, 0, 0, 0, 0)         # test_collision_unit
-LENGTH_DIMS = si.Dimensions(0, 1, 0, 0, 0, 0, 0)          # no factor match
+FORCE_DIMS = si.Dimensions(1, 1, -2, 0, 0, 0, 0)  # lb
+SPRING_DIMS = si.Dimensions(1, 0, -2, 0, 0, 0, 0)  # test_collision_unit
+LENGTH_DIMS = si.Dimensions(0, 1, 0, 0, 0, 0, 0)  # no factor match
 
 # lb and test_collision_unit are defined with the identical Factor string.
 SHARED_FACTOR = Fraction(1) / Fraction("0.45359237") / Fraction("9.80665")
@@ -40,6 +40,7 @@ SHARED_FACTOR = Fraction(1) / Fraction("0.45359237") / Fraction("9.80665")
 # ---------------------------------------------------------------------------
 # environment.py — factor index accumulation
 # ---------------------------------------------------------------------------
+
 
 def test_factor_index_accumulates_units_with_shared_factor():
     """Both units that share a Factor must coexist under the same key in
@@ -67,6 +68,7 @@ def test_factor_index_preserves_distinct_definitions():
 # ---------------------------------------------------------------------------
 # physical_helper_functions.py — dimension-aware factor lookup
 # ---------------------------------------------------------------------------
+
 
 def test_get_units_by_factor_picks_force_on_collision():
     """Querying the shared factor with force dims returns lb, not the
@@ -107,6 +109,7 @@ def test_get_units_by_factor_returns_empty_when_factor_unknown():
 # ---------------------------------------------------------------------------
 # End-to-end: repr resolves the correct unit despite the collision
 # ---------------------------------------------------------------------------
+
 
 def test_repr_resolves_force_unit_despite_collision():
     """An lb-dimensioned quantity still renders as lb even though another
