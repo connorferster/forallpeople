@@ -243,6 +243,8 @@ class Physical(object):
                 kg_bool = True
         elif prefix_bool and prefixed:
             prefix = prefixed
+            if dims_orig == Dimensions(1, 0, 0, 0, 0, 0, 0):
+                kg_bool = True
         elif prefix_bool and dims_orig == Dimensions(1, 0, 0, 0, 0, 0, 0):
             kg_bool = True
             prefix = phf._auto_prefix(val, power, kg=kg_bool)
