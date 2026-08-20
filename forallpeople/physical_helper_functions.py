@@ -287,7 +287,7 @@ def _format_symbol(prefix: str, symbol: str, repr_format: str = "") -> str:
         ohm = "&#0937;"
     elif repr_format == "latex":
         dot_operator = " \\cdot "
-        ohm = "$\\Omega$"
+        ohm = "\\Omega"
         symbol_string_open = "\\mathrm{"
         symbol_string_close = "}"
 
@@ -529,6 +529,7 @@ def format_scientific_notation(value_as_str: str, template="") -> str:
         times = "\\times"
         pre_sup = "^ {"
         post_sup = "}"
+
 
     if template == "html" or template == "latex":
         exponent_str = value_as_str.lower().split("e")[1]

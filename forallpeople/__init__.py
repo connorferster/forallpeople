@@ -280,8 +280,8 @@ class Physical(object):
             space = r"\ "
             pre_super = "^{"
             post_super = "}"
-            pre_inline = "$"
-            post_inline = "$"
+            pre_inline = ""
+            post_inline = ""
         elif template == "html":
             space = " "
             pre_super = "<sup>"
@@ -335,13 +335,12 @@ class Physical(object):
 
     def __format__(self, format_spec=""):
         template = ""
-        if "L" in format_spec:
+        if format_spec.endswith("L"):
             template = "latex"
-            format_spec = format_spec.replace("L", "")
-        elif "H" in format_spec:
+            format_spec = format_spec.rstrip('L')
+        elif format_spec.endswith("H"):
             template = "html"
-            format_spec = format_spec.replace("H", "")
-
+            format_spec = format_spec.rstrip('H')
         return self._repr_template_(template=template, format_spec=format_spec)
 
     def __hash__(self):
