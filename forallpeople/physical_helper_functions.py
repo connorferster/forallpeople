@@ -22,7 +22,6 @@ from typing import Any, Union, Optional, List, Callable
 from forallpeople.dimensions import Dimensions
 import forallpeople.tuplevector as vec
 
-
 ### Helper methods for repr methods ###
 
 _prefixes = {  # Do not add custom prefixes between Y and y, e.g. "c": 1e-2
@@ -529,7 +528,6 @@ def format_scientific_notation(value_as_str: str, template="") -> str:
         times = "\\times"
         pre_sup = "^ {"
         post_sup = "}"
-
 
     if template == "html" or template == "latex":
         exponent_str = value_as_str.lower().split("e")[1]

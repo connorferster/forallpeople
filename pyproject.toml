@@ -33,5 +33,6 @@ test = [
 
 [dependency-groups]
 dev = [
+    "black>=26.5.1",
     "pytest>=9.1.1",
 ]
