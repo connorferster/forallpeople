@@ -15,22 +15,6 @@ dynamic = ["version", "description"]
 Home = "https://github.com/connorferster/forallpeople"
 Documentation = "https://connorferster.github.io/forallpeople"
 
-[project.optional-dependencies]
-
-dev = [
-    "black >= 22.3.0"
-]
-
-doc = [
-    "sphinx",
-    "nbsphinx",
-    "pydata-sphinx-theme"
-]
-
-test = [
-    "pytest-cov"
-]
-
 [dependency-groups]
 dev = [
     "black>=26.5.1",
