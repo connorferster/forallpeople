@@ -33,7 +33,7 @@ A module to model the seven SI base units:
 #    limitations under the License.
 from __future__ import annotations
 
-__version__ = "2.7.1"
+__version__ = "3.0.0"
 
 from fractions import Fraction
 from typing import Union, Optional
@@ -199,12 +199,16 @@ class Physical(object):
     def _repr_latex_(self):
         return self._repr_template_(template="latex")
 
-    def _repr_template_(self, template: str = "", format_spec="") -> str:
+    def _repr_template_(
+        self, template: str = "", format_spec="", inline_math: bool = False
+    ) -> str:
         """
         Returns a string that appropriately represents the Physical
         instance. The parameter,'template', allows two optional values:
         'html' and 'latex'. which will only be utilized if the Physical
         exists in the Jupyter/iPython environment.
+        If 'inline_math' is True, the returned string is wrapped in '$'
+        delimiters (only meaningful for the 'latex' template).
         """
         if not format_spec:
             format_spec = f".{self.precision}f"
@@ -239,6 +243,8 @@ class Physical(object):
                 kg_bool = True
         elif prefix_bool and prefixed:
             prefix = prefixed
+            if dims_orig == Dimensions(1, 0, 0, 0, 0, 0, 0):
+                kg_bool = True
         elif prefix_bool and dims_orig == Dimensions(1, 0, 0, 0, 0, 0, 0):
             kg_bool = True
             prefix = phf._auto_prefix(val, power, kg=kg_bool)
@@ -276,12 +282,14 @@ class Physical(object):
         space = " "
         pre_inline = ""
         post_inline = ""
+
         if template == "latex":
+            if inline_math:
+                pre_inline = "$"
+                post_inline = "$"
             space = r"\ "
             pre_super = "^{"
             post_super = "}"
-            pre_inline = "$"
-            post_inline = "$"
         elif template == "html":
             space = " "
             pre_super = "<sup>"
@@ -335,14 +343,20 @@ class Physical(object):
 
     def __format__(self, format_spec=""):
         template = ""
-        if "L" in format_spec:
+        inline_math = False
+        if format_spec.endswith("L$"):
             template = "latex"
-            format_spec = format_spec.replace("L", "")
-        elif "H" in format_spec:
+            inline_math = True
+            format_spec = format_spec[:-2]
+        elif format_spec.endswith("L"):
+            template = "latex"
+            format_spec = format_spec[:-1]
+        elif format_spec.endswith("H"):
             template = "html"
-            format_spec = format_spec.replace("H", "")
-
-        return self._repr_template_(template=template, format_spec=format_spec)
+            format_spec = format_spec[:-1]
+        return self._repr_template_(
+            template=template, format_spec=format_spec, inline_math=inline_math
+        )
 
     def __hash__(self):
         return hash(
@@ -363,9 +377,7 @@ class Physical(object):
         elif isinstance(other, Physical) and self.dimensions == other.dimensions:
             return math.isclose(self.value, other.value)
         else:
-            raise ValueError(
-                "Can only compare between Physical instances of equal dimension."
-            )
+            return False
 
     def __gt__(self, other):
         if isinstance(other, NUMBER):

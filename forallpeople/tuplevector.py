@@ -1,5 +1,5 @@
 """
-tuplevector: Treat tuples of any kind (e.g. namedtuple, NamedTuple) 
+tuplevector: Treat tuples of any kind (e.g. namedtuple, NamedTuple)
 like one dimensional vectors!
 by Connor Ferster 03/2019
 """
