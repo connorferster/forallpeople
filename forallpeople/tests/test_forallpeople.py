@@ -553,6 +553,17 @@ def test__format__():
     assert "{:L}".format(value * MPa) == "432.924\\ \\mathrm{MPa}"
     # a leading 'L' is a fill character, not the latex flag: must not trigger latex
     assert "{:L<12}".format(value * MPa) == "432.92393LLL MPa"
+    # the 'L$' flag renders latex wrapped in inline math delimiters
+    assert "{:L$}".format(value * MPa) == "$432.924\\ \\mathrm{MPa}$"
+    assert "{:.2fL$}".format(value * MPa) == "$432.92\\ \\mathrm{MPa}$"
+    assert "{:.2eL$}".format(value * MPa) == "$4.33 \\times 10^ {2}\\ \\mathrm{MPa}$"
+    assert (
+        "{:.2fL$}".format(2.5 * kg * m**2.5)
+        == "$2.50\\ \\mathrm{kg} \\cdot \\mathrm{m}^{2.5}$"
+    )
+    # the delimiters do not leak into the plain latex flag or the .latex property
+    assert "{:L}".format(value * MPa) == "432.924\\ \\mathrm{MPa}"
+    assert (value * MPa).latex == "432.924\\ \\mathrm{MPa}"
 
 
 ## Test of Environment Class ##
