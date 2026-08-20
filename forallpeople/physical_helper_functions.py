@@ -22,7 +22,6 @@ from typing import Any, Union, Optional, List, Callable
 from forallpeople.dimensions import Dimensions
 import forallpeople.tuplevector as vec
 
-
 ### Helper methods for repr methods ###
 
 _prefixes = {  # Do not add custom prefixes between Y and y, e.g. "c": 1e-2
