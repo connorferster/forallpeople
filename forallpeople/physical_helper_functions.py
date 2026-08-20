@@ -22,7 +22,6 @@ from typing import Any, Union, Optional, List, Callable
 from forallpeople.dimensions import Dimensions
 import forallpeople.tuplevector as vec
 
-
 ### Helper methods for repr methods ###
 
 _prefixes = {  # Do not add custom prefixes between Y and y, e.g. "c": 1e-2
@@ -287,7 +286,7 @@ def _format_symbol(prefix: str, symbol: str, repr_format: str = "") -> str:
         ohm = "&#0937;"
     elif repr_format == "latex":
         dot_operator = " \\cdot "
-        ohm = "$\\Omega$"
+        ohm = "\\Omega"
         symbol_string_open = "\\mathrm{"
         symbol_string_close = "}"
 

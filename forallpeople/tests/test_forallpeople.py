@@ -186,11 +186,9 @@ def test__get_superscript_string():
 
 
 def test_latex():
-    assert MPa.latex == "$1.000\\ \\mathrm{MPa}$"
-    assert (
-        2.5 * kg * m**2.5
-    ).latex == "$2.500\\ \\mathrm{kg} \\cdot \\mathrm{m}^{2.5}$"
-    assert (5000 * A).latex == "$5.000\\ \\mathrm{kA}$"
+    assert MPa.latex == "1.000\\ \\mathrm{MPa}"
+    assert (2.5 * kg * m**2.5).latex == "2.500\\ \\mathrm{kg} \\cdot \\mathrm{m}^{2.5}"
+    assert (5000 * A).latex == "5.000\\ \\mathrm{kA}"
 
 
 def test_repr():
@@ -546,7 +544,24 @@ def test__format__():
     assert "{:.3f}".format(value * MPa) == "432.924 MPa"
     assert "{:.2e}".format(value * MPa) == "4.33e+02 MPa"
     assert "{:.2eH}".format(value * MPa) == "4.33 &times; 10<sup>2</sup> MPa"
-    assert "{:.2eL}".format(value * MPa) == "$4.33 \\times 10^ {2}\\ \\mathrm{MPa}$"
+    assert "{:.2eL}".format(value * MPa) == "4.33 \\times 10^ {2}\\ \\mathrm{MPa}"
+    # html flag combined with a fixed-point spec
+    assert "{:.2fH}".format(value * MPa) == "432.92 MPa"
+    # latex flag on its own falls back to the instance's default precision
+    assert "{:L}".format(value * MPa) == "432.924\\ \\mathrm{MPa}"
+    # a leading 'L' is a fill character, not the latex flag: must not trigger latex
+    assert "{:L<12}".format(value * MPa) == "432.92393LLL MPa"
+    # the 'L$' flag renders latex wrapped in inline math delimiters
+    assert "{:L$}".format(value * MPa) == "$432.924\\ \\mathrm{MPa}$"
+    assert "{:.2fL$}".format(value * MPa) == "$432.92\\ \\mathrm{MPa}$"
+    assert "{:.2eL$}".format(value * MPa) == "$4.33 \\times 10^ {2}\\ \\mathrm{MPa}$"
+    assert (
+        "{:.2fL$}".format(2.5 * kg * m**2.5)
+        == "$2.50\\ \\mathrm{kg} \\cdot \\mathrm{m}^{2.5}$"
+    )
+    # the delimiters do not leak into the plain latex flag or the .latex property
+    assert "{:L}".format(value * MPa) == "432.924\\ \\mathrm{MPa}"
+    assert (value * MPa).latex == "432.924\\ \\mathrm{MPa}"
 
 
 ## Test of Environment Class ##
