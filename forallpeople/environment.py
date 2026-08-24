@@ -12,11 +12,11 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+import ast
 from fractions import Fraction
 from operator import add, sub, mul, truediv, pow
 import pathlib
 import json
-import re
 import sys
 from typing import Union
 from types import ModuleType
@@ -136,8 +136,8 @@ class Environment:
             " .json file, '{env_name}.json', for unit '{unit}'"
         )
         unit_factor_not_eval = (
-            "Unit definition in '{env_name}.json': Factor"
-            "must be an arithmetic expr (as a str), a float,"
+            "Unit definition for '{unit}' in '{env_name}.json': Factor "
+            "must be an arithmetic expr (as a str), a float, "
             "or an int: not '{factor}'."
         )
         file_path = pathlib.Path(__file__).parent / "environments" / f"{env_name}.json"
@@ -151,24 +151,26 @@ class Environment:
             units_environment = json.load(json_unit_definitions)
 
         # Load definitions
-        arithmetic_expr = re.compile(r"[0-9.*/+-]")
         for unit, definitions in units_environment.items():
             dimensions = definitions.get("Dimension", ())
             factor_expr = definitions.get("Factor", "1")
             symbol = definitions.get("Symbol", "")
             if not dimensions:
-                raise DimensionError(dim_array_not_defn.format(env_name, unit))
+                raise DimensionError(
+                    dim_array_not_defn.format(env_name=env_name, unit=unit)
+                )
             else:
                 units_environment[unit]["Dimension"] = Dimensions(*dimensions)
 
-            if type(factor_expr) is str and not arithmetic_expr.match(factor_expr):
-                raise ValueError(
-                    unit_factor_not_eval.format(unit, env_name, factor_expr)
-                )
-            else:
-                # factor_expr = str(factor_expr)
+            try:
                 units_environment[unit]["Factor"] = evaluate_factor_expression(
                     factor_expr
+                )
+            except (ValueError, SyntaxError, ZeroDivisionError):
+                raise ValueError(
+                    unit_factor_not_eval.format(
+                        unit=unit, env_name=env_name, factor=factor_expr
+                    )
                 )
         return units_environment
 
@@ -195,21 +197,61 @@ class Environment:
         return units_dict
 
 
-def evaluate_factor_expression(factor_expression: str) -> Union[int, Fraction]:
+_FACTOR_BINOPS = {
+    ast.Add: add,
+    ast.Sub: sub,
+    ast.Mult: mul,
+    ast.Div: truediv,
+    ast.Pow: pow,
+}
+
+
+def _evaluate_factor_node(node: ast.AST) -> Union[int, Fraction]:
     """
-    Returns the evaluated result of 'factor_expression' which is a str representing
-    an arithmetic expression .
+    Recursively evaluates a node of a parsed factor expression over Fraction.
+
+    Only numeric literals, parentheses (implicit in the parse tree), unary
+    +/- and the binary operators + - * / ** are permitted. Every other node
+    type -- names, calls, attribute access, comparisons, subscripts -- raises
+    ValueError, so an environment .json cannot smuggle in executable code.
     """
-    ops = {"+": add, "-": sub, "*": mul, "/": truediv, "**": pow}
-    expr_elements = re.findall("[0-9.]+|(?:\*\*|\*|/|\+|\-)", factor_expression)
-    factor = Fraction("1")
-    dec_elem = Fraction("1")
-    op = mul
-    for elem in expr_elements:
-        try:
-            dec_elem = Fraction(elem)
-        except:
-            op = ops[elem]
-            continue
-        factor = op(factor, dec_elem)
-    return factor
+    if isinstance(node, ast.Expression):
+        return _evaluate_factor_node(node.body)
+    if isinstance(node, ast.Constant):
+        if isinstance(node.value, bool) or not isinstance(node.value, (int, float)):
+            raise ValueError(
+                f"Factor expressions may only contain numbers: got {node.value!r}"
+            )
+        # via str() so that a decimal literal becomes its exact Fraction
+        # (0.3048 -> 381/1250) rather than the binary float approximation.
+        return Fraction(str(node.value))
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
+        operand = _evaluate_factor_node(node.operand)
+        return operand if isinstance(node.op, ast.UAdd) else -operand
+    if isinstance(node, ast.BinOp) and type(node.op) in _FACTOR_BINOPS:
+        left = _evaluate_factor_node(node.left)
+        right = _evaluate_factor_node(node.right)
+        return _FACTOR_BINOPS[type(node.op)](left, right)
+    raise ValueError(
+        f"Not a permitted operation in a Factor expression: {type(node).__name__}"
+    )
+
+
+def evaluate_factor_expression(
+    factor_expression: Union[str, int, float],
+) -> Union[int, Fraction]:
+    """
+    Returns the evaluated result of 'factor_expression', an arithmetic
+    expression given as a str (a plain int or float is also accepted).
+
+    The expression is parsed with Python's own grammar and evaluated over
+    Fraction, so operator precedence, parentheses and scientific notation are
+    all honoured and the result is exact. Only numeric literals and the
+    operators + - * / ** (and unary +/-) are permitted.
+    """
+    if isinstance(factor_expression, (int, float)) and not isinstance(
+        factor_expression, bool
+    ):
+        return Fraction(str(factor_expression))
+    parsed = ast.parse(str(factor_expression).strip(), mode="eval")
+    return _evaluate_factor_node(parsed)
