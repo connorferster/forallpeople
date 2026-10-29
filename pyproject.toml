@@ -11,6 +11,9 @@ classifiers = ["License :: OSI Approved :: Apache Software License"]
 dynamic = ["version", "description"]
 
 
+[project.entry-points."ymprint.plugins"]
+forallpeople = "forallpeople.ymprint_plugin:setup"
+
 [project.urls]
 Home = "https://github.com/connorferster/forallpeople"
 Documentation = "https://connorferster.github.io/forallpeople"

@@ -179,6 +179,25 @@ DimensionError: Expected the dimensions of MPa (1, -1, -2, 0, 0, 0, 0), got kN (
 * Loading does not need an environment, and `display` is for human readers only (it is ignored on load).
 * To use the standard library directly: `json.dumps(obj, default=si.json_default)` and `json.loads(text, object_hook=si.json_object_hook)`.
 
+## Quantities in YMPrint projects
+
+With [YMPrint](https://github.com/StructuralPython/ymprint) 0.8.1 or later installed, forallpeople registers itself as a YMPrint plugin, so there is nothing to configure:
+
+* A quantity a document exports (`_export`) or a script publishes is written in the exact JSON form above. Whoever reads it back through `_data` gets a `Physical`, not a dict.
+* The `yaml+units` loader reads data files written with units. Every string that starts with a number is parsed as in `si.parse_tree`. The file names its environment at the top, either an environment name or a path to an environment `.json` relative to the file. There is no default environment.
+
+```yaml
+# project.ymprint.yml
+_data:
+  geometry: {path: geometry.yml, loader: yaml+units}
+
+# geometry.yml
+_environment: structural
+B01: {span: 6 m, w_DL: 2.5 kN/m, f_y: 350 MPa}
+```
+
+forallpeople has one active environment per process. A data file that names a different environment from the active one replaces it, with a warning.
+
 ## Dimensionally inconsistent calculations
 
 It is not uncommon for some calculations to use formulas whose dimensions seem to magically appear on their own. The `forallpeople` library can handle these calculations if the "hidden dimensions" are recognized and accounted for by the user.
