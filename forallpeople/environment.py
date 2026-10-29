@@ -122,30 +122,27 @@ class Environment:
         for key in units_dict.keys():
             module.__dict__.pop(key)
 
-    def _load_environment(self, env_name: str):
+    def _load_environment(self, env_name: Union[str, pathlib.Path]):
         """
         Returns a dict that describes a set of unit definitions as contained in the
         JSON file titled "'env_name'.json". Alternatively, 'env_name' can
-        also be a path to a JSON file outside forallpeople.
+        also be a path to a JSON file outside forallpeople (a pathlib.Path, a str
+        ending in ".json", or an existing file that is not an installed environment).
         After the 'Dimension' definition is converted to an Dimensions
         object and any factors are checked for safety then evaluated.
         Raises error if file not found.
         """
         dim_array_not_defn = (
             "Dimension array not defined in environment"
-            " .json file, '{env_name}.json', for unit '{unit}'"
+            " .json file, '{env_name}', for unit '{unit}'"
         )
         unit_factor_not_eval = (
-            "Unit definition in '{env_name}.json': Factor"
-            "must be an arithmetic expr (as a str), a float,"
-            "or an int: not '{factor}'."
+            "Unit definition for '{unit}' in '{env_name}': Factor"
+            " must be an arithmetic expr (as a str), a float,"
+            " or an int: not '{factor}'."
         )
-        file_path = pathlib.Path(__file__).parent / "environments" / f"{env_name}.json"
-
-        if not file_path.exists():
-            raise ValueError(
-                "The environment name, {env_name}, does not exist in the installed environments."
-            )
+        file_path = _resolve_environment_path(env_name)
+        env_name = file_path.name
 
         with open(file_path, "r", encoding="utf-8") as json_unit_definitions:
             units_environment = json.load(json_unit_definitions)
@@ -157,13 +154,17 @@ class Environment:
             factor_expr = definitions.get("Factor", "1")
             symbol = definitions.get("Symbol", "")
             if not dimensions:
-                raise DimensionError(dim_array_not_defn.format(env_name, unit))
+                raise DimensionError(
+                    dim_array_not_defn.format(env_name=env_name, unit=unit)
+                )
             else:
                 units_environment[unit]["Dimension"] = Dimensions(*dimensions)
 
             if type(factor_expr) is str and not arithmetic_expr.match(factor_expr):
                 raise ValueError(
-                    unit_factor_not_eval.format(unit, env_name, factor_expr)
+                    unit_factor_not_eval.format(
+                        unit=unit, env_name=env_name, factor=factor_expr
+                    )
                 )
             else:
                 # factor_expr = str(factor_expr)
@@ -195,13 +196,38 @@ class Environment:
         return units_dict
 
 
+def _resolve_environment_path(env_name: Union[str, pathlib.Path]) -> pathlib.Path:
+    """
+    Returns the path to the environment JSON file described by 'env_name'.
+    'env_name' is treated as a file path if it is a pathlib.Path or ends in ".json".
+    Otherwise it is the name of an installed environment, falling back to a file
+    path if no installed environment has that name.
+    Raises ValueError if the file does not exist.
+    """
+    candidate = pathlib.Path(env_name).expanduser()
+    is_path = isinstance(env_name, pathlib.Path) or str(env_name).lower().endswith(
+        ".json"
+    )
+    if not is_path:
+        file_path = pathlib.Path(__file__).parent / "environments" / f"{env_name}.json"
+        if file_path.exists():
+            return file_path
+        if not candidate.is_file():
+            raise ValueError(
+                f"The environment name, {env_name}, does not exist in the installed environments."
+            )
+    if not candidate.is_file():
+        raise ValueError(f"The environment file, {candidate}, does not exist.")
+    return candidate
+
+
 def evaluate_factor_expression(factor_expression: str) -> Union[int, Fraction]:
     """
     Returns the evaluated result of 'factor_expression' which is a str representing
     an arithmetic expression .
     """
     ops = {"+": add, "-": sub, "*": mul, "/": truediv, "**": pow}
-    expr_elements = re.findall("[0-9.]+|(?:\*\*|\*|/|\+|\-)", factor_expression)
+    expr_elements = re.findall(r"[0-9.]+|(?:\*\*|\*|/|\+|\-)", factor_expression)
     factor = Fraction("1")
     dec_elem = Fraction("1")
     op = mul
