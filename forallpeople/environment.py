@@ -21,6 +21,7 @@ import sys
 from typing import Union
 from types import ModuleType
 from forallpeople.dimensions import Dimensions, DimensionError
+import forallpeople.parsing as parsing
 
 
 class Environment:
@@ -44,6 +45,8 @@ class Environment:
         self.push_module = None
         if not self.environment:
             self.environment = self._si_base_units
+        self._env_name = None
+        self._cache_units(self._si_base_units, {})
 
     @property
     def units_by_dimension(self):
@@ -89,6 +92,8 @@ class Environment:
         )
         self._push_vars(new_units_dict, push_module)
         self._push_vars(self._si_base_units, push_module)
+        self._env_name = pathlib.Path(env_name).stem
+        self._cache_units(new_units_dict, self.environment)
 
         # Update internal class dictionaries: self.units_by_dimension, self.units_by_factor
         self._units_by_dimension = {"derived": dict(), "defined": dict()}
@@ -114,6 +119,43 @@ class Environment:
                 else:
                     self._units_by_factor[factor] = {name: definition}
         self.push_module = push_module  # Update previous push_module; could be either module or top-level
+
+    def parse(self, text: str, expect=None):
+        """
+        Returns a Physical (or a float, if dimensionless) parsed from 'text',
+        e.g. "350 MPa", "4.5 kN/m", "164e6 mm**4", "5 kip·ft" or "0.9", using the
+        units of this environment. Raises UnitParseError (a ValueError) if 'text'
+        cannot be parsed.
+
+        'expect', a unit str (e.g. "MPa") or a Physical, raises DimensionError if
+        the parsed quantity does not have the same dimensions.
+        """
+        return parsing.parse(text, self, expect=expect)
+
+    def parse_tree(self, obj, strict: bool = True):
+        """
+        Returns a copy of 'obj' (e.g. data loaded from YAML or JSON) with nested
+        dicts, lists and tuples walked and every str that starts with a number
+        parsed with .parse(). Keys and other values are left unchanged. If a str
+        starting with a number cannot be parsed (e.g. "2 storeys"), raises
+        UnitParseError naming its path when 'strict' is True, otherwise leaves it
+        as a str.
+        """
+        return parsing.parse_tree(obj, self, strict=strict)
+
+    def _cache_units(self, units_dict: dict, environment: dict) -> None:
+        """
+        Caches the unit objects (keyed by name) available to .parse(), along with
+        a Symbol -> name alias map and a display name -> name map.
+        """
+        self._units_dict = {**self._si_base_units, **units_dict}
+        self._symbol_aliases = {}
+        self._display_names = {name: name for name in self._si_base_units}
+        for name, definition in environment.items():
+            symbol = definition.get("Symbol", "")
+            if symbol and symbol not in self._units_dict:
+                self._symbol_aliases.setdefault(symbol, name)
+            self._display_names.setdefault(symbol or name, name)
 
     def _push_vars(self, units_dict: dict, module: ModuleType) -> None:
         module.__dict__.update(units_dict)

@@ -132,6 +132,52 @@ Almost all methods return a new `Physical` because all instances are **immutable
 * `.sqrt(self, n: float)`: Returns a `Physical` that represents the square root of `self`. `n` can be set to any other number to compute alternate roots.
 * `.split(self)`: Returns a 2-tuple where the 0-th element is the `.value` of the quantity and the 1-th element is the `Physical` instance with a value set to `1` (i.e. just the dimensional part of the quantity). To reconstitute, multiply the two tuple elements together. This is useful to perform computations in `numpy` that only accept numerical input (e.g. `numpy.linalg.inv()`): the value can be computed separately from the dimension and then reconstituted afterwards.
 * `.to(self, unit_name: str = "")`: Returns a new `Physical` instance with a `.factor` corresponding to a dimensionally compatible unit defined in the `environment`. If `.to()` is called without any arguments, then a list of available units for that quantity is printed to `stdout`.
+* `.to_dict(self)` / `Physical.from_dict(data)`: Converts a `Physical` to and from a JSON-compatible `dict` (see _Saving quantities to JSON_ below).
+
+> **NOTE:** `float(q)` returns the value in the unit that `q` is *displayed* in, which depends on its magnitude (`float(30.2*si.kN) == 30.2` but `float(0.5*si.kN) == 500.0`). Use `.value` (always SI) when you need a stable number.
+
+## Parsing quantities from text
+
+Quantities can be parsed from strings, e.g. from YAML or JSON data files, so that units are written once, alongside the data:
+
+```python
+>>> si.environment("structural")
+>>> si.parse("350 MPa")
+350.000 MPa
+>>> si.parse("4.5 kN/m")
+4.500 kN/m
+>>> si.parse("164e6 mm**4")   # also "164e6 mm^4" and "164e6 mm⁴"
+164000000.000 mm⁴
+>>> si.parse("5 kip·ft")      # environment Symbols keep their factor
+5.000 kip·ft
+>>> si.parse("0.9")           # no units -> float
+0.9
+>>> si.parse("350 kN", expect="MPa")
+DimensionError: Expected the dimensions of MPa (1, -1, -2, 0, 0, 0, 0), got kN (1, 1, -2, 0, 0, 0, 0).
+```
+
+* Units are environment names (`kN`), environment symbols (`kip·ft`, `N/m`), SI base units, or SI-prefixed SI units (`kN·m`, `μm`, `mg`).
+* Combine units with `*` or `·`, `/`, parentheses and exponents (`**`, `^` or superscripts). `/` is left-associative, as in Python (`kN/m/s` is `(kN/m)/s`); use parentheses for anything beyond one `/`.
+* Units separated only by a space (`"30 kN m"`) are rejected as ambiguous.
+* Errors raise `si.UnitParseError` (a `ValueError`) with suggestions, e.g. `'kNm' is not a unit in environment 'structural'. Did you mean 'kN·m' (Nm)?`
+* There is no `eval()`: the units are evaluated with a small parser.
+
+`si.parse_tree(obj, strict=True)` walks nested dicts, lists and tuples (e.g. the result of `yaml.safe_load`) and parses every string that starts with a number. Keys and other strings (`"W310x74"`) are left alone. A string that starts with a number but is not a valid quantity (`"2 storeys"`) raises an error naming its path (`geometry.levels: '2 storeys'`), or is left as a string with `strict=False`.
+
+## Saving quantities to JSON
+
+```python
+>>> q = 30.2 * si.kN
+>>> q.to_dict()
+{'__physical__': 1, 'value': 30200.0, 'dimensions': [1, 1, -2, 0, 0, 0, 0], 'factor': 1, 'precision': 3, 'prefixed': '', 'display': '30.200 kN'}
+>>> text = si.dumps({"Vr": q, "phi": 0.9})   # also si.dump(obj, fp)
+>>> si.loads(text)                           # also si.load(fp)
+{'Vr': 30.200 kN, 'phi': 0.9}
+```
+
+* The round trip is exact: `value` is always in SI units and a fractional `factor` (e.g. for `ft`) is stored exactly as `"n/d"`.
+* Loading does not need an environment, and `display` is for human readers only (it is ignored on load).
+* To use the standard library directly: `json.dumps(obj, default=si.json_default)` and `json.loads(text, object_hook=si.json_object_hook)`.
 
 ## Dimensionally inconsistent calculations
 
@@ -263,7 +309,7 @@ When the auto-prefixing is triggered for a unit and that unit is of a power othe
 
 > **NOTE: See the documentation for more information**
 
-An environment is simply a JSON document stored within the package folder in the following format:
+An environment is simply a JSON document stored within the package folder (or anywhere else: `si.environment("path/to/my_units.json")` loads an environment from a file path) in the following format:
 
     "Name": {
         "Dimension": [0,0,0,0,0,0,0],
