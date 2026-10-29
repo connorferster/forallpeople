@@ -41,6 +41,7 @@ from forallpeople.dimensions import Dimensions
 import forallpeople.physical_helper_functions as phf
 import forallpeople.tuplevector as vec
 from forallpeople.environment import Environment
+from forallpeople.parsing import UnitParseError
 import math
 import builtins
 import sys
@@ -796,6 +797,29 @@ _the_si_base_units = {
 
 environment = Environment(Physical, builtins, _the_si_base_units)
 environment._push_vars(_the_si_base_units, sys.modules[__name__])
+
+
+def parse(text: str, expect=None):
+    """
+    Returns a Physical (or a float, if dimensionless) parsed from 'text', e.g.
+    "350 MPa", "4.5 kN/m", "164e6 mm**4", "5 kip·ft" or "0.9", using the units of
+    the active environment. Raises UnitParseError (a ValueError) if 'text' cannot
+    be parsed. 'expect', a unit str (e.g. "MPa") or a Physical, raises
+    DimensionError if the parsed quantity does not have the same dimensions.
+    """
+    return environment.parse(text, expect=expect)
+
+
+def parse_tree(obj, strict: bool = True):
+    """
+    Returns a copy of 'obj' (e.g. data loaded from YAML or JSON) with every str
+    in its nested dicts, lists and tuples that starts with a number parsed with
+    parse(). Keys and other values are left unchanged. If such a str cannot be
+    parsed (e.g. "2 storeys"), raises UnitParseError naming its path when
+    'strict' is True, otherwise leaves it as a str.
+    """
+    return environment.parse_tree(obj, strict=strict)
+
 
 from forallpeople.serialization import (
     json_default,
