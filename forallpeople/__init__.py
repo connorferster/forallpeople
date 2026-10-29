@@ -47,6 +47,29 @@ import sys
 import warnings
 
 NUMBER = (int, float)
+SERIALIZATION_TAG = "__physical__"
+SERIALIZATION_VERSION = 1
+
+
+def _serialize_factor(factor: Union[int, float, Fraction]) -> Union[int, float, str]:
+    """
+    Returns 'factor' as an int if it is a whole number, as an exact "n/d" str if
+    it is any other Fraction, and as a float otherwise.
+    """
+    if isinstance(factor, Fraction):
+        if factor.denominator == 1:
+            return factor.numerator
+        return str(factor)
+    return _int_if_integral(factor)
+
+
+def _int_if_integral(x: Union[int, float]) -> Union[int, float]:
+    """
+    Returns 'x' as an int if it is a whole number, otherwise 'x' unchanged.
+    """
+    if isinstance(x, float) and x.is_integer():
+        return int(x)
+    return x
 
 
 class Physical(object):
@@ -142,6 +165,86 @@ class Physical(object):
                 ),
             )
         return (float(self), Physical(1, self.dimensions, self.factor, self.precision))
+
+    def to_dict(self) -> dict:
+        """
+        Returns a JSON-compatible dict that fully describes the Physical instance.
+        The five slots ("value", "dimensions", "factor", "precision", "prefixed")
+        are the data; "value" is always in SI base units. "factor" is written as an
+        exact "n/d" str when it is a non-integer Fraction. "display" is the str of the
+        instance, provided for readers of the JSON, and is ignored by .from_dict().
+        """
+        return {
+            SERIALIZATION_TAG: SERIALIZATION_VERSION,
+            "value": self.value,
+            "dimensions": [_int_if_integral(dim) for dim in self.dimensions],
+            "factor": _serialize_factor(self.factor),
+            "precision": self.precision,
+            "prefixed": self.prefixed,
+            "display": str(self),
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> Physical:
+        """
+        Returns a Physical instance from a dict created by .to_dict(). No
+        environment is required: the dict is self-contained. Raises ValueError
+        naming the offending field if 'data' is not a valid serialized Physical.
+        """
+        if not isinstance(data, dict):
+            raise ValueError(f"Expected a dict to load a Physical, not {type(data)}.")
+        version = data.get(SERIALIZATION_TAG)
+        if version != SERIALIZATION_VERSION:
+            raise ValueError(
+                f"'{SERIALIZATION_TAG}': expected format version {SERIALIZATION_VERSION}, "
+                f"got {version!r}."
+            )
+
+        if "value" not in data:
+            raise ValueError("'value': missing from serialized Physical.")
+        value = data["value"]
+        if isinstance(value, bool) or not isinstance(value, NUMBER):
+            raise ValueError(f"'value': must be a number, not {value!r}.")
+
+        dims = data.get("dimensions")
+        if (
+            not isinstance(dims, (list, tuple))
+            or len(dims) != 7
+            or any(isinstance(d, bool) or not isinstance(d, NUMBER) for d in dims)
+        ):
+            raise ValueError(
+                "'dimensions': must be a list of 7 numbers in the order "
+                f"(kg, m, s, A, cd, K, mol), not {dims!r}."
+            )
+
+        factor = data.get("factor", 1)
+        if isinstance(factor, str):
+            try:
+                factor = Fraction(factor)
+            except ValueError:
+                raise ValueError(
+                    f"'factor': must be a number or an 'n/d' str, not {factor!r}."
+                ) from None
+        elif isinstance(factor, bool) or not isinstance(factor, NUMBER):
+            raise ValueError(
+                f"'factor': must be a number or an 'n/d' str, not {factor!r}."
+            )
+
+        precision = data.get("precision", 3)
+        if isinstance(precision, bool) or not isinstance(precision, int):
+            raise ValueError(f"'precision': must be an int, not {precision!r}.")
+
+        prefixed = data.get("prefixed", "")
+        if not isinstance(prefixed, str):
+            raise ValueError(f"'prefixed': must be a str, not {prefixed!r}.")
+
+        return cls(
+            value,
+            Dimensions(*(_int_if_integral(d) for d in dims)),
+            factor,
+            precision,
+            prefixed,
+        )
 
     def sqrt(self, n: Union[int, float] = 2):
         """
@@ -693,3 +796,12 @@ _the_si_base_units = {
 
 environment = Environment(Physical, builtins, _the_si_base_units)
 environment._push_vars(_the_si_base_units, sys.modules[__name__])
+
+from forallpeople.serialization import (
+    json_default,
+    json_object_hook,
+    dump,
+    dumps,
+    load,
+    loads,
+)
