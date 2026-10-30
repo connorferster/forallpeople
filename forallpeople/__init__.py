@@ -767,14 +767,14 @@ class Physical(object):
         if other != other:  # Test for nans
             return other
         if isinstance(other, NUMBER):
-            if self.prefixed:
-                return float(self) ** other
             new_value = self.value**other
             new_dimensions = vec.multiply(self.dimensions, other)
             new_factor = phf.fraction_pow(self.factor, other)
             if new_dimensions == Dimensions(0, 0, 0, 0, 0, 0, 0):
                 return float(new_value * new_factor)
-            return Physical(new_value, new_dimensions, new_factor, self.precision)
+            return Physical(
+                new_value, new_dimensions, new_factor, self.precision, self.prefixed
+            )
         else:
             raise ValueError(
                 "Cannot raise a Physical to the power of \

@@ -230,6 +230,21 @@ def test_prefixed_kg():
     assert (5 * kg).prefix("k").html == "5.000 kg"
 
 
+def test_pow_prefixed():
+    # Raising a prefixed Physical to a power keeps its units and its prefix
+    # rather than returning a float in the display units.
+    area = (4 * m).prefix("m") ** 2
+    assert isinstance(area, si.Physical)
+    assert area == 16 * m**2
+    assert area.prefixed == "m"
+    assert repr(area) == "16000000.000 mm²"
+    assert isinstance(m.prefix("m") ** 2, si.Physical)
+    dims = si.Dimensions(0, 3, 0, 0, 0, 0, 0)
+    assert repr(si.Physical(0.001, dims, 1, 3, "m")) == "1000000.000 mm³"
+    assert (4 * m).prefix("m").sqrt().prefixed == "m"
+    assert (4 * m).prefix("m") ** 2 / (2 * m) ** 2 == 4.0
+
+
 def test_round():
     # with pytest.raises(DeprecationWarning):
     #     assert repr((25.2398783 * N).round(4)) == "25.2399 N"
