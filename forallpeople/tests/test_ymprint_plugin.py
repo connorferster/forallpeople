@@ -89,8 +89,7 @@ def decode_in_fresh_process(data: dict) -> subprocess.CompletedProcess:
     Decodes 'data' with the plugin in a new process, where no environment has
     been loaded, and prints the result, the active environment and any warnings.
     """
-    script = textwrap.dedent(
-        f"""
+    script = textwrap.dedent(f"""
         import json, warnings
         warnings.simplefilter("always")
         import forallpeople as si
@@ -100,8 +99,7 @@ def decode_in_fresh_process(data: dict) -> subprocess.CompletedProcess:
         ymprint_plugin.decode(data)
         print(q)
         print(si.environment._env_name)
-        """
-    )
+        """)
     return subprocess.run(
         [sys.executable, "-c", script], capture_output=True, text=True, check=True
     )
