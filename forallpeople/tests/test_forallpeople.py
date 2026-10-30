@@ -149,14 +149,23 @@ def test__get_unit_components_from_dims():
     assert func(si.Dimensions(0, 0, 0, 0, 0, 0, 0)) == []
 
 
-# TODO: Complete these tests
+def test__format_symbol():
+    func = phf._format_symbol
+    assert func("", "N/m", "") == "N/m"
+    assert func("k", "N", "") == "kN"
+    assert func("", "N·m", "html") == "N&#8901;m"
+    assert func("", "Ω", "latex") == "\\Omega "
+    assert func("μ", "m", "") == "μm"
+    assert func("", "\\mathrm{m}", "latex") == "\\mathrm{m}"
 
-# def test__format_symbol():
-#     assert False
 
-
-# def test__format_exponent():
-#     assert False
+def test__format_exponent():
+    func = phf._format_exponent
+    assert func(1, "") == ""
+    assert func(2, "") == "²"
+    assert func(2.5, "") == "²'⁵"
+    assert func(2, "html") == "2"
+    assert func(-2, "latex") == "-2"
 
 
 def test_nan_pass_through():
@@ -471,9 +480,9 @@ def test___add__():
         N + psf
 
 
-# def test___iadd__():
-#     with pytest.raises(ValueError):
-#         m += 3
+def test___iadd__():
+    with pytest.raises(ValueError, match="immutable"):
+        m.__iadd__(3)
 
 
 def test___sub__():
@@ -501,9 +510,9 @@ def test___rsub__():
     assert 10 - N == si.Physical(9, si.Dimensions(1, 1, -2, 0, 0, 0, 0), 1)
 
 
-# def test___isub__():
-#     with pytest.raises(ValueError):
-#         m -= 3
+def test___isub__():
+    with pytest.raises(ValueError, match="immutable"):
+        m.__isub__(3)
 
 
 def test___mul__():
@@ -523,9 +532,9 @@ def test___mul__():
     assert m * ft == si.Physical(0.3048, si.Dimensions(0, 2, 0, 0, 0, 0, 0), 1.0)
 
 
-# def test___imul__():
-#     with pytest.raises(ValueError):
-#         m *= 3
+def test___imul__():
+    with pytest.raises(ValueError, match="immutable"):
+        m.__imul__(3)
 
 
 def test___truediv__():
@@ -595,11 +604,26 @@ def test__format__():
 
 ## Test of Environment Class ##
 
-# def test_load_environment():
-#    assert "stub" == False
-#
-# def test_instantiator():
-#    assert "stub" == False
+
+def test_load_environment():
+    env = si.environment._load_environment("test_definitions")
+    assert set(env) >= {"ft", "lb", "MPa", "Ohm"}
+    assert env["ft"]["Dimension"] == si.Dimensions(0, 1, 0, 0, 0, 0, 0)
+    assert env["ft"]["Factor"] == Fraction("1") / Fraction("0.3048")
+    assert env["lb"]["Default"] is True
+    assert env["Ohm"]["Symbol"] == "Ω"
+
+
+def test_instantiator():
+    env = si.environment._load_environment("test_definitions")
+    units_dict = si.environment._generate_units_dict(env, si.Physical)
+    ft_unit = units_dict["ft"]
+    assert ft_unit.dimensions == si.Dimensions(0, 1, 0, 0, 0, 0, 0)
+    assert ft_unit.factor == env["ft"]["Factor"]
+    assert ft_unit.value == pytest.approx(0.3048)
+    mm_unit = units_dict["mm"]
+    assert mm_unit.value == pytest.approx(0.001)
+    assert mm_unit.dimensions == si.Dimensions(0, 1, 0, 0, 0, 0, 0)
 
 
 ## Tests of supplementary math functions ##
