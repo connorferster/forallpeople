@@ -172,24 +172,30 @@ class Physical(object):
         Returns a JSON-compatible dict that fully describes the Physical instance.
         The five slots ("value", "dimensions", "factor", "precision", "prefixed")
         are the data; "value" is always in SI base units. "factor" is written as an
-        exact "n/d" str when it is a non-integer Fraction. "display" is the str of the
-        instance, provided for readers of the JSON, and is ignored by .from_dict().
+        exact "n/d" str when it is a non-integer Fraction. "environment" is the name
+        of the active environment (omitted if none is loaded) and "display" is the
+        str of the instance in it; both are provided for readers of the JSON and
+        are ignored by .from_dict().
         """
-        return {
+        data = {
             SERIALIZATION_TAG: SERIALIZATION_VERSION,
             "value": self.value,
             "dimensions": [_int_if_integral(dim) for dim in self.dimensions],
             "factor": _serialize_factor(self.factor),
             "precision": self.precision,
             "prefixed": self.prefixed,
-            "display": str(self),
         }
+        if environment._env_name is not None:
+            data["environment"] = environment._env_name
+        data["display"] = str(self)
+        return data
 
     @classmethod
     def from_dict(cls, data: dict) -> Physical:
         """
         Returns a Physical instance from a dict created by .to_dict(). No
-        environment is required: the dict is self-contained. Raises ValueError
+        environment is required: the dict is self-contained, and its
+        "environment" is not loaded (the ymprint plugin's decoder does that). Raises ValueError
         naming the offending field if 'data' is not a valid serialized Physical.
         """
         if not isinstance(data, dict):
@@ -812,9 +818,11 @@ def parse(text: str, expect=None):
 
 def parse_tree(obj, strict: bool = True):
     """
-    Returns a copy of 'obj' (e.g. data loaded from YAML or JSON) with every str
-    in its nested dicts, lists and tuples that starts with a number parsed with
-    parse(). Keys and other values are left unchanged. If such a str cannot be
+    Returns a copy of 'obj' (e.g. data loaded from YAML or JSON) with every
+    quantity str in its nested dicts, lists and tuples parsed with parse(). A
+    quantity str is a number, alone or followed by whitespace and unit text
+    (e.g. "12", "350 MPa"); strs such as "2026-10-29", "W310x74" or "350MPa" are
+    left alone, as are keys and other values. If a quantity str cannot be
     parsed (e.g. "2 storeys"), raises UnitParseError naming its path when
     'strict' is True, otherwise leaves it as a str.
     """

@@ -81,10 +81,57 @@ def test_symbol_aliases_keep_factors():
     assert str(si.parse("2 ft")) == "2.000 ft"
 
 
-def test_display_auto_prefixes():
-    q = si.parse("1200 mm")
-    assert str(q) == "1.200 m"
-    assert q.prefixed == ""
+@pytest.mark.parametrize(
+    "text, display, prefixed, value",
+    [
+        ("0.6 kPa", "0.600 kPa", "k", 600.0),
+        ("4000 mm", "4000.000 mm", "m", 4.0),
+        ("1200 mm", "1200.000 mm", "m", 1.2),
+        ("350 MPa", "350.000 MPa", "M", 350e6),
+        ("12 kN", "12.000 kN", "k", 12000.0),
+        ("1.2 kN·m", "1.200 kN·m", "k", 1200.0),
+        ("3 um", "3.000 μm", "μ", 3e-6),
+        ("500 mg", "500.000 mg", "m", 0.0005),
+        ("6 m", "6.000 m", "", 6.0),
+        ("500 g", "500.000 g", "", 0.5),
+        ("2 kg", "2.000 kg", "", 2.0),
+        ("1.2 kN*m", "1.200 kN·m", "", 1200.0),
+        ("4.9 kN/m^3", "4.900 kN/m³", "", 4900.0),
+        ("164e6 mm^4", "164000000.000 mm⁴", "", 164e-6),
+        ("5 kip", "5.000 kip", "", 5 * 4448.2216152605),
+        ("2 ft", "2.000 ft", "", 0.6096),
+    ],
+)
+def test_display_keeps_the_authored_prefix(text, display, prefixed, value):
+    q = si.parse(text)
+    assert str(q) == display
+    assert q.prefixed == prefixed
+    assert math.isclose(q.value, value)  # .value stays SI
+
+
+def test_float_follows_the_authored_prefix():
+    assert float(si.parse("0.6 kPa")) == pytest.approx(0.6)
+    assert float(si.parse("4000 mm")) == pytest.approx(4000.0)
+    assert si.parse("0.6 kPa").value == pytest.approx(600.0)
+
+
+def test_arithmetic_on_a_parsed_prefixed_value():
+    area = si.parse("4000 mm") ** 2
+    assert isinstance(area, si.Physical)
+    assert area == si.parse("16 m^2")
+    assert str(area) == "16000000.000 mm²"
+    assert str(si.parse("0.6 kPa") * 2) == "1.200 kPa"
+    assert str(si.parse("0.6 kPa") * si.parse("4 m")) == "2.400 kN/m"
+
+
+def test_a_parsed_prefix_survives_serialization():
+    q = si.Physical.from_dict(si.parse("0.6 kPa").to_dict())
+    assert str(q) == "0.600 kPa"
+    assert q.prefixed == "k"
+
+
+def test_expect_with_a_parsed_prefix():
+    assert str(si.parse("0.6 kPa", expect="Pa")) == "0.600 kPa"
 
 
 def test_parenthesised_number_is_an_error():
@@ -93,7 +140,7 @@ def test_parenthesised_number_is_an_error():
 
 
 def test_power_keeps_units():
-    # parse never sets 'prefixed', which would make __pow__ return a float
+    # A prefix set by parse is carried through __pow__ rather than dropping units
     area = si.parse("6 m") ** 2
     assert isinstance(area, si.Physical)
     assert area == 36 * si.m**2
@@ -194,6 +241,50 @@ def test_parse_tree_non_strict():
     tree = si.parse_tree({"levels": "2 storeys", "h": "3 m"}, strict=False)
     assert tree["levels"] == "2 storeys"
     assert same(tree["h"], 3 * si.m)
+
+
+@pytest.mark.parametrize(
+    "text, expected",
+    [
+        ("12", 12.0),
+        (" 3.5 ", 3.5),
+        ("1e-3", 0.001),
+        ("350 MPa", "350.000 MPa"),
+        ("4.9 kN/m^3", "4.900 kN/m³"),
+        ("164e6 mm^4", "164000000.000 mm⁴"),
+        ("000.000.000", "000.000.000"),
+        ("2026-014", "2026-014"),
+        ("2026-10-29", "2026-10-29"),
+        ("1.2.3", "1.2.3"),
+        ("38x140", "38x140"),
+        ("2x10", "2x10"),
+        ("350MPa", "350MPa"),
+    ],
+)
+@pytest.mark.parametrize("strict", [True, False])
+def test_parse_tree_quantity_candidates(text, expected, strict):
+    # A quantity str is a number, alone or followed by whitespace and unit
+    # text; anything glued to the number leaves the str alone.
+    tree = si.parse_tree({"site": {"items": [{"v": text}]}}, strict=strict)
+    result = tree["site"]["items"][0]["v"]
+    if isinstance(expected, float):
+        assert result == expected
+    elif expected == text:
+        assert result == text
+    else:
+        assert isinstance(result, si.Physical)
+        assert str(result) == expected
+
+
+def test_parse_tree_glued_unit_text_still_parses_with_parse():
+    assert str(si.parse("350MPa")) == "350.000 MPa"
+
+
+def test_parse_tree_a_candidate_that_is_not_a_quantity():
+    data = {"site": {"levels": ["2 storeys"]}}
+    with pytest.raises(si.UnitParseError, match=r"^site\.levels\[0\]: '2 storeys': "):
+        si.parse_tree(data)
+    assert si.parse_tree(data, strict=False) == data
 
 
 @pytest.mark.parametrize(

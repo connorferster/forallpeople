@@ -18,6 +18,10 @@ JSON serialization of Physical instances.
     json.loads(text, object_hook=si.json_object_hook)
 
 or, equivalently, si.dumps(tree) / si.loads(text) (and si.dump / si.load for files).
+
+Decoding has no side effects: the "environment" a Physical was written in is
+recorded in its JSON but never loaded here. Only the ymprint plugin's decoder
+loads it (see forallpeople.ymprint_plugin.decode).
 """
 
 import json

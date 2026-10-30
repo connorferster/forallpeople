@@ -146,6 +146,8 @@ Quantities can be parsed from strings, e.g. from YAML or JSON data files, so tha
 350.000 MPa
 >>> si.parse("4.5 kN/m")
 4.500 kN/m
+>>> si.parse("4000 mm")       # a prefixed unit keeps its authored prefix
+4000.000 mm
 >>> si.parse("164e6 mm**4")   # also "164e6 mm^4" and "164e6 mm⁴"
 164000000.000 mm⁴
 >>> si.parse("5 kip·ft")      # environment Symbols keep their factor
@@ -157,26 +159,29 @@ DimensionError: Expected the dimensions of MPa (1, -1, -2, 0, 0, 0, 0), got kN (
 ```
 
 * Units are environment names (`kN`), environment symbols (`kip·ft`, `N/m`), SI base units, or SI-prefixed SI units (`kN·m`, `μm`, `mg`).
+* A quantity written in a single SI-prefixed unit (`0.6 kPa`, `4000 mm`, `3 μm`) displays with that prefix rather than an auto-prefix, so `float()` of it is in that unit (`float(si.parse("0.6 kPa")) == 0.6`). `.value` is always SI (`600.0`). Compound units (`kN/m^3`) are auto-prefixed as usual.
 * Combine units with `*` or `·`, `/`, parentheses and exponents (`**`, `^` or superscripts). `/` is left-associative, as in Python (`kN/m/s` is `(kN/m)/s`); use parentheses for anything beyond one `/`.
 * Units separated only by a space (`"30 kN m"`) are rejected as ambiguous.
 * Errors raise `si.UnitParseError` (a `ValueError`) with suggestions, e.g. `'kNm' is not a unit in environment 'structural'. Did you mean 'kN·m' (Nm)?`
 * There is no `eval()`: the units are evaluated with a small parser.
 
-`si.parse_tree(obj, strict=True)` walks nested dicts, lists and tuples (e.g. the result of `yaml.safe_load`) and parses every string that starts with a number. Keys and other strings (`"W310x74"`) are left alone. A string that starts with a number but is not a valid quantity (`"2 storeys"`) raises an error naming its path (`geometry.levels: '2 storeys'`), or is left as a string with `strict=False`.
+`si.parse_tree(obj, strict=True)` walks nested dicts, lists and tuples (e.g. the result of `yaml.safe_load`) and parses every quantity string: a number on its own (`"12"`), or a number followed by whitespace and unit text (`"350 MPa"`). Keys and other strings are left alone, including strings with something attached directly to the number, such as `"W310x74"`, `"2026-10-29"`, `"000.000.000"` and `"38x140"`. A quantity string that does not parse (`"2 storeys"`) raises an error naming its path (`geometry.levels: '2 storeys'`), or is left as a string with `strict=False`.
+
+Note that `"350MPa"`, without a space, is left as a string by `parse_tree` (though `si.parse("350MPa")` accepts it): write a space between the number and its units.
 
 ## Saving quantities to JSON
 
 ```python
 >>> q = 30.2 * si.kN
 >>> q.to_dict()
-{'__physical__': 1, 'value': 30200.0, 'dimensions': [1, 1, -2, 0, 0, 0, 0], 'factor': 1, 'precision': 3, 'prefixed': '', 'display': '30.200 kN'}
+{'__physical__': 1, 'value': 30200.0, 'dimensions': [1, 1, -2, 0, 0, 0, 0], 'factor': 1, 'precision': 3, 'prefixed': '', 'environment': 'structural', 'display': '30.200 kN'}
 >>> text = si.dumps({"Vr": q, "phi": 0.9})   # also si.dump(obj, fp)
 >>> si.loads(text)                           # also si.load(fp)
 {'Vr': 30.200 kN, 'phi': 0.9}
 ```
 
 * The round trip is exact: `value` is always in SI units and a fractional `factor` (e.g. for `ft`) is stored exactly as `"n/d"`.
-* Loading does not need an environment, and `display` is for human readers only (it is ignored on load).
+* Loading does not need an environment. `environment` (the active environment, omitted if none is loaded) and `display` are for readers only: `si.loads` ignores them and never loads an environment.
 * To use the standard library directly: `json.dumps(obj, default=si.json_default)` and `json.loads(text, object_hook=si.json_object_hook)`.
 
 ## Quantities in YMPrint projects
@@ -184,7 +189,8 @@ DimensionError: Expected the dimensions of MPa (1, -1, -2, 0, 0, 0, 0), got kN (
 With [YMPrint](https://github.com/StructuralPython/ymprint) 0.8.1 or later installed, forallpeople registers itself as a YMPrint plugin, so there is nothing to configure:
 
 * A quantity a document exports (`_export`) or a script publishes is written in the exact JSON form above. Whoever reads it back through `_data` gets a `Physical`, not a dict.
-* The `yaml+units` loader reads data files written with units. Every string that starts with a number is parsed as in `si.parse_tree`. The file names its environment at the top, either an environment name or a path to an environment `.json` relative to the file. There is no default environment.
+* When a quantity is read back and no environment is active yet, the bundled environment it was written in (its `environment`) is loaded, so it displays as it was written (`16.099 kN/m`, not `16099.200 kg·s⁻²`). An active environment is never replaced; a different one, or a custom environment that is not bundled, is warned about once.
+* The `yaml+units` loader reads data files written with units. Every quantity string (a number, alone or followed by a space and units) is parsed as in `si.parse_tree`; strings like `2026-014` or `000.000.000` are left alone. The file names its environment at the top, either an environment name or a path to an environment `.json` relative to the file. There is no default environment.
 
 ```yaml
 # project.ymprint.yml
