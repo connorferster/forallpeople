@@ -135,11 +135,12 @@ class Environment:
     def parse_tree(self, obj, strict: bool = True):
         """
         Returns a copy of 'obj' (e.g. data loaded from YAML or JSON) with nested
-        dicts, lists and tuples walked and every str that starts with a number
-        parsed with .parse(). Keys and other values are left unchanged. If a str
-        starting with a number cannot be parsed (e.g. "2 storeys"), raises
-        UnitParseError naming its path when 'strict' is True, otherwise leaves it
-        as a str.
+        dicts, lists and tuples walked and every quantity str parsed with
+        .parse(). A quantity str is a number, alone or followed by whitespace and
+        unit text (e.g. "12", "350 MPa"); strs such as "2026-10-29", "W310x74" or
+        "350MPa" are left alone, as are keys and other values. If a quantity str
+        cannot be parsed (e.g. "2 storeys"), raises UnitParseError naming its
+        path when 'strict' is True, otherwise leaves it as a str.
         """
         return parsing.parse_tree(obj, self, strict=strict)
 

@@ -77,6 +77,7 @@ def test_to_dict_format():
         "factor": 1,
         "precision": 3,
         "prefixed": "",
+        "environment": "structural",
         "display": "30.200 kN",
     }
     d = (2 * si.ft).to_dict()
@@ -129,6 +130,21 @@ def test_json_default_rejects_other_types():
         si.json_default({1, 2})
     with pytest.raises(TypeError):
         si.dumps({"bad": object()})
+
+
+def test_to_dict_omits_environment_when_none_is_loaded(monkeypatch):
+    monkeypatch.setattr(si.environment, "_env_name", None)
+    assert "environment" not in (30.2 * si.kN).to_dict()
+
+
+def test_from_dict_with_and_without_environment():
+    d = (30.2 * si.kN).to_dict()
+    assert si.Physical.from_dict(d) == 30.2 * si.kN
+    d["environment"] = "us_customary"  # informational only: never loaded
+    assert si.Physical.from_dict(d) == 30.2 * si.kN
+    del d["environment"]
+    assert si.Physical.from_dict(d) == 30.2 * si.kN
+    assert si.environment._env_name == "structural"
 
 
 def test_display_ignored_on_load():

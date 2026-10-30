@@ -19,7 +19,8 @@ are installed. It registers:
 
 - a serializer, so a Physical exported by a document (`_export`) or published by
   a script is written exactly (its .to_dict(), tagged for YMPrint), and
-- a decoder, so whoever reads that data back through `_data` gets a Physical;
+- a decoder, so whoever reads that data back through `_data` gets a Physical,
+  displayed in the environment it was written in if none is active yet;
 - the "yaml+units" data loader, for hand-written data with quantities:
 
       # project.ymprint.yml
@@ -30,8 +31,8 @@ are installed. It registers:
       _environment: structural
       B01: {span: 6 m, w_DL: 2.5 kN/m}
 
-  Every str value that starts with a number is parsed with parse_tree(). The
-  file names its environment in `_environment` (an environment name, or a path
+  Every quantity str (a number, alone or followed by whitespace and units) is
+  parsed with parse_tree(); strs like "2026-014" are left alone. The file names its environment in `_environment` (an environment name, or a path
   to an environment .json relative to the file); there is no default.
 
 YMPrint is imported only inside setup(), so forallpeople does not depend on it.
@@ -73,17 +74,67 @@ def serialize(quantity) -> dict:
 
 
 def decode(data: dict):
-    """Returns the Physical serialized in 'data' (YMPrint's tag is ignored)."""
+    """
+    Returns the Physical serialized in 'data' (YMPrint's tag is ignored). If no
+    environment is active, the bundled environment named in 'data' is loaded so
+    that the value displays as it was written; an active environment is never
+    replaced. Unlike si.loads(), this has that side effect because in a YMPrint
+    project the data comes from the project's own exports.
+    """
     from forallpeople import Physical
 
+    _use_recorded_environment(data.get("environment"))
     return Physical.from_dict(data)
+
+
+# The (situation, environment name) pairs already warned about by decode().
+_warned = set()
+
+
+def _use_recorded_environment(name: Any) -> None:
+    """
+    Loads the environment 'name', recorded in a serialized Physical, if no
+    environment is active and 'name' is a bundled environment. Otherwise warns
+    (once per process) if the value will not display in 'name'.
+    """
+    from forallpeople import environment
+
+    if not isinstance(name, str) or not name:
+        return
+    active = environment._env_name
+    if active == name:
+        return
+    if active is None:
+        if name in _environment_names():
+            environment(name)
+        else:
+            _warn_once(
+                ("custom", name),
+                f"Physical values were written in the units environment {name!r}, "
+                f"which is not bundled with forallpeople, so it was not loaded. Load "
+                f"it with si.environment(...), or read a `yaml+units` file that names "
+                f"it, before displaying them.",
+            )
+        return
+    _warn_once(
+        ("different", name, active),
+        f"Physical values were written in the units environment {name!r} but "
+        f"display in the active environment {active!r}.",
+    )
+
+
+def _warn_once(key: tuple, message: str) -> None:
+    if key in _warned:
+        return
+    _warned.add(key)
+    warnings.warn(message, stacklevel=3)
 
 
 def load_yaml_with_units(path: pathlib.Path) -> Any:
     """
-    Returns the data in the YAML file 'path', with every str value that starts
-    with a number parsed into a Physical (or float) in the environment the file
-    names in `_environment`.
+    Returns the data in the YAML file 'path', with every quantity str parsed
+    into a Physical (or float) in the environment the file names in
+    `_environment`.
     """
     from forallpeople.parsing import UnitParseError
     from ymprint.data_sources import DataSourceError

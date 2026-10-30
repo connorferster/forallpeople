@@ -27,6 +27,7 @@ parser: there is no eval().
 """
 
 import difflib
+import math
 import re
 from typing import Any, Optional, Union
 
@@ -43,6 +44,11 @@ class UnitParseError(ValueError):
 _NUMBER = re.compile(
     r"[+-]?(?:\d(?:_?\d)*(?:\.(?:\d(?:_?\d)*)?)?|\.\d(?:_?\d)*)(?:[eE][+-]?\d(?:_?\d)*)?"
 )
+
+# A str that parse_tree() parses: a number, alone or followed by whitespace and
+# unit text. Strs with something glued to the number ("2026-014", "38x140",
+# "350MPa") are left alone.
+_QUANTITY_CANDIDATE = re.compile(rf"\s*{_NUMBER.pattern}(?:\s*$|\s+\S)")
 
 _SUPERSCRIPT_DIGITS = "⁰¹²³⁴⁵⁶⁷⁸⁹"
 _FROM_SUPERSCRIPT = str.maketrans(
@@ -67,6 +73,7 @@ _PREFIXES = {
     prefix: value for prefix, value in phf._prefixes.items() if prefix
 } | phf._additional_prefixes
 _PREFIXES.update({"u": _PREFIXES["μ"], "\u00b5": _PREFIXES["μ"]})  # "u" and micro sign
+_CANONICAL_PREFIXES = {"u": "μ", "\u00b5": "μ"}
 
 _SPACE_HINT = (
     "Units separated only by a space are ambiguous: use '·' or '*' to multiply "
@@ -92,6 +99,11 @@ def parse(text: str, environment, expect=None) -> Union[float, Any]:
         result = value
     else:
         result = value * _evaluate_unit_expr(unit_text, environment)
+        # A single prefixed SI unit (e.g. "kPa", "mm") keeps displaying with the
+        # prefix it was written with.
+        _, prefix = _resolve_name(unit_text, environment)
+        if prefix:
+            result = result.prefix(prefix)
 
     if expect is not None:
         _check_expected(result, unit_text, expect, environment)
@@ -100,11 +112,14 @@ def parse(text: str, environment, expect=None) -> Union[float, Any]:
 
 def parse_tree(obj: Any, environment, strict: bool = True, _path: str = "") -> Any:
     """
-    Returns a copy of 'obj' (nested dicts, lists and tuples) with every str that
-    starts with a number parsed into a Physical (or float). Keys are never parsed,
-    and other values are returned unchanged. If a str starting with a number
-    cannot be parsed, raises UnitParseError naming its path when 'strict' is True,
-    otherwise leaves it as a str.
+    Returns a copy of 'obj' (nested dicts, lists and tuples) with every quantity
+    str parsed into a Physical (or float). A quantity str is a number, alone or
+    followed by whitespace and unit text (e.g. "12", "350 MPa"); a str with
+    anything else attached to the number (e.g. "2026-10-29", "38x140", "350MPa")
+    is left as a str. Keys are never parsed, and other values are returned
+    unchanged. If a quantity str cannot be parsed (e.g. "2 storeys"), raises
+    UnitParseError naming its path when 'strict' is True, otherwise leaves it as
+    a str.
     """
     if isinstance(obj, dict):
         return {
@@ -119,7 +134,7 @@ def parse_tree(obj: Any, environment, strict: bool = True, _path: str = "") -> A
             for idx, value in enumerate(obj)
         ]
         return items if isinstance(obj, list) else type(obj)(items)
-    if isinstance(obj, str) and _NUMBER.match(obj.strip()):
+    if isinstance(obj, str) and _QUANTITY_CANDIDATE.match(obj):
         try:
             return parse(obj, environment)
         except UnitParseError as err:
@@ -176,19 +191,49 @@ def _lookup_name(name: str, environment):
     prefix (e.g. "kN·m", "μm", "mg"; the display name is the Symbol, if the unit
     has one, otherwise the key).
     """
+    return _resolve_name(name, environment)[0]
+
+
+def _resolve_name(name: str, environment) -> tuple:
+    """
+    Returns (unit, prefix) for 'name', as found by _lookup_name(). 'prefix' is
+    the SI prefix (e.g. "k", "μ") when 'name' is an SI unit with an SI prefix,
+    otherwise "". 'unit' is None if 'name' is not found.
+    """
     units = environment._units_dict
     if name in units:
-        return units[name]
+        return units[name], _implied_prefix(name, units[name], environment)
     alias = environment._symbol_aliases.get(name)
     if alias is not None:
-        return units[alias]
+        return units[alias], _implied_prefix(name, units[alias], environment)
     if name == "g":
-        return _gram(environment)
+        return _gram(environment), ""
     for prefix, base in _split_prefix(name):
         unit = _lookup_display_name(base, environment)
         if unit is not None and _is_prefixable(unit):
-            return _PREFIXES[prefix] * unit
-    return None
+            return _PREFIXES[prefix] * unit, _CANONICAL_PREFIXES.get(prefix, prefix)
+    return None, ""
+
+
+def _implied_prefix(name: str, unit, environment) -> str:
+    """
+    Returns the SI prefix that 'name', a unit defined in 'environment', is
+    written with, or "" if it is not exactly an SI prefix on a prefixable unit.
+    e.g. "kPa" defined with a Value of 1000 returns "k"; "kip", "ft" and the SI
+    base unit "kg" return "".
+    """
+    if name in environment._si_base_units or unit.factor != 1:
+        return ""
+    for prefix, base in _split_prefix(name):
+        base_unit = _lookup_display_name(base, environment)
+        if (
+            base_unit is not None
+            and _is_prefixable(base_unit)
+            and unit.dimensions == base_unit.dimensions
+            and math.isclose(unit.value, _PREFIXES[prefix] * base_unit.value)
+        ):
+            return _CANONICAL_PREFIXES.get(prefix, prefix)
+    return ""
 
 
 def _split_prefix(name: str) -> list:

@@ -6,6 +6,8 @@ YMPrint project, and the "yaml+units" data loader. Skipped without ymprint.
 import json
 import math
 import pathlib
+import subprocess
+import sys
 import textwrap
 import warnings
 from importlib.metadata import entry_points
@@ -79,6 +81,75 @@ def test_the_json_is_tagged_and_readable(tmp_path):
     assert slots(si.loads(json.dumps(data))) == slots(30.2 * si.kN)
 
 
+# --- decoding in the recorded environment -----------------------------------------
+
+
+def decode_in_fresh_process(data: dict) -> subprocess.CompletedProcess:
+    """
+    Decodes 'data' with the plugin in a new process, where no environment has
+    been loaded, and prints the result, the active environment and any warnings.
+    """
+    script = textwrap.dedent(f"""
+        import json, warnings
+        warnings.simplefilter("always")
+        import forallpeople as si
+        from forallpeople import ymprint_plugin
+        data = json.loads({json.dumps(json.dumps(data))})
+        q = ymprint_plugin.decode(data)
+        ymprint_plugin.decode(data)
+        print(q)
+        print(si.environment._env_name)
+        """)
+    return subprocess.run(
+        [sys.executable, "-c", script], capture_output=True, text=True, check=True
+    )
+
+
+def test_decode_loads_the_recorded_environment_when_none_is_active():
+    data = serialized(12 * si.kN * si.m)
+    assert data["environment"] == "structural"
+    run = decode_in_fresh_process(data)
+    assert run.stdout.splitlines() == ["12.000 kN·m", "structural"]
+    assert run.stderr == ""
+
+
+def test_decode_does_not_load_a_custom_environment():
+    data = {**serialized(12 * si.kN * si.m), "environment": "house_units"}
+    run = decode_in_fresh_process(data)
+    assert run.stdout.splitlines() == ["12000.000 kg·m²·s⁻²", "None"]
+    assert run.stderr.count("'house_units', which is not bundled") == 1
+
+
+def test_decode_never_switches_the_active_environment(monkeypatch):
+    monkeypatch.setattr(ymprint_plugin, "_warned", set())
+    expected = 12 * si.kN * si.m
+    data = serialized(expected)
+    try:
+        si.environment("default")
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            first = ymprint_plugin.decode(data)
+            ymprint_plugin.decode(data)
+        assert si.environment._env_name == "default"
+        assert slots(first) == slots(expected)
+        messages = [str(w.message) for w in caught]
+        assert len(messages) == 1
+        assert "written in the units environment 'structural'" in messages[0]
+        assert "display in the active environment 'default'" in messages[0]
+    finally:
+        si.environment("structural")
+
+
+def test_decode_in_the_same_environment_is_silent():
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        assert ymprint_plugin.decode(serialized(30.2 * si.kN)) == 30.2 * si.kN
+
+
+def serialized(quantity) -> dict:
+    return json.loads(dumps({"q": quantity}))["q"]
+
+
 # --- yaml+units ------------------------------------------------------------------
 
 
@@ -101,6 +172,22 @@ def test_yaml_with_units(tmp_path):
     assert math.isclose(b01["P"].value, 1200)
     assert math.isclose(b02["span"].value, 3.048)
     assert (b02["label"], b02["n"], b02["ratio"]) == ("B02", 3, 0.9)
+
+
+def test_yaml_with_units_leaves_strs_that_only_start_with_a_number(tmp_path):
+    path = write(
+        tmp_path / "project.yml",
+        """
+        _environment: structural
+        number: "000.000.000"
+        date: 2026-014
+        span: 6 m
+        """,
+    )
+    data = load_file(path, "yaml+units")
+    assert data["number"] == "000.000.000"
+    assert data["date"] == "2026-014"
+    assert slots(data["span"]) == slots(6 * si.m)
 
 
 def test_yaml_with_units_requires_an_environment(tmp_path):
