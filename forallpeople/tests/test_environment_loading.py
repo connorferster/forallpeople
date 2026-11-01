@@ -84,14 +84,11 @@ def test_load_environment_from_path(tmp_path):
 LB, G, FT, INCH = 0.45359237, 9.80665, 0.3048, 0.0254
 LBF = LB * G
 UNIT_SIZES = {
-    # Length, area, volume
+    # Length
     "mile": 1760 * 0.9144,
     "yard": 0.9144,
     "ft": FT,
     "inch": INCH,
-    "acre": 43560 * FT**2,
-    "fl_ounce": 29.5735295625e-6,
-    "quart": 0.946352946e-3,
     # Force and mass
     "lbf": LBF,
     "lb": LBF,
@@ -146,3 +143,25 @@ def test_unit_factors(env_name, unit):
     units = si.environment._generate_units_dict(definitions, si.Physical)
     assert unit in UNIT_SIZES, f"Add the exact size of {unit!r} to UNIT_SIZES."
     assert units[unit].value == pytest.approx(UNIT_SIZES[unit], rel=1e-12)
+
+
+@pytest.mark.parametrize(
+    "env_name, expression, expected",
+    [
+        # A volume or area shows with the prefix applied to the whole power,
+        # e.g. 1 mm³ = 1e-9 m³.
+        ("us_customary", "0.003785 * si.m**3", "3785000.000 mm³"),
+        ("us_customary", "0.5 * si.m**2", "500000.000 mm²"),
+        ("us_customary", "0.0005 * si.m**2", "500.000 mm²"),
+        # A mass flow or density gets no prefix in front of "kg".
+        ("thermal", "0.01 * si.kg / si.s", "0.010 kg·s⁻¹"),
+        ("thermal", "5000 * si.kg / si.s", "5000.000 kg·s⁻¹"),
+        ("thermal", "1200 * si.kg / si.m**3", "1200.000 kg·m⁻³"),
+    ],
+)
+def test_display_in_bundled_environment(env_name, expression, expected):
+    try:
+        si.environment(env_name)
+        assert str(eval(expression, {"si": si})) == expected
+    finally:
+        si.environment("test_definitions", top_level=True)

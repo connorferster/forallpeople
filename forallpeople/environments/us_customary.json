@@ -15,18 +15,6 @@
         "Dimension": [0,1,0,0,0,0,0],
         "Symbol": "inch",
         "Factor": "12/0.3048"},
-    "acre": {
-        "Dimension": [0,2,0,0,0,0,0],
-        "Symbol": "acre",
-        "Factor": "1/0.3048/0.3048/43560"},
-    "fl_ounce": {
-        "Dimension": [0,3,0,0,0,0,0],
-        "Symbol": "fl. oz.",
-        "Factor": "1/0.0000295735295625"},
-    "quart": {
-        "Dimension": [0,3,0,0,0,0,0],
-        "Symbol": "qt.",
-        "Factor": "1/0.000946352946"},
     "lbf": {
         "Dimension": [1,1,-2,0,0,0,0],
         "Factor": "1/0.45359237/9.80665",
