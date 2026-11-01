@@ -79,20 +79,70 @@ def test_load_environment_from_path(tmp_path):
         si.environment("test_definitions", top_level=True)
 
 
-# 1 psi is exactly 1 lbf/in², with 1 lbf = 0.45359237 kg × 9.80665 m/s² and
-# 1 in = 0.0254 m.
-PSI_IN_PA = 0.45359237 * 9.80665 / 0.0254**2
+# The exact definitions of the units with factors, in SI base units:
+# 1 lb = 0.45359237 kg, g = 9.80665 m/s², 1 ft = 0.3048 m, 1 in = 0.0254 m.
+LB, G, FT, INCH = 0.45359237, 9.80665, 0.3048, 0.0254
+LBF = LB * G
+UNIT_SIZES = {
+    # Length, area, volume
+    "mile": 1760 * 0.9144,
+    "yard": 0.9144,
+    "ft": FT,
+    "inch": INCH,
+    "acre": 43560 * FT**2,
+    "fl_ounce": 29.5735295625e-6,
+    "quart": 0.946352946e-3,
+    # Force and mass
+    "lbf": LBF,
+    "lb": LBF,
+    "kip": 1000 * LBF,
+    "ton": 2000 * LBF,
+    "lbm": LB,
+    "ounce": 0.028349523125,
+    # Moment
+    "lbft": LBF * FT,
+    "kipft": 1000 * LBF * FT,
+    "lbin": LBF * INCH,
+    "kipin": 1000 * LBF * INCH,
+    "lbft2": LBF * FT**2,
+    "kft2": 1000 * LBF * FT**2,
+    # Line load, pressure, weight density
+    "lb_ft": LBF / FT,
+    "kip_ft": 1000 * LBF / FT,
+    "psf": LBF / FT**2,
+    "ksf": 1000 * LBF / FT**2,
+    "psi": LBF / INCH**2,
+    "ksi": 1000 * LBF / INCH**2,
+    "bar": 100_000,
+    "pcf": LBF / FT**3,
+    "kcf": 1000 * LBF / FT**3,
+    "pci": LBF / INCH**3,
+    "kci": 1000 * LBF / INCH**3,
+    # Time, mass flow, molar mass, temperature difference
+    "minute": 60,
+    "hour": 3600,
+    "day": 86400,
+    "kg_h": 1 / 3600,
+    "g_mol": 0.001,
+    "kg_kmol": 0.001,
+    "F": 5 / 9,
+}
+BUNDLED = ["default", "structural", "us_customary", "electrical", "thermal"]
+FACTORED_UNITS = [
+    (env_name, unit)
+    for env_name in BUNDLED
+    for unit, definition in json.loads(
+        (PACKAGE_DIR / "environments" / f"{env_name}.json").read_text("utf-8")
+    ).items()
+    if "Factor" in definition
+]
 
 
-@pytest.mark.parametrize("env_name", ["us_customary", "structural"])
-@pytest.mark.parametrize(
-    "unit, size_in_pa", [("psi", PSI_IN_PA), ("ksi", 1000 * PSI_IN_PA)]
-)
-def test_psi_and_ksi_factors(env_name, unit, size_in_pa):
-    # Read the definitions without loading the environment: other tests rely
-    # on the environment that their module loaded.
+@pytest.mark.parametrize("env_name, unit", FACTORED_UNITS)
+def test_unit_factors(env_name, unit):
+    # Build the units without loading the environment: other tests rely on the
+    # environment that their module loaded.
     definitions = si.environment._load_environment(env_name)
-    # A unit's factor converts SI base units into it, so 1 unit is 1 / factor.
-    assert 1 / float(definitions[unit]["Factor"]) == pytest.approx(
-        size_in_pa, rel=1e-12
-    )
+    units = si.environment._generate_units_dict(definitions, si.Physical)
+    assert unit in UNIT_SIZES, f"Add the exact size of {unit!r} to UNIT_SIZES."
+    assert units[unit].value == pytest.approx(UNIT_SIZES[unit], rel=1e-12)
