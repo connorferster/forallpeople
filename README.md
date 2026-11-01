@@ -5,7 +5,7 @@
 
 <p align="center">
   <a href="https://pypi.org/project/forallpeople/" target="_blank"><img alt="Github Stars" src="https://img.shields.io/pypi/pyversions/forallpeople"></a>
-  <a href="https://connorferster.github.io/forallpeople/" target="_blank"><img alt="Github Pages Documentation Link" src="https://img.shields.io/badge/Doc-Pages_link-blue"></a>
+  <a href="https://forallpeople.structuralpython.com/" target="_blank"><img alt="Documentation" src="https://img.shields.io/badge/docs-forallpeople.structuralpython.com-blue"></a>
   <a href="https://github.com/connorferster/forallpeople/issues" target="_blank">
  <img src="https://img.shields.io/github/stars/connorferster/forallpeople">
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/connorferster/forallpeople"></a>
@@ -77,6 +77,7 @@ Additionally, when you load an environment, the units defined in the environment
 
 The `'default'` environment defines and loads the following units as variables into the module namespace:
 
+* `si.Hz` - hertz
 * `si.N` - newton
 * `si.Pa` - pascal
 * `si.J` - joule
@@ -89,12 +90,13 @@ The `'default'` environment defines and loads the following units as variables i
 * `si.Wb` - weber
 * `si.T` - tesla
 * `si.H` - henry
-* `si.lm` - lumen
-* `si.lx` - lux
-* `si.Bq` - becquerel
+* `si.Celsius` - degree Celsius
+* `si.lux` - lux
 * `si.Gy` - gray
-* `si.Sv` - sievert
-* `si.kat` - katal
+* `si.katal` - katal
+* `si.minute` - minute
+* `si.hour` - hour
+* `si.day` - day
 
 Because the units of `si.N` are one of the `Physical` instances that have now been instantiated and loaded into the `si` namespace, you can perform calculations with them directly: 
 
@@ -396,7 +398,7 @@ matrix([
 ```
 
 ## Documentation
-For more detailed information, visit the [documentation](https://connorferster.github.io/forallpeople/)
+For more detailed information, visit the [documentation](https://forallpeople.structuralpython.com/).
 
 ## PyPI
 This package is available on [PyPI](https://pypi.org/project/forallpeople/)

@@ -16,10 +16,19 @@ forallpeople = "forallpeople.ymprint_plugin:setup"
 
 [project.urls]
 Home = "https://github.com/connorferster/forallpeople"
-Documentation = "https://connorferster.github.io/forallpeople"
+Documentation = "https://forallpeople.structuralpython.com"
 
 [dependency-groups]
 dev = [
     "black>=26.5.1",
     "pytest>=9.1.1",
+]
+docs = [
+    "ipykernel>=6.29",
+    "myst-nb>=1.1",
+    "numpy>=2.0",
+    "shibuya>=2025.1",
+    "sphinx>=8.1",
+    "sphinx-copybutton>=0.5",
+    "sphinx-design>=0.6",
 ]
