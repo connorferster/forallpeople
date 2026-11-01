@@ -77,3 +77,22 @@ def test_load_environment_from_path(tmp_path):
             assert (2 * si.furlong).value == pytest.approx(402.336)
     finally:
         si.environment("test_definitions", top_level=True)
+
+
+# 1 psi is exactly 1 lbf/in², with 1 lbf = 0.45359237 kg × 9.80665 m/s² and
+# 1 in = 0.0254 m.
+PSI_IN_PA = 0.45359237 * 9.80665 / 0.0254**2
+
+
+@pytest.mark.parametrize("env_name", ["us_customary", "structural"])
+@pytest.mark.parametrize(
+    "unit, size_in_pa", [("psi", PSI_IN_PA), ("ksi", 1000 * PSI_IN_PA)]
+)
+def test_psi_and_ksi_factors(env_name, unit, size_in_pa):
+    # Read the definitions without loading the environment: other tests rely
+    # on the environment that their module loaded.
+    definitions = si.environment._load_environment(env_name)
+    # A unit's factor converts SI base units into it, so 1 unit is 1 / factor.
+    assert 1 / float(definitions[unit]["Factor"]) == pytest.approx(
+        size_in_pa, rel=1e-12
+    )
