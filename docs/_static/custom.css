@@ -1,0 +1,4 @@
+/* Keep wide outputs (e.g. numpy arrays) inside the page. */
+.cell_output pre {
+  overflow-x: auto;
+}
