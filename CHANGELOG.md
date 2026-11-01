@@ -1,5 +1,26 @@
 # Changelog
 
+## 3.4.0
+
+**Unit values change:** several units in the bundled environments had wrong definitions and now have the correct size. Calculations that used them give different (correct) results. Five units are removed.
+
+### Fixed
+
+- **Wrong unit factors in the bundled environments.** The factor parser evaluates left to right with no operator precedence, so factors written with `**` were wrong; other factors were inverted.
+  - `us_customary`: `psi`, `ksi`, `pci` and `kci` were wrong (`**` precedence); `ton` is now 2000 lbf (it was treated as a mass); `F` (Fahrenheit degree) was inverted.
+  - `structural`: `pci`, `kci`, `lbft2` and `kft2` were wrong (`**` precedence).
+  - `thermal`: `psi` and `ksi` were wrong (`**` precedence); `kg_h`, `g_mol` and `kg_kmol` were inverted; `bar` is now 100 000 Pa and displays as "bar".
+- **Wrong unit symbols.** `mile` displayed as "yard"; `pci` and `kci` displayed as "pcf" and "kcf".
+- **Wrong displays in `us_customary` and `thermal`.** In `us_customary`, `0.003785*si.m**3` displayed as `3.785 mm³`; it is now `3785000.000 mm³`. In `thermal`, `0.01*si.kg/si.s` displayed as `10.000 mkg·s⁻¹`; it is now `0.010 kg·s⁻¹`.
+
+### Removed
+
+- `acre`, `fl_ounce` and `quart` from `us_customary`, and `kg_s` and `kg_m3` from `thermal`. They caused the wrong displays above. (`fl_ounce` and `quart` also had wrong sizes: 1 fl oz was 33 814 m³.)
+
+### Documentation
+
+- New documentation site: https://forallpeople.structuralpython.com
+
 ## 3.3.0
 
 ### Changed
