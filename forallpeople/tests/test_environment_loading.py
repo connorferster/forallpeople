@@ -77,3 +77,91 @@ def test_load_environment_from_path(tmp_path):
             assert (2 * si.furlong).value == pytest.approx(402.336)
     finally:
         si.environment("test_definitions", top_level=True)
+
+
+# The exact definitions of the units with factors, in SI base units:
+# 1 lb = 0.45359237 kg, g = 9.80665 m/s², 1 ft = 0.3048 m, 1 in = 0.0254 m.
+LB, G, FT, INCH = 0.45359237, 9.80665, 0.3048, 0.0254
+LBF = LB * G
+UNIT_SIZES = {
+    # Length
+    "mile": 1760 * 0.9144,
+    "yard": 0.9144,
+    "ft": FT,
+    "inch": INCH,
+    # Force and mass
+    "lbf": LBF,
+    "lb": LBF,
+    "kip": 1000 * LBF,
+    "ton": 2000 * LBF,
+    "lbm": LB,
+    "ounce": 0.028349523125,
+    # Moment
+    "lbft": LBF * FT,
+    "kipft": 1000 * LBF * FT,
+    "lbin": LBF * INCH,
+    "kipin": 1000 * LBF * INCH,
+    "lbft2": LBF * FT**2,
+    "kft2": 1000 * LBF * FT**2,
+    # Line load, pressure, weight density
+    "lb_ft": LBF / FT,
+    "kip_ft": 1000 * LBF / FT,
+    "psf": LBF / FT**2,
+    "ksf": 1000 * LBF / FT**2,
+    "psi": LBF / INCH**2,
+    "ksi": 1000 * LBF / INCH**2,
+    "bar": 100_000,
+    "pcf": LBF / FT**3,
+    "kcf": 1000 * LBF / FT**3,
+    "pci": LBF / INCH**3,
+    "kci": 1000 * LBF / INCH**3,
+    # Time, mass flow, molar mass, temperature difference
+    "minute": 60,
+    "hour": 3600,
+    "day": 86400,
+    "kg_h": 1 / 3600,
+    "g_mol": 0.001,
+    "kg_kmol": 0.001,
+    "F": 5 / 9,
+}
+BUNDLED = ["default", "structural", "us_customary", "electrical", "thermal"]
+FACTORED_UNITS = [
+    (env_name, unit)
+    for env_name in BUNDLED
+    for unit, definition in json.loads(
+        (PACKAGE_DIR / "environments" / f"{env_name}.json").read_text("utf-8")
+    ).items()
+    if "Factor" in definition
+]
+
+
+@pytest.mark.parametrize("env_name, unit", FACTORED_UNITS)
+def test_unit_factors(env_name, unit):
+    # Build the units without loading the environment: other tests rely on the
+    # environment that their module loaded.
+    definitions = si.environment._load_environment(env_name)
+    units = si.environment._generate_units_dict(definitions, si.Physical)
+    assert unit in UNIT_SIZES, f"Add the exact size of {unit!r} to UNIT_SIZES."
+    assert units[unit].value == pytest.approx(UNIT_SIZES[unit], rel=1e-12)
+
+
+@pytest.mark.parametrize(
+    "env_name, expression, expected",
+    [
+        # A volume or area shows with the prefix applied to the whole power,
+        # e.g. 1 mm³ = 1e-9 m³.
+        ("us_customary", "0.003785 * si.m**3", "3785000.000 mm³"),
+        ("us_customary", "0.5 * si.m**2", "500000.000 mm²"),
+        ("us_customary", "0.0005 * si.m**2", "500.000 mm²"),
+        # A mass flow or density gets no prefix in front of "kg".
+        ("thermal", "0.01 * si.kg / si.s", "0.010 kg·s⁻¹"),
+        ("thermal", "5000 * si.kg / si.s", "5000.000 kg·s⁻¹"),
+        ("thermal", "1200 * si.kg / si.m**3", "1200.000 kg·m⁻³"),
+    ],
+)
+def test_display_in_bundled_environment(env_name, expression, expected):
+    try:
+        si.environment(env_name)
+        assert str(eval(expression, {"si": si})) == expected
+    finally:
+        si.environment("test_definitions", top_level=True)
