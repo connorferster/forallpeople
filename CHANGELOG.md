@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **Wrong display of a value with a factor that no unit has.** A unit with a factor (such as a tonne, `t`, with `Factor: 1/1000`) gives its factor to the quantities made from it. When no unit in the environment has that factor and those dimensions, the value is shown in SI units, but it was still scaled by the factor: `1 * t / m**3` displayed as `1.000 kg·m⁻³` instead of `1000.000 kg·m⁻³` ([handcalcs #352](https://github.com/connorferster/handcalcs/issues/352)). The value itself (`.value`) was always right.
+
 ## 3.4.0
 
 **Unit values change:** several units in the bundled environments had wrong definitions and now have the correct size. Calculations that used them give different (correct) results. Five units are removed.
