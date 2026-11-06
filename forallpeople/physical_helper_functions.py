@@ -126,9 +126,15 @@ def _evaluate_dims_and_factor(
     elif derived or single_dim:
         units_match = derived
         prefix_bool = True
+        # The value is shown with an SI prefix, so it is not scaled by the factor.
+        factor = 1
     else:
         units_match = derived
         prefix_bool = False
+        # No unit has this factor, so the value is shown in SI base units, and
+        # must not be scaled by the factor either: 1 t/m³ (factor 1/1000, with t
+        # = 1000 kg) is 1000 kg·m⁻³, not 1 kg·m⁻³.
+        factor = 1
 
     if units_match:
         name = tuple(units_match.keys())[0]

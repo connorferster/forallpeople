@@ -165,3 +165,57 @@ def test_display_in_bundled_environment(env_name, expression, expected):
         assert str(eval(expression, {"si": si})) == expected
     finally:
         si.environment("test_definitions", top_level=True)
+
+
+# A unit with a factor (t = 1000 kg, Factor 1/1000) carries its factor into a
+# product that no unit has (t/m³). That value is shown in SI base units, without
+# the factor: 1 t/m³ is 1000 kg·m⁻³, not 1 kg·m⁻³ (handcalcs #352).
+
+
+@pytest.fixture
+def tonne_environment(tmp_path):
+    env_file = tmp_path / "tonne.json"
+    env_file.write_text(
+        json.dumps(
+            {
+                "t": {
+                    "Dimension": [1, 0, 0, 0, 0, 0, 0],
+                    "Factor": "1/1000",
+                    "Symbol": "t",
+                },
+                "kN": {
+                    "Dimension": [1, 1, -2, 0, 0, 0, 0],
+                    "Factor": "1/1000",
+                    "Symbol": "kN",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    try:
+        si.environment(str(env_file))
+        yield si
+    finally:
+        si.environment("test_definitions", top_level=True)
+
+
+@pytest.mark.parametrize(
+    "expression, expected",
+    [
+        ("1 * si.t", "1.000 t"),
+        ("2.5 * si.t", "2.500 t"),
+        ("1 * si.t / si.m**3", "1000.000 kg·m⁻³"),
+        ("3 * si.t / si.m**2", "3000.000 kg·m⁻²"),
+        ("1 * si.t * si.m / si.s**2", "1.000 kN"),
+        ("1 * si.t / si.m**3 * si.m**3", "1.000 t"),
+    ],
+)
+def test_factor_with_no_matching_unit_is_not_applied(
+    tonne_environment, expression, expected
+):
+    value = eval(expression, {"si": tonne_environment})
+    assert repr(value) == expected
+    # The SI value was always right; only its display was scaled.
+    assert value.value == pytest.approx(
+        eval(expression.replace("si.t", "1000 * si.kg"), {"si": si}).value
+    )
