@@ -51,7 +51,8 @@ si.environment()
 
 ## Bundled environments
 
-`default`, `structural`, `us_customary`, `electrical` and `thermal` are bundled
+`default`, `structural`, `us_structural`, `us_customary`, `electrical` and
+`thermal` are bundled
 with forallpeople. The tables list each unit's variable name, how it is
 displayed, its dimensions, and its definition as written in the environment
 file (see {doc}`custom-environments` for what `Value` and `Factor` mean).
@@ -65,6 +66,11 @@ file (see {doc}`custom-environments` for what `Value` and `Factor` mean).
 
 :::{tab-item} structural
 ```{include} ../_generated/environment-structural.md
+```
+:::
+
+:::{tab-item} us_structural
+```{include} ../_generated/environment-us_structural.md
 ```
 :::
 
@@ -119,19 +125,44 @@ the left-hand quantity:
 ### When no defined unit matches
 
 If a calculation produces a factor that no unit in the environment has, the
-result is displayed in SI units of the same dimensions, if the environment
-has one:
+result is displayed in SI units of the same dimensions:
 
 ```{code-cell} ipython3
 5 * si.kip / (2 * si.m), 2 * si.kip * si.ft * si.ft
 ```
 
-```{warning}
-If the environment has no SI unit for the dimensions either, the result is
-displayed with an SI base unit label but the number is still scaled by the
-leftover factor. Convert such results explicitly with `.to()` or `.si()`
-(below), or add a unit for them to your environment, perhaps with a `Default`
-(see {doc}`custom-environments`).
+Convert such results with `.to()` or `.si()` (below), or use an environment
+with `Default` units, such as `us_structural`.
+
+### The `us_structural` environment
+
+`us_structural` is for calculations entirely in US customary units. It
+defines `lb` and `kip` with `inch` (shown as `in`) and `ft` in every
+combination of a force times, or over, a length to the first to fourth power:
+moments (`kip·ft`), `kip·in²`, `lb·in³`, line loads (`kip/ft`), pressures
+(`psi`, `ksf`), densities (`pcf`, `kci`) and `kip/in⁴`, so intermediate values
+are shown in a unit you would write.
+
+Each dimension has a `Default` unit (see {doc}`custom-environments`), used
+when units are mixed so that no defined unit matches, e.g. ksi and psi:
+
+```{code-cell} ipython3
+si.environment("us_structural")
+
+A_s = 2.37 * si.inch**2
+f_y = 60 * si.ksi
+f_c = 4000 * si.psi
+b = 12 * si.inch
+a = A_s * f_y / (0.85 * f_c * b)
+a, 2 * si.ft * (6 * si.inch)
+```
+
+Without the default, `a` would be shown in millimetres. The defaults are `in`,
+`kip`, `kip·ft`, `kip·in²`, `kip·in³`, `kip·in⁴`, `kip/ft`, `ksi`, `pcf` and
+`kip/in⁴`.
+
+```{code-cell} ipython3
+si.environment("structural")
 ```
 
 ## Converting units

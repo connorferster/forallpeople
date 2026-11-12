@@ -98,6 +98,13 @@ BUNDLED_ENVIRONMENTS = [
         "SI and US customary units used in structural engineering: forces, "
         "moments, line loads, pressures and densities.",
     ),
+    (
+        "us_structural",
+        "US customary units for structural engineering: lb and kip with in and "
+        "ft, in every combination of force times or over length to the fourth "
+        "power. Mixed-unit results are shown in the `Default` units (in, kip, "
+        "kip·ft, kip/ft, ksi, pcf, ...).",
+    ),
     ("us_customary", "Common US customary units of length, area, volume, force and mass."),
     ("electrical", "Units for electrical engineering."),
     ("thermal", "Units for building envelope and heat transfer calculations."),

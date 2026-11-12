@@ -145,6 +145,19 @@ value, unit = length.split()
 math.sqrt(value) * unit
 ```
 
+## Reading the display in code
+
+{meth}`~forallpeople.Physical.display` returns what is shown as a
+{class}`~forallpeople.Display`: the number (`magnitude`), the unit (`unit`) and
+the `factor` from the SI value to the number (`magnitude == value * factor`).
+The factor includes the prefix and is an exact `Fraction`, so code that
+writes the quantity elsewhere (a spreadsheet, a report) does not have to parse
+the string:
+
+```{code-cell} ipython3
+length.display(), (3 * si.m**2).display("latex")
+```
+
 ## `repr()` and `str()`
 
 forallpeople puts conventions before Python's: both `repr()` and `str()` give

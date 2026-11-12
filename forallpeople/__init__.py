@@ -35,6 +35,7 @@ from __future__ import annotations
 
 __version__ = "3.4.1"
 
+from dataclasses import dataclass
 from fractions import Fraction
 from typing import Union, Optional
 from forallpeople.dimensions import Dimensions
@@ -71,6 +72,20 @@ def _int_if_integral(x: Union[int, float]) -> Union[int, float]:
     if isinstance(x, float) and x.is_integer():
         return int(x)
     return x
+
+
+@dataclass(frozen=True)
+class Display:
+    """
+    How a Physical is displayed (see Physical.display): 'magnitude' is the
+    number shown, in 'unit', and magnitude == value * 'factor', where value is
+    the SI value. 'factor' is a Fraction (exact) for a defined unit or an SI
+    prefix, an int for 1, and a float only after a non-integer power.
+    """
+
+    magnitude: float
+    unit: str
+    factor: Union[int, float, Fraction]
 
 
 class Physical(object):
@@ -309,19 +324,30 @@ class Physical(object):
     def _repr_latex_(self):
         return self._repr_template_(template="latex")
 
-    def _repr_template_(
-        self, template: str = "", format_spec="", inline_math: bool = False
-    ) -> str:
+    def display(self, template: str = "") -> Display:
         """
-        Returns a string that appropriately represents the Physical
-        instance. The parameter,'template', allows two optional values:
-        'html' and 'latex'. which will only be utilized if the Physical
-        exists in the Jupyter/iPython environment.
-        If 'inline_math' is True, the returned string is wrapped in '$'
-        delimiters (only meaningful for the 'latex' template).
+        Returns how the instance is displayed, as a Display: the number shown
+        ('magnitude'), the unit it is shown in ('unit') and the 'factor' that
+        relates them to the SI value: magnitude == value * factor.
+
+        The factor includes any SI prefix (1000 for mm), and is an exact
+        Fraction for a defined unit or a prefix. 'template' formats the unit
+        for "html" or "latex", as _repr_html_ and _repr_latex_ do.
         """
-        if not format_spec:
-            format_spec = f".{self.precision}f"
+        magnitude, units, exponent, factor = self._display_parts(template)
+        pre_super = post_super = ""
+        if exponent and template == "latex":
+            pre_super, post_super = "^{", "}"
+        elif exponent and template == "html":
+            pre_super, post_super = "<sup>", "</sup>"
+        return Display(magnitude, f"{units}{pre_super}{exponent}{post_super}", factor)
+
+    def _display_parts(self, template: str = "") -> tuple:
+        """
+        Returns (magnitude, units, exponent, factor): the number shown, the
+        unit symbol formatted for 'template', the exponent of the unit (''
+        if none) and the factor from the SI value to the magnitude.
+        """
         dims = self.dimensions
         factor = self.factor
         val = self.value
@@ -344,7 +370,6 @@ class Physical(object):
             dims_orig, factor, power, env_fact, env_dims
         )
         factor = mod_factor
-        float_factor = float(factor)
         # Get the appropriate prefix
 
         if prefix_bool and prefixed == "unity":
@@ -368,24 +393,40 @@ class Physical(object):
         if not symbol and phf._dims_basis_multiple(dims):
             components = phf._get_unit_components_from_dims(dims)
             units_symbol = phf._get_unit_string(components, repr_format=template)
-            units = units_symbol
             units = phf._format_symbol(prefix, units_symbol, repr_format=template)
             exponent = ""
         elif not symbol:
             components = phf._get_unit_components_from_dims(dims)
-            units_symbol = phf._get_unit_string(components, repr_format=template)
-            units = units_symbol
+            units = phf._get_unit_string(components, repr_format=template)
             exponent = ""
         else:
             units = phf._format_symbol(prefix, symbol, repr_format=template)
 
         # Determine the appropriate display value
-        value = val * float_factor
+        value = val * float(factor)
 
         if prefix_bool:
             # If the quantity has a "pre-fixed" prefix, it will override
             # the value generated in _auto_prefix_value
             value = phf._auto_prefix_value(val, power, prefix, kg_bool)
+            factor = phf._prefix_factor(val, value, power, prefix, kg_bool)
+
+        return value, units, exponent, factor
+
+    def _repr_template_(
+        self, template: str = "", format_spec="", inline_math: bool = False
+    ) -> str:
+        """
+        Returns a string that appropriately represents the Physical
+        instance. The parameter,'template', allows two optional values:
+        'html' and 'latex'. which will only be utilized if the Physical
+        exists in the Jupyter/iPython environment.
+        If 'inline_math' is True, the returned string is wrapped in '$'
+        delimiters (only meaningful for the 'latex' template).
+        """
+        if not format_spec:
+            format_spec = f".{self.precision}f"
+        value, units, exponent, _ = self._display_parts(template)
 
         pre_super = ""
         post_super = ""
@@ -419,23 +460,11 @@ class Physical(object):
     ### "Magic" Methods ###
 
     def __float__(self):
-        value = self.value
-        factor = float(self.factor)
-        if factor != 1.0:
-            return value * factor
-        kg_bool = False
-        dims = self.dimensions
-        env_dims = environment.units_by_dimension or dict()
-        power, _ = phf._powers_of_derived(dims, env_dims)
-        dim_components = phf._get_unit_components_from_dims(dims)
-        if len(dim_components) == 1 and dim_components[0][0] == "kg":
-            kg_bool = True
-        if self.prefixed:
-            prefix = self.prefixed
-        else:
-            prefix = phf._auto_prefix(value, power, kg_bool)
-        float_value = phf._auto_prefix_value(value, power, prefix, kg_bool)
-        return float_value
+        """
+        Returns the number displayed: the value in the unit (and prefix) the
+        instance is shown in (see .display()). Use .value for the SI value.
+        """
+        return float(self.display().magnitude)
 
     def __int__(self):
         return int(float(self))

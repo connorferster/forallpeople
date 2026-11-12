@@ -118,7 +118,9 @@ def _evaluate_dims_and_factor(
         default_attributes = list(default.values())[0]
         if not defined and "Factor" in default_attributes:
             defined = default
-            factor = default_attributes["Factor"]
+            # A power of the default unit (in² for a default of inch) takes the
+            # power of its factor too.
+            factor = _factor_pow(default_attributes["Factor"], power)
 
     if defined:
         units_match = defined
@@ -145,6 +147,16 @@ def _evaluate_dims_and_factor(
     return (symbol, prefix_bool, factor)
 
 
+def _factor_pow(factor: Union[int, Fraction], power: Union[int, float]):
+    """
+    Returns 'factor' raised to 'power', exactly (a Fraction) when 'power' is a
+    whole number.
+    """
+    if float(power).is_integer():
+        return Fraction(factor) ** int(power)
+    return float(factor) ** power
+
+
 @functools.lru_cache(maxsize=None)
 def _get_units_by_factor(
     factor: float, dims: Dimensions, units_env: Callable, power: Union[int, float]
@@ -169,16 +181,22 @@ def _get_units_by_factor(
 
 def _match_factors(
     new_factor: Fraction, units_env: dict, tol=Fraction(1, int(1e9))
-) -> Union[Fraction, dict]:
+) -> dict:
     """
-    Returns
+    Returns the units in 'units_env' (a factor index) whose factor is
+    'new_factor', or within a relative tolerance of 'tol' of it (for factors
+    that went through a float, e.g. a square root). Returns {} if none match.
+
+    The tolerance is relative because factors span many orders of magnitude:
+    kip/in⁴ is about 1e-10, so an absolute tolerance of 1e-9 would match it to
+    any small factor.
     """
     units_match = units_env.get(new_factor, dict())
     if units_match != dict():
         return units_match
     else:
         for factor, units in units_env.items():
-            if abs(new_factor - factor) < tol:
+            if abs(new_factor - factor) <= tol * abs(factor):
                 return units
         return dict()
 
@@ -593,3 +611,27 @@ def fraction_pow(a: Fraction, b: Fraction) -> Union[Fraction, float]:
         d = Decimal(str(x / y))
         m, n = d.as_integer_ratio()
         return Fraction(n, m)
+
+
+def _prefix_factor(
+    value: float,
+    prefixed_value: float,
+    power: Union[int, float],
+    prefix: str,
+    kg_bool: bool = False,
+) -> Union[int, Fraction, float]:
+    """
+    Returns the factor from 'value' (SI) to 'prefixed_value' (the value shown
+    with 'prefix'): a power of ten, as an exact Fraction (1000 for mm), or a
+    float if it is not one.
+    """
+    if value:
+        ratio = prefixed_value / value
+    else:
+        ratio = _auto_prefix_value(1.0, power, prefix, kg_bool)
+    if ratio == 1:
+        return 1
+    exponent = round(math.log10(abs(ratio)))
+    if math.isclose(ratio, 10.0**exponent, rel_tol=1e-9):
+        return Fraction(10) ** exponent
+    return ratio
