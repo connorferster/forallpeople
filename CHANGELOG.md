@@ -1,5 +1,18 @@
 # Changelog
 
+## 3.5.0
+
+### Added
+
+- **`us_structural` environment** for structural calculations in US customary units: `lb` and `kip` with `inch` (displayed as `in`) and `ft`, in every combination of a force times or over a length to the first to fourth power (`kip·ft`, `lb·in²`, `kip·in⁴`, `kip/ft`, `psi`, `pcf`, `kip/in⁴`, ...), and `lbm`. Each dimension has a `Default` unit, so a result of mixed units (ksi and psi, ft and in) is shown in US units instead of SI: `A_s * f_y / (0.85 * f_c * b)` with `f_y` in ksi and `f_c` in psi is `3.485 in`, not `88.526 mm`.
+- **`Physical.display(template="")`** returns how a quantity is displayed, as a `Display(magnitude, unit, factor)`, with `magnitude == value * factor`. The factor includes any SI prefix and is an exact `Fraction` for a defined unit or a prefix, so code that writes quantities elsewhere no longer has to parse `str()`.
+
+### Fixed
+
+- **A power of a `Default` unit showed the wrong number.** An area with the factor of `ft` (not `ft²`), e.g. from mixing units, was shown in `ft²` with the number scaled by the factor of `ft` once: `6.000 ft²` instead of `19.685 ft²`.
+- **`float()` now always gives the number displayed**, as documented. It was different for a quantity shown in a `Default` unit (`float()` gave the number in the unit of the factor), for a factor no unit has (shown in SI), and for a compound SI unit that is not prefixed (`float(40000 * A * kg)` was `40.0`).
+- **Factors are matched to units with a relative tolerance.** The absolute tolerance of 1e-9 could match a factor to a unit with a much smaller factor, such as `kip/in⁴` (about 1e-10).
+
 ## 3.4.1
 
 ### Fixed

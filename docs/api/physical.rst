@@ -4,7 +4,7 @@ Physical
 .. currentmodule:: forallpeople
 
 .. autoclass:: Physical
-   :members: prefix, round, sqrt, split, to, si, to_dict, from_dict, repr
+   :members: display, prefix, round, sqrt, split, to, si, to_dict, from_dict, repr
    :no-undoc-members:
 
    Quantities are usually made by multiplying numbers by units
@@ -47,6 +47,27 @@ Physical
       :type: str
 
       The quantity as HTML.
+
+.. autoclass:: Display
+   :no-members:
+
+   How a quantity is displayed, returned by :meth:`Physical.display`.
+
+   .. attribute:: magnitude
+      :type: float
+
+      The number shown.
+
+   .. attribute:: unit
+      :type: str
+
+      The unit shown, with its prefix, e.g. ``"mm"`` or ``"kip·ft"``.
+
+   .. attribute:: factor
+      :type: int | float | fractions.Fraction
+
+      ``magnitude == value * factor``, where ``value`` is the SI value. An
+      exact ``Fraction`` for a defined unit or an SI prefix.
 
 .. autoclass:: forallpeople.dimensions.Dimensions
    :no-members:
