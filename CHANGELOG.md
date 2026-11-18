@@ -1,5 +1,22 @@
 # Changelog
 
+## 4.0.0
+
+### Changed (breaking)
+
+- **A defined unit displays as its unit alone**: `kN` rather than `1.000 kN`, in
+  `repr()`, `str()`, `format()`, LaTeX and HTML. This applies to the units an
+  environment defines and to the SI base units, which now have `is_unit = True`.
+  The result of a calculation never has it, so `1 * kN` still displays as
+  `1.000 kN`, and so does a unit shown in another unit (`kN.prefix("unity")`) or a
+  constant defined in an environment. `is_unit` is not part of the quantity: it is
+  ignored by `==`, `hash()` and serialization. `display()` and `float()` are
+  unchanged (`kN.display().magnitude` is `1`).
+- **Escape hatch (temporary):** `forallpeople.legacy_unit_repr()`, or the environment
+  variable `FORALLPEOPLE_LEGACY_UNIT_REPR=1`, brings back the old display. Both warn
+  with a `FutureWarning`; the escape hatch will be removed in 5.0.
+- `abs()` of a positive quantity returns a new quantity rather than the same object.
+
 ## 3.5.0
 
 ### Added

@@ -33,7 +33,7 @@ A module to model the seven SI base units:
 #    limitations under the License.
 from __future__ import annotations
 
-__version__ = "3.5.0"
+__version__ = "4.0.0"
 
 from dataclasses import dataclass
 from fractions import Fraction
@@ -45,12 +45,43 @@ from forallpeople.environment import Environment
 from forallpeople.parsing import UnitParseError
 import math
 import builtins
+import os
 import sys
 import warnings
 
 NUMBER = (int, float)
 SERIALIZATION_TAG = "__physical__"
 SERIALIZATION_VERSION = 1
+
+# The escape hatch for the bare display of defined units (4.0): when True, a
+# defined unit shows its number again ("1 kN" rather than "kN"). Set with
+# legacy_unit_repr() or the environment variable below; removed in 5.0.
+LEGACY_UNIT_REPR_ENV_VAR = "FORALLPEOPLE_LEGACY_UNIT_REPR"
+_LEGACY_UNIT_REPR_WARNING = (
+    "The legacy display of defined units ('1 kN' rather than 'kN') is a "
+    "temporary escape hatch and will be removed in forallpeople 5.0."
+)
+_legacy_unit_repr = os.environ.get(LEGACY_UNIT_REPR_ENV_VAR, "").strip().lower() in (
+    "1",
+    "true",
+    "yes",
+    "on",
+)
+if _legacy_unit_repr:
+    warnings.warn(_LEGACY_UNIT_REPR_WARNING, FutureWarning, stacklevel=2)
+
+
+def legacy_unit_repr(enabled: bool = True) -> None:
+    """
+    Show defined units with their number, as before forallpeople 4.0: "1 kN"
+    rather than "kN" (for documents that must regenerate unchanged). The
+    environment variable FORALLPEOPLE_LEGACY_UNIT_REPR=1 does the same without
+    a code change. This escape hatch is temporary: it will be removed in 5.0.
+    """
+    global _legacy_unit_repr
+    if enabled:
+        warnings.warn(_LEGACY_UNIT_REPR_WARNING, FutureWarning, stacklevel=2)
+    _legacy_unit_repr = bool(enabled)
 
 
 def _serialize_factor(factor: Union[int, float, Fraction]) -> Union[int, float, str]:
@@ -92,9 +123,14 @@ class Physical(object):
     """
     A class that defines any physical quantity that can be described
     within the BIPM SI unit system.
+
+    'is_unit' is True for a unit defined by the environment (kN, mm) and the SI
+    base units: such a unit displays as its unit alone ("kN", not "1 kN"). It
+    is never set on the result of a calculation, so 1 * kN shows "1 kN". It is
+    not part of the quantity: it is ignored by ==, hash() and serialization.
     """
 
-    __slots__ = ("value", "dimensions", "factor", "precision", "prefixed")
+    __slots__ = ("value", "dimensions", "factor", "precision", "prefixed", "is_unit")
 
     def __init__(
         self,
@@ -103,6 +139,7 @@ class Physical(object):
         factor: float,
         precision: int = 3,
         prefixed: str = "",
+        is_unit: bool = False,
     ):
         """Constructor"""
         super(Physical, self).__setattr__("value", float(value))
@@ -110,6 +147,7 @@ class Physical(object):
         super(Physical, self).__setattr__("factor", factor)
         super(Physical, self).__setattr__("precision", precision)
         super(Physical, self).__setattr__("prefixed", prefixed)
+        super(Physical, self).__setattr__("is_unit", bool(is_unit))
 
     ### API Methods ###
     @property
@@ -132,7 +170,12 @@ class Physical(object):
             )
         # check if eligible for prefixing; do not rely on __repr__ to ignore it
         return Physical(
-            self.value, self.dimensions, self.factor, self.precision, prefixed
+            self.value,
+            self.dimensions,
+            self.factor,
+            self.precision,
+            prefixed,
+            self.is_unit,
         )
 
     @property
@@ -449,13 +492,30 @@ class Physical(object):
             pre_super = ""
             post_super = ""
 
+        unit_text = f"{units}{pre_super}{exponent}{post_super}"
+        if self.shows_bare_unit(value):
+            return f"{pre_inline}{unit_text}{post_inline}"
+
         formatted_value = f"{value:{format_spec}}"
         if "e" in format_spec.lower():
             formatted_value = phf.format_scientific_notation(
                 formatted_value, template=template
             )
 
-        return f"{pre_inline}{formatted_value}{space}{units}{pre_super}{exponent}{post_super}{post_inline}"
+        return f"{pre_inline}{formatted_value}{space}{unit_text}{post_inline}"
+
+    def shows_bare_unit(self, magnitude: Optional[float] = None) -> bool:
+        """
+        True if the instance displays as its unit alone ("kN"): a defined unit
+        ('is_unit') shown with the number 1, unless legacy_unit_repr() is on. A
+        defined constant (g = 9.81 m/s²), or a unit shown in another unit
+        (kN.prefix("unity") is 1000 N), keeps its number.
+        """
+        if not getattr(self, "is_unit", False) or _legacy_unit_repr:
+            return False
+        if magnitude is None:
+            magnitude = self._display_parts()[0]
+        return math.isclose(magnitude, 1, rel_tol=1e-9)
 
     ### "Magic" Methods ###
 
@@ -475,7 +535,7 @@ class Physical(object):
     def __abs__(self):
         if self.value < 0:
             return self * -1
-        return self
+        return self * 1
 
     def __bool__(self):
         return True
@@ -503,7 +563,9 @@ class Physical(object):
         )
 
     def __round__(self, n=0):
-        return Physical(self.value, self.dimensions, self.factor, n, self.prefixed)
+        return Physical(
+            self.value, self.dimensions, self.factor, n, self.prefixed, self.is_unit
+        )
 
     def __contains__(self, other):
         return False
@@ -821,13 +883,13 @@ class Physical(object):
 
 # The seven SI base units...
 _the_si_base_units = {
-    "kg": Physical(1, Dimensions(1, 0, 0, 0, 0, 0, 0), 1),
-    "m": Physical(1, Dimensions(0, 1, 0, 0, 0, 0, 0), 1),
-    "s": Physical(1, Dimensions(0, 0, 1, 0, 0, 0, 0), 1),
-    "A": Physical(1, Dimensions(0, 0, 0, 1, 0, 0, 0), 1),
-    "cd": Physical(1, Dimensions(0, 0, 0, 0, 1, 0, 0), 1),
-    "K": Physical(1, Dimensions(0, 0, 0, 0, 0, 1, 0), 1),
-    "mol": Physical(1, Dimensions(0, 0, 0, 0, 0, 0, 1), 1),
+    "kg": Physical(1, Dimensions(1, 0, 0, 0, 0, 0, 0), 1, is_unit=True),
+    "m": Physical(1, Dimensions(0, 1, 0, 0, 0, 0, 0), 1, is_unit=True),
+    "s": Physical(1, Dimensions(0, 0, 1, 0, 0, 0, 0), 1, is_unit=True),
+    "A": Physical(1, Dimensions(0, 0, 0, 1, 0, 0, 0), 1, is_unit=True),
+    "cd": Physical(1, Dimensions(0, 0, 0, 0, 1, 0, 0), 1, is_unit=True),
+    "K": Physical(1, Dimensions(0, 0, 0, 0, 0, 1, 0), 1, is_unit=True),
+    "mol": Physical(1, Dimensions(0, 0, 0, 0, 0, 0, 1), 1, is_unit=True),
 }
 
 environment = Environment(Physical, builtins, _the_si_base_units)

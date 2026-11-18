@@ -16,6 +16,29 @@ forallpeople shows a quantity the way you would write it in a calculation:
 in the units of the environment, scaled to a sensible prefix, to three decimal
 places.
 
+## A unit displays as its unit
+
+A unit of the environment, or an SI base unit, displays as its unit alone. A
+quantity, including the result of any calculation, displays with its number:
+
+```{code-cell} ipython3
+si.m, si.N, 1 * si.m, 5 * si.N
+```
+
+So writing a calculation with units reads as it would on paper, `5 * N` rather
+than `5 * 1.000 N`. Only the unit objects themselves (and other names for them,
+such as `force_unit = si.N`) display this way; their `is_unit` attribute is
+`True`. It is not part of the quantity: `si.N == 1 * si.N`. A unit shown in
+another unit, or a constant defined in an environment, keeps its number.
+
+```{note}
+Before forallpeople 4.0, a unit displayed with its number (`1.000 N`). To get
+that display back while you update documents that must regenerate unchanged,
+call `si.legacy_unit_repr()` or set the environment variable
+`FORALLPEOPLE_LEGACY_UNIT_REPR=1`. This escape hatch is temporary and will be
+removed in forallpeople 5.0.
+```
+
 ## Automatic prefixes
 
 SI quantities are scaled to the prefix that keeps the number between 1 and
