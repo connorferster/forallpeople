@@ -230,12 +230,20 @@ class Environment:
             factor = definitions.get("Factor", 1)
             symbol = definitions.get("Symbol", "")
             value = definitions.get("Value", 1)
+            # A defined unit displays as its unit alone ("kN"); see
+            # Physical.is_unit.
             if symbol:
                 units_dict.update(
-                    {unit: physical_class(1 / float(factor), dimensions, factor)}
+                    {
+                        unit: physical_class(
+                            1 / float(factor), dimensions, factor, is_unit=True
+                        )
+                    }
                 )
             else:
-                units_dict.update({unit: physical_class(value, dimensions, factor)})
+                units_dict.update(
+                    {unit: physical_class(value, dimensions, factor, is_unit=True)}
+                )
         return units_dict
 
 

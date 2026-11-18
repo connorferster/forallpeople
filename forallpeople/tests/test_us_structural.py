@@ -67,7 +67,9 @@ DEFINITIONS = json.loads(
 def test_each_unit(us, name):
     unit = getattr(us, name)
     symbol = DEFINITIONS[name]["Symbol"]
-    assert str(unit) == f"1.000 {symbol}"
+    # A defined unit displays as its unit alone; a quantity of it, with its number.
+    assert str(unit) == symbol
+    assert str(1 * unit) == f"1.000 {symbol}"
     assert math.isclose(unit.value, si_size(name), rel_tol=1e-12)
     assert math.isclose(float(unit), 1)
     assert us.parse(f"2.5 {symbol}").value == pytest.approx(2.5 * unit.value)
