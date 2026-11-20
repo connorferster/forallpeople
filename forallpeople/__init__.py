@@ -433,6 +433,7 @@ class Physical(object):
         exponent = phf._format_exponent(power, repr_format=template)
 
         # Format the units
+        base_units_only = False
         if not symbol and phf._dims_basis_multiple(dims):
             components = phf._get_unit_components_from_dims(dims)
             units_symbol = phf._get_unit_string(components, repr_format=template)
@@ -442,11 +443,21 @@ class Physical(object):
             components = phf._get_unit_components_from_dims(dims)
             units = phf._get_unit_string(components, repr_format=template)
             exponent = ""
+            base_units_only = True
         else:
             units = phf._format_symbol(prefix, symbol, repr_format=template)
 
         # Determine the appropriate display value
         value = val * float(factor)
+
+        if base_units_only:
+            # The environment has no symbol for these dimensions, so the unit
+            # string above is plain SI base units, which carry no factor. Scaling
+            # the value by the factor anyway prints a number that does not belong
+            # to the units printed beside it: 100*lb/(2*s) prints the number
+            # 50.000 against a base-unit string when the quantity is actually
+            # 222.411 N/s. A base-unit string needs the base-unit value.
+            value = val
 
         if prefix_bool:
             # If the quantity has a "pre-fixed" prefix, it will override
